@@ -88,19 +88,21 @@ class WindowsController:
         Returns:
             dev: airtest.
         """
-        if not self.is_android_online():
-            self.restart_android()
-            time.sleep(15)
+        # if not self.is_android_online():
+        #     self.restart_android()
+        #     time.sleep(15)
 
-        if self.emulator == "雷电":
-            dev_name = f"ANDROID:///{self.emulator_name}"
-        elif self.emulator == "蓝叠 Hyper-V":
-            with open(self.emulator_config_file, "r") as f:
-                lines = f.readlines()
-            for line in lines:
-                if line.startswith("bst.instance.Pie64.status.adb_port="):
-                    port = line.split("=")[-1].strip()[1:-1]
-                    dev_name = f"ANDROID:///127.0.0.1:{port}"
+        # if self.emulator == "雷电":
+        #     dev_name = f"ANDROID:///{self.emulator_name}"
+        # elif self.emulator == "蓝叠 Hyper-V":
+        #     with open(self.emulator_config_file, "r") as f:
+        #         lines = f.readlines()
+        #     for line in lines:
+        #         if line.startswith("bst.instance.Pie64.status.adb_port="):
+        #             port = line.split("=")[-1].strip()[1:-1]
+        #             dev_name = f"ANDROID:///127.0.0.1:{port}"
+
+        dev_name = f"ANDROID:///10.200.127.154:5555"
 
         from logging import ERROR, getLogger
 
@@ -128,7 +130,9 @@ class WindowsController:
             self.logger.debug("Emulator status: " + raw_res)
             return raw_res == "running"
         else:
-            raw_res = check_output(f'tasklist /fi "ImageName eq {self.exe_name}').decode("gbk")  # TODO: 检查是否所有windows版本返回都是中文
+            raw_res = check_output(f'tasklist /fi "ImageName eq {self.exe_name}').decode(
+                "gbk"
+            )  # TODO: 检查是否所有windows版本返回都是中文
             return "PID" in raw_res
 
     def kill_android(self):

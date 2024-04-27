@@ -17,10 +17,11 @@ class AndroidController:
         self.logger = logger
         self.dev = dev
         self.resolution = self.snapshot().shape[:2]
+        self.resolution = (720, 1280)
         self.resolution = self.resolution[::-1]
 
     def snapshot(self):
-        return self.dev.snapshot(quality=99)
+        return self.dev.snapshot(quality=99)[:720, :1280]
 
     def ShellCmd(self, cmd, *args, **kwargs):
         """向链接的模拟器发送 shell 命令
