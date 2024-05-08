@@ -200,8 +200,22 @@ class Timer(Emulator):
             self.Windows.connect_android()
             self.restart(times + 1, *args, **kwargs)
 
+    def is_other_device_login(self, timeout=2):
+        """检查是否有其他设备登录顶号"""
+        return self.wait_images(IMG.error_image["user_remote_login"], timeout=timeout) != None
+
+    def process_other_device_login(self, timeout=2):
+        """处理其他设备登录顶号
+        重新登录以后写，暂时留空,直接抛出错误
+        """
+        if self.is_other_device_login(timeout):
+            self.logger.log_image(self.update_screen, name="other_device_login.PNG", ignore_existed_image=True)
+            self.logger.error("other device login")
+            raise CriticalErr("other device login")
+
     def is_bad_network(self, timeout=10):
-        return self.wait_images([IMG.error_image["bad_network"], IMG.symbol_image[10]], timeout=timeout) != None
+        """检查是否为网络状况问题"""
+        return self.wait_images([IMG.error_image["bad_network"]] + [IMG.symbol_image[10]], timeout=timeout) != None
 
     def process_bad_network(self, extra_info="", timeout=10):
         """判断并处理网络状况问题
@@ -212,25 +226,27 @@ class Timer(Emulator):
         """
         start_time = time.time()
         while self.is_bad_network(timeout):
+            self.logger.log_image(self.update_screen, name="bad_network.PNG", ignore_existed_image=True)
             self.logger.error(f"bad network: {extra_info}")
-            while True:
-                if time.time() - start_time >= 180:
-                    raise TimeoutError("Process bad network timeout")
-                if self.Windows.check_network() != False:
-                    break
 
-            start_time2 = time.time()
-            while self.image_exist([IMG.symbol_image[10]] + [IMG.error_image["bad_network"]]):
+            # 等待网络恢复
+
+            if not self.Windows.wait_network():
+                raise NetworkErr("can't connect to www.moefantasy.com")
+
+            # 处理网络问题
+            while self.wait_images([IMG.symbol_image[10]] + [IMG.error_image["bad_network"]], timeout=3):
                 time.sleep(0.5)
-                if time.time() - start_time2 >= 60:
-                    break
+
                 if self.image_exist(IMG.error_image["bad_network"]):
-                    self.Android.click(476, 298, delay=2)
+                    self.click_image(IMG.error_image["network_retry"])
 
-            if time.time() - start_time2 < 60:
-                self.logger.debug("ok network problem solved, at", time.time())
-                return True
+                if not self.wait_images([IMG.symbol_image[10]] + [IMG.error_image["bad_network"]], timeout=5):
+                    self.logger.debug("ok network problem solved")
+                    return True
 
+                if time.time() - start_time > 1800:
+                    raise TimeoutError("process bad network timeout")
         return False
 
     # ========================= 维护当前所在游戏界面 =========================
@@ -269,6 +285,13 @@ class Timer(Emulator):
             if time.time() - start_time > timeout:
                 break
             time.sleep(gap)
+
+        if self.is_bad_network(timeout=3):
+            if self.process_bad_network("can't wait pages"):
+                res = self.wait_pages(names, timeout, gap, after_wait)
+                return res
+        if self.is_other_device_login():
+            self.process_other_device_login()
 
         raise TimeoutError(f"identify timeout of{str(names)}")
 
@@ -354,7 +377,9 @@ class Timer(Emulator):
         except TimeoutError as exception:
             if try_times > 3:
                 raise TimeoutError("can't access the page")
-            if self.is_bad_network(timeout=0) == False:
+            if self.is_other_device_login():
+                self.process_other_device_login()
+            if not self.is_bad_network(timeout=2):
                 self.logger.debug("wrong path is operated,anyway we find a way to solve,processing")
                 self.logger.debug("wrong info is:", exception)
                 self.go_main_page()
@@ -385,7 +410,16 @@ class Timer(Emulator):
             ValueError: _description_
         """
         if QuitOperationTime > 200:
-            raise ValueError("Error,Couldn't go main page")
+            if self.is_other_device_login():
+                self.process_other_device_login()
+
+            if self.is_bad_network(timeout=3):
+                if self.process_bad_network("can't go main page"):
+                    self.go_main_page(0, List)
+                    return
+            else:
+                self.logger.error("Unknown error,can't go main page")
+                raise ValueError("Error,Couldn't go main page")
 
         self.now_page = self.ui.get_node_by_name("main_page")
         if len(List) == 0:
