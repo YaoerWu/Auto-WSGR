@@ -205,11 +205,15 @@ class NormalFightPlan(FightPlan):
         else:
             plan_args = yaml_to_dict(os.path.join(self.config.PLAN_ROOT, plan_path))
 
+        self.fleet_level_limit = None  # 舰队等级限制
         # 从参数加载计划
         if fleet_id is not None:
             plan_args["fleet_id"] = fleet_id  # 舰队编号
         if fleet != -1:
             plan_args["fleet"] = fleet
+        if "fleet_level_limit" in plan_args:
+            self.fleet_level_limit = plan_args["fleet_level_limit"]
+            self.logger.info(f"已启用舰队等级限制, 限制为: {self.fleet_level_limit}")
 
         # 检查参数完整情况
         if "fleet_id" not in plan_args:
@@ -281,6 +285,20 @@ class NormalFightPlan(FightPlan):
         ):
             ChangeShips(self.timer, self.fleet_id, self.fleet)
             self.timer.port.fleet[self.fleet_id] = self.fleet[:]
+
+        if isinstance(self.fleet_level_limit, list):
+            fleet = Fleet(self.timer)
+            fleet.detect(check_level=True)
+            self.timer.logger.info(f"舰船等级: {fleet.levels}")
+            for i in range(1, 7):
+                if self.fleet_level_limit[i] is not None:
+                    if fleet.levels[i] is None:
+                        continue
+                    if fleet.levels[i] >= self.fleet_level_limit[i]:
+                        self.timer.logger.info(
+                            f"舰队第{i}位等级达到上限: {self.fleet_level_limit[i]}"
+                        )
+                        return literals.LV_LIMIT_REACHED
 
         self.Info.ship_stats = detect_ship_stats(self.timer)
         quick_repair(self.timer, self.repair_mode, self.Info.ship_stats)

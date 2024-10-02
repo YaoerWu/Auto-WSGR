@@ -376,6 +376,8 @@ class FightPlan(ABC):
             return ret
         elif ret == literals.BATTLE_TIMES_EXCEED:
             return ret
+        elif ret == literals.LV_LIMIT_REACHED:
+            return ret
         else:
             self.logger.error("无法进入战斗, 原因未知! 屏幕状态已记录")
             self.timer.log_screen()

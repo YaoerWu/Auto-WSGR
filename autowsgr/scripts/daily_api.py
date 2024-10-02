@@ -81,6 +81,9 @@ class DailyOperation:
                     self.fight_complete_times[task_id][0] += 1
                 elif ret == literals.DOCK_FULL_FLAG:
                     break  # 不解装则结束出征
+                elif ret == literals.LV_LIMIT_REACHED:
+                    self.timer.logger.info("等级上限，结束出征")
+                    break
 
                 if self.config.quick_repair_limit:
                     if self.timer.quick_repaired_cost >= int(
