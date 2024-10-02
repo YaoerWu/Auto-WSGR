@@ -213,6 +213,8 @@ class NormalFightPlan(FightPlan):
             plan_args["fleet"] = fleet
         if "fleet_level_limit" in plan_args:
             self.fleet_level_limit = plan_args["fleet_level_limit"]
+            self.level_fleet = Fleet(self.timer)
+            self.level_fleet.ships = [None] + ["1"] * (len(self.fleet_level_limit) - 1)
             self.logger.info(f"已启用舰队等级限制, 限制为: {self.fleet_level_limit}")
 
         # 检查参数完整情况
@@ -287,14 +289,13 @@ class NormalFightPlan(FightPlan):
             self.timer.port.fleet[self.fleet_id] = self.fleet[:]
 
         if isinstance(self.fleet_level_limit, list):
-            fleet = Fleet(self.timer)
-            fleet.detect(check_level=True)
-            self.timer.logger.info(f"舰船等级: {fleet.levels}")
+            self.level_fleet.check_level()
+            self.timer.logger.info(f"舰船等级: {self.level_fleet.levels}")
             for i in range(1, 7):
                 if self.fleet_level_limit[i] is not None:
-                    if fleet.levels[i] is None:
+                    if self.level_fleet.levels[i] is None:
                         continue
-                    if fleet.levels[i] >= self.fleet_level_limit[i]:
+                    if self.level_fleet.levels[i] >= self.fleet_level_limit[i]:
                         self.timer.logger.info(
                             f"舰队第{i}位等级达到上限: {self.fleet_level_limit[i]}"
                         )

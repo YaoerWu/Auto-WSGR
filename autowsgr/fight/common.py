@@ -337,7 +337,7 @@ class FightPlan(ABC):
             fight_flag = self.run()
             fight_flag != "SL"
 
-            if fight_flag not in ["SL", "success"]:
+            if fight_flag not in ["SL", "success", "level limit reached"]:
                 if fight_flag == "dock is full":
                     return "dock is full"
                 raise RuntimeError(f"战斗进行时出现异常, 信息为 {fight_flag}")
