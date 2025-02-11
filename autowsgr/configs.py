@@ -148,11 +148,10 @@ class DecisiveBattleConfig(BaseConfig):
 
 
 @dataclass(frozen=True)
-class UserConfig(BaseConfig):
+class EmulatorConfig(BaseConfig):
     # 系统
     os_type: OSType = field(init=False)
     """操作系统类型。自动设置"""
-
     # 模拟器
     emulator_type: EmulatorType = EmulatorType.leidian
     """模拟器类型。mumu模拟器现在截图效率较低，后续会进行优化"""
@@ -163,6 +162,33 @@ class UserConfig(BaseConfig):
     emulator_process_name: str | None = None
     """模拟器进程名。不填则自动设置"""
 
+    def __post_init__(self) -> None:
+        object.__setattr__(self, 'emulator_type', EmulatorType(self.emulator_type))
+        # 系统
+        object.__setattr__(self, 'os_type', OSType.auto())
+        # 模拟器
+        if self.emulator_name is None:
+            object.__setattr__(
+                self,
+                'emulator_name',
+                self.emulator_type.default_emulator_name(self.os_type),
+            )
+        if self.emulator_start_cmd is None:
+            object.__setattr__(
+                self,
+                'emulator_start_cmd',
+                self.emulator_type.auto_emulator_path(self.os_type),
+            )
+        if self.emulator_process_name is None:
+            object.__setattr__(
+                self,
+                'emulator_process_name',
+                os.path.basename(self.emulator_start_cmd),
+            )
+
+
+@dataclass(frozen=True)
+class UserConfig(BaseConfig):
     # 游戏
     game_app: GameAPP = GameAPP.official
     """游戏版本。"""
@@ -234,10 +260,11 @@ class UserConfig(BaseConfig):
     """日常自动化配置"""
     decisive_battle: DecisiveBattleConfig | None = None
     """决战自动化配置"""
+    emulator: EmulatorConfig | None = None
+    """模拟器配置"""
 
     def __post_init__(self) -> None:
         # 确保类型正确
-        object.__setattr__(self, 'emulator_type', EmulatorType(self.emulator_type))
         object.__setattr__(self, 'game_app', GameAPP(self.game_app))
         object.__setattr__(self, 'ocr_backend', OcrBackend(self.ocr_backend))
         object.__setattr__(
@@ -252,29 +279,6 @@ class UserConfig(BaseConfig):
                 self,
                 'destroy_ship_types',
                 [ShipType(t) for t in self.destroy_ship_types],
-            )
-
-        # 系统
-        object.__setattr__(self, 'os_type', OSType.auto())
-
-        # 模拟器
-        if self.emulator_name is None:
-            object.__setattr__(
-                self,
-                'emulator_name',
-                self.emulator_type.default_emulator_name(self.os_type),
-            )
-        if self.emulator_start_cmd is None:
-            object.__setattr__(
-                self,
-                'emulator_start_cmd',
-                self.emulator_type.auto_emulator_path(self.os_type),
-            )
-        if self.emulator_process_name is None:
-            object.__setattr__(
-                self,
-                'emulator_process_name',
-                os.path.basename(self.emulator_start_cmd),
             )
 
         # 游戏
@@ -441,6 +445,7 @@ class NodeConfig(BaseConfig):
 ATTRIBUTE_RECURSIVE = {
     'daily_automation': DailyAutomationConfig,
     'decisive_battle': DecisiveBattleConfig,
+    'emulator': EmulatorConfig,
     # {'enemy_rules': EnemyRule},
 }
 ATTRIBUTE_IGNORE = {

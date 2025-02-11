@@ -71,8 +71,8 @@ class Timer(AndroidController):
             OSType.windows: WindowsController,
             OSType.macos: MacController,
         }
-        self.os_controller: OSController = adapter_fun[self.config.os_type](
-            self.config,
+        self.os_controller: OSController = adapter_fun[self.config.emulator.os_type](
+            self.config.emulator,
             self.logger,
         )
         # 初始化android控制器

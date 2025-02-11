@@ -10,7 +10,7 @@ import requests
 from airtest.core.api import connect_device
 from airtest.core.error import AdbError
 
-from autowsgr.configs import UserConfig
+from autowsgr.configs import EmulatorConfig
 from autowsgr.constants.custom_exceptions import CriticalErr
 from autowsgr.types import EmulatorType
 from autowsgr.utils.logger import Logger
@@ -83,7 +83,7 @@ class OSController(Protocol):
 class WindowsController(OSController):
     def __init__(
         self,
-        config: UserConfig,
+        config: EmulatorConfig,
         logger: Logger,
     ) -> None:
         self.logger = logger
@@ -189,7 +189,7 @@ class WindowsController(OSController):
 
 
 class MacController(OSController):
-    def __init__(self, config: UserConfig, logger: Logger) -> None:
+    def __init__(self, config: EmulatorConfig, logger: Logger) -> None:
         self.logger = logger
 
         self.emulator_type = config.emulator_type
