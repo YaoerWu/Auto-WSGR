@@ -1,13 +1,13 @@
-import image_autowsgrs
+import autowsgr_native
 import numpy as np
 
 
 class ApiDll:
     def locate(self, image: np.ndarray) -> list[tuple[int, int]]:
-        return image_autowsgrs.locate(image)
+        return autowsgr_native.locate(image)
 
     def recognize_enemy(self, images: list[np.ndarray]) -> str:
-        return image_autowsgrs.recognize_enemy(images)
+        return autowsgr_native.recognize_enemy(images)
 
     def recognize_map(self, image: np.ndarray) -> str:
-        return image_autowsgrs.recognize_map(image)
+        return autowsgr_native.recognize_map(image)

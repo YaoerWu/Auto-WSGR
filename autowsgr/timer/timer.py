@@ -7,7 +7,7 @@ from autowsgr.constants.image_templates import IMG
 from autowsgr.constants.other_constants import ALL_PAGES
 from autowsgr.constants.ui import WSGR_UI, Node
 from autowsgr.port.common import Port
-from autowsgr.timer.backends import EasyocrBackend, PaddleOCRBackend
+from autowsgr.timer.backends import EasyocrBackend
 from autowsgr.timer.controllers import (
     AndroidController,
     MacController,
@@ -87,8 +87,8 @@ class Timer(AndroidController):
         match self.config.ocr_backend:
             case OcrBackend.easyocr:
                 self.ocr_backend = EasyocrBackend(self.config, self.logger)
-            case OcrBackend.paddleocr:
-                self.ocr_backend = PaddleOCRBackend(self.config, self.logger)
+            case _:
+                raise ValueError(f'unsupported ocr backend: {self.config.ocr_backend}')
         self.logger.info('OCR 后端初始化成功')
 
     # ========================= OCR 功能穿透 =========================
