@@ -489,7 +489,7 @@ class RepairTask(Task):
             self.timer.relative_swipe(0.33, 0.5, 0.66, 0.5, delay=1)
             time.sleep(0.5)
             if time_costs == last_result:
-                raise BaseException('未找到目标舰船')
+                raise Exception('未找到目标舰船')
             last_result = time_costs
 
     def recognize_screen_relative(
