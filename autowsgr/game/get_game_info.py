@@ -224,7 +224,10 @@ def get_enemy_condition(timer: Timer, type='exercise', *args, **kwargs):
 
     enemy_type_count['ALL'] = 0
     for x in res:
-        enemy_type_count[x] += 1
+        try:
+            enemy_type_count[x] += 1
+        except KeyError:
+            timer.logger.warning(f'识别到未知的敌人类型: {x}')
         if x != NO:
             enemy_type_count['ALL'] += 1
     enemy_type_count[NAP] = enemy_type_count['AP'] - enemy_type_count[SAP]

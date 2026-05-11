@@ -5,7 +5,6 @@ import cv2
 import numpy as np
 
 from autowsgr.configs import UserConfig
-from autowsgr.constants.data_roots import BIN_ROOT
 from autowsgr.timer.backends.api_dll import ApiDll
 from autowsgr.utils.io import cv_imread
 from autowsgr.utils.logger import Logger
@@ -82,7 +81,7 @@ class OCRBackend(Protocol):
     bin: ApiDll
 
     def __init_subclass__(cls) -> None:
-        cls.bin = ApiDll(os.path.join(BIN_ROOT))
+        cls.bin = ApiDll()
 
     def read_text(
         self,
@@ -365,38 +364,6 @@ class EasyocrBackend(OCRBackend):
         else:
             raise ValueError(f'Invalid sort method: {sort}')
 
-        if self.config.show_ocr_info:
-            self.logger.debug(f'原始OCR结果: {results}')
-        return results
-
-
-class PaddleOCRBackend(OCRBackend):
-    def __init__(self, config: UserConfig, logger: Logger) -> None:
-        self.config = config
-        self.logger = logger
-        self.WORD_REPLACE = {
-            '鲍鱼': '鲃鱼',
-        }
-
-        # TODO:后期单独训练模型，提高识别准确率，暂时使用现成的模型
-        from paddleocr import PaddleOCR
-
-        self.reader = PaddleOCR(
-            use_angle_cls=True,
-            use_gpu=True,
-            show_log=False,
-            lang='ch',
-        )  # need to run only once to download and load model into memory
-
-    def read_text(self, img, allowlist, **kwargs):
-        def get_center(pos1, pos2):
-            x1, y1 = pos1
-            x2, y2 = pos2
-            return (x1 + x2) / 2, (y1 + y2) / 2
-
-        results = self.reader.ocr(img, cls=False, **kwargs)
-        results = [] if results == [None] else results[0]
-        results = [(get_center(r[0][1], r[0][3]), r[1][0], r[1][1]) for r in results]
         if self.config.show_ocr_info:
             self.logger.debug(f'原始OCR结果: {results}')
         return results
