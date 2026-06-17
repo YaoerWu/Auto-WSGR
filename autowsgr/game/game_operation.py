@@ -393,8 +393,6 @@ def change_ship(
     timer.logger.debug('输入框已经出现')
     # 输入名字检索
     timer.text(name)
-    # 输入后随便点击获得检索结果
-    timer.click(50, 50, delay=0.5)
     time.sleep(0.5)
     # OCR识别舰船
     if name not in timer.ship_names:
