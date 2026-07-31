@@ -1,13 +1,36 @@
+import os
+import re
 import time
 from typing import Any
 
 from autowsgr.constants.custom_exceptions import ImageNotFoundErr
 from autowsgr.constants.image_templates import IMG
 from autowsgr.timer import Timer
+from autowsgr.utils.io import yaml_to_dict
 from autowsgr.utils.math_functions import cal_dis
 
 
+# 入口标识映射: 内部用 a/b, 地图文件名用希腊字母 α/β (仅活动地图有 α/β 入口概念)
+ENTRANCE_TO_GREEK = {'a': 'α', 'b': 'β'}
+GREEK_TO_ENTRANCE = {'α': 'a', 'β': 'b'}
+
+
+def parse_map_value(map_value) -> tuple[int, str | None]:
+    """解析活动 plan 中的 map 字段, 返回 (map_id, entrance)。
+    纯数字(1 或 '1')  -> (1, None)     # 无入口(如旧活动 E-1)
+    '1a' / '1A'       -> (1, 'a')      # α 入口
+    '3b' / '3B'       -> (3, 'b')      # β 入口
+    """
+    m = re.fullmatch(r'(\d+)([abAB])?', str(map_value).strip())
+    if not m:
+        raise ValueError(f'无法解析 map 值: {map_value!r}, 应为数字或 数字+a/b (如 1、1a、3b)')
+    entrance = m.group(2).lower() if m.group(2) else None
+    return int(m.group(1)), entrance
+
+
 class Event:
+    MAP_NAME_PREFIX: str | None = None  # 新活动子类覆盖为中文名前缀, 如 '激斗漩涡'
+
     def __init__(self, timer: Timer, event_name: str) -> None:
         self.timer = timer
         self.logger = timer.logger
@@ -66,6 +89,31 @@ class Event:
                 self.timer.log_screen()
                 raise ImageNotFoundErr
         return None
+
+    def load_point_positions(self, map_path):
+        """加载活动地图节点位置文件(覆盖 NormalFightInfo 的实现)。
+        命名格式:
+          - MAP_NAME_PREFIX 为 None: 旧活动命名 {chapter}-{map}.yaml, 如 E-1.yaml
+          - 设置 MAP_NAME_PREFIX: 中文命名 {prefix}{H?}-Ex-{map}-{α|β}.yaml, 如 激斗漩涡-Ex-1-α.yaml
+        """
+        map_id, entrance = parse_map_value(self.map)
+        self.map_id = map_id  # 供 plan 的 NODE_POSITION / _is_alpha 使用
+        self.entrance = entrance
+        if self.MAP_NAME_PREFIX is None:
+            self.point_positions = yaml_to_dict(
+                os.path.join(map_path, f'{self.chapter}-{map_id}.yaml'),
+            )
+            return
+        prefix = self.MAP_NAME_PREFIX
+        if str(self.chapter) in 'Hh':  # 困难难度前缀加 H
+            prefix += 'H'
+        if entrance is None:
+            raise ValueError(
+                f'新活动地图 {prefix}-Ex-{map_id} 需指定入口(map 写如 {map_id}a/{map_id}b)',
+            )
+        greek = ENTRANCE_TO_GREEK[entrance]
+        fname = f'{prefix}-Ex-{map_id}-{greek}.yaml'
+        self.point_positions = yaml_to_dict(os.path.join(map_path, fname))
 
 
 class PatrollingEvent(Event):
