@@ -32,14 +32,13 @@ bathroom_feature_count: 1
 bathroom_count: 2
 
 # ========= 模拟器类型 =========
-emulator_type: 雷电
+emulator_type: MuMu
 # 如果您有多开等需要指定模拟器的需求，请使用emulator_name手动指定
 # emulator_name: your_ip:your_port
 
 # ========= 日常挂机策略设置 =========
 # 若需要启用/禁用某项功能, 请手动修改对应的 True/False, 或者添加 # 注释掉使用默认值
 daily_automation:
-
   # 自动重复远征
   auto_expedition: True
 
@@ -104,7 +103,7 @@ decisive_battle:
 # ========= 活动设置 =========
 event_automation:
   # 选择活动
-  event_folder: '20250710'
+  event_folder: "20250710"
   # 选择任务
   plan_name: E9AC夜战
   # 选择舰队
