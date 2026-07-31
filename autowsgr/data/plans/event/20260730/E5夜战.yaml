@@ -3,7 +3,7 @@
 # 节点/阵容请按实际情况调整
 chapter: E
 map: 5a # Ex-1 的 α 入口; 打 β 入口写 1b
-selected_nodes: [A, B, C, D, E, F]
+selected_nodes: [A, B, C, D, F]
 node_defaults:
   night: True
   proceed: True
@@ -13,7 +13,6 @@ node_args:
     proceed: False
   D:
     proceed: False
-  E:
-    proceed: False
+
   F:
     proceed: False
