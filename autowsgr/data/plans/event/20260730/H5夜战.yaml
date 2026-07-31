@@ -1,7 +1,7 @@
 # 20260730 激斗漩涡 E-1 α 入口 示例
 # map 写法: 数字+a/b, a=α入口 b=β入口; chapter 仍为 E(简单)/H(困难)
 # 节点/阵容请按实际情况调整
-chapter: E
+chapter: H
 map: 5a # Ex-1 的 α 入口; 打 β 入口写 1b
 selected_nodes: [A, B, C, D, F]
 node_defaults:
