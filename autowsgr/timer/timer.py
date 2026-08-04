@@ -32,6 +32,8 @@ class Timer(AndroidController):
         self.initialize_ocr()
 
         # 初始化状态变量
+        self.re_login = True  # 是否需要重新登录
+        self.re_login_count = 0  # 重新登录次数计数
         self.everyday_check = True
         self.ship_stats = [0, 0, 0, 0, 0, 0, 0]  # 我方舰船状态
         self.enemy_type_count = {}  # 字典,每种敌人舰船分别有多少
@@ -274,10 +276,22 @@ class Timer(AndroidController):
         return self.wait_images(IMG.error_image['user_remote_login'], timeout=timeout) is not None
 
     def process_other_device_login(self, timeout=2):
-        """处理其他设备登录顶号
-        TODO: 重新登录以后写，暂时留空,直接抛出错误
-        """
-        if self.is_other_device_login(timeout):
+        """处理其他设备登录顶号, 等待 60 秒后使用配置的账号密码重新登录"""
+
+        if self.is_other_device_login(timeout) and self.re_login:
+            self.logger.warning('other device login')
+            if self.re_login_count <= 4:
+                self.re_login_count += 1
+                time.sleep(60 * self.re_login_count)
+                self.logger.info('game restart')
+                self.restart()
+            else:
+                self.log_screen(need_screen_shot=True, name='other device login.PNG')
+                self.logger.error('other device login and too many times')
+                raise CriticalErr('other device login')
+
+
+        elif self.is_other_device_login(timeout) and not self.re_login:
             self.log_screen(need_screen_shot=True, name='other device login.PNG')
             self.logger.error('other device login')
             raise CriticalErr('other device login')
