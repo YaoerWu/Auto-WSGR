@@ -486,7 +486,7 @@ class RepairTask(Task):
 
                     self.timer.logger.debug(f'识别到舰船: {name}')
 
-            self.timer.relative_swipe(0.33, 0.5, 0.66, 0.5, delay=1)
+            self.timer.relative_swipe(0.66, 0.5, 0.33, 0.5, delay=1)
             time.sleep(0.5)
             if time_costs == last_result:
                 raise Exception('未找到目标舰船')
