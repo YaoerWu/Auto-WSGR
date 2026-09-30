@@ -11,7 +11,6 @@ from autowsgr.utils.math_functions import cal_dis
 
 
 # 入口标识映射: 内部用 a/b, 地图文件名用希腊字母 α/β (仅活动地图有 α/β 入口概念)
-ENTRANCE_TO_GREEK = {'a': 'α', 'b': 'β'}
 GREEK_TO_ENTRANCE = {'α': 'a', 'β': 'b'}
 
 
@@ -29,8 +28,6 @@ def parse_map_value(map_value) -> tuple[int, str | None]:
 
 
 class Event:
-    MAP_NAME_PREFIX: str | None = None  # 新活动子类覆盖为中文名前缀, 如 '激斗漩涡'
-
     def __init__(self, timer: Timer, event_name: str) -> None:
         self.timer = timer
         self.logger = timer.logger
@@ -55,10 +52,15 @@ class Event:
         这里同时有检查 _go_map_page 是否成功的功能
         如果未能检测到难度图标，但是检测到进入活动地图，默认没有通过简单难度，返回简单 0.
         """
+        # 活动页面标志(event_image[2], 如标题横幅)受光效影响实测匹配度仅 ~0.77, 需降低置信度检测
+        ACTIVITY_PAGE_CONFIDENCE = 0.85
+        # 已在活动页面(如无难度切换 UI 的活动)时, 直接视为简单难度
+        if self.timer.image_exist(self.event_image[2], confidence=ACTIVITY_PAGE_CONFIDENCE):
+            return 0
         res = self.timer.wait_images(self.common_image.hard + self.common_image.easy)
         if res is None:
             self.logger.warning('ImageNotFoundErr: difficulty image not found')
-            if self.timer.wait_image(self.event_image[2]):
+            if self.timer.wait_image(self.event_image[2], confidence=ACTIVITY_PAGE_CONFIDENCE):
                 self.logger.info(
                     '成功进入活动页面，未检测到切换难度图标，请检查是否通关简单难度',
                 )
@@ -92,28 +94,43 @@ class Event:
 
     def load_point_positions(self, map_path):
         """加载活动地图节点位置文件(覆盖 NormalFightInfo 的实现)。
-        命名格式:
-          - MAP_NAME_PREFIX 为 None: 旧活动命名 {chapter}-{map}.yaml, 如 E-1.yaml
-          - 设置 MAP_NAME_PREFIX: 中文命名 {prefix}{H?}-Ex-{map}-{α|β}.yaml, 如 激斗漩涡-Ex-1-α.yaml
+        按 '-' 分割地图文件名匹配, 不依赖活动中文名前缀, 兼容两种命名:
+          - 旧活动: {chapter}-{map}.yaml, 如 E-1.yaml
+          - 新活动: {名}{H?}-Ex-{map}-{α|β?}.yaml, 如 激斗漩涡-Ex-1-α.yaml, 最强之舟-Ex-1.yaml
+            前缀段以 H 结尾表示困难难度; α/β 段可选, 文件带入口时须与 plan 的 map 一致
         """
         map_id, entrance = parse_map_value(self.map)
         self.map_id = map_id  # 供 plan 的 NODE_POSITION / _is_alpha 使用
         self.entrance = entrance
-        if self.MAP_NAME_PREFIX is None:
-            self.point_positions = yaml_to_dict(
-                os.path.join(map_path, f'{self.chapter}-{map_id}.yaml'),
-            )
+        hard = str(self.chapter) in 'Hh'
+
+        # 旧活动命名直接构造
+        legacy = os.path.join(map_path, f'{self.chapter}-{map_id}.yaml')
+        if os.path.exists(legacy):
+            self.point_positions = yaml_to_dict(legacy)
             return
-        prefix = self.MAP_NAME_PREFIX
-        if str(self.chapter) in 'Hh':  # 困难难度前缀加 H
-            prefix += 'H'
-        if entrance is None:
-            raise ValueError(
-                f'新活动地图 {prefix}-Ex-{map_id} 需指定入口(map 写如 {map_id}a/{map_id}b)',
-            )
-        greek = ENTRANCE_TO_GREEK[entrance]
-        fname = f'{prefix}-Ex-{map_id}-{greek}.yaml'
-        self.point_positions = yaml_to_dict(os.path.join(map_path, fname))
+
+        for fname in os.listdir(map_path):
+            if not fname.endswith('.yaml'):
+                continue
+            parts = fname.removesuffix('.yaml').split('-')
+            if 'Ex' not in parts:
+                continue
+            i = parts.index('Ex')
+            if i + 1 >= len(parts) or parts[i + 1] != str(map_id):
+                continue
+            # 入口: 文件名带 α/β 时须与 plan 一致, 不带则任意入口均可
+            if len(parts) > i + 2 and GREEK_TO_ENTRANCE.get(parts[i + 2]) != entrance:
+                continue
+            if parts[0].endswith('H') != hard:
+                continue
+            self.point_positions = yaml_to_dict(os.path.join(map_path, fname))
+            return
+
+        raise FileNotFoundError(
+            f'在 {map_path} 未找到地图 {self.map!r}(chapter={self.chapter}) 的节点位置文件; '
+            f'若活动有 α/β 入口, plan 的 map 需写如 {map_id}a/{map_id}b',
+        )
 
 
 class PatrollingEvent(Event):

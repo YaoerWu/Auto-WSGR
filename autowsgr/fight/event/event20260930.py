@@ -1,32 +1,22 @@
-"""20260730 激斗漩涡 活动脚本
-
-地图文件采用中文活动名 + 希腊字母入口的命名:
-  激斗漩涡-Ex-{n}-{α|β}.yaml    (简单难度, chapter=E)
-  激斗漩涡H-Ex-{n}-{α|β}.yaml   (困难难度, chapter=H)
-plan 中用 `map: {n}a` / `map: {n}b` 指定地图号与入口(a=α, b=β), chapter 仍为 E/H。
-入口(α/β)绑定在地图文件名上, 因此 _is_alpha 改为根据地图名判断, 不再做像素检测。
-
-注意: NODE_POSITION 坐标、_go_map_page 进入逻辑、event_image 引用依赖实机截图,
-      需确认后填入(见 TODO)。还需在 autowsgr/data/images/event/20260730/ 放置 1.PNG…N.PNG。
-"""
-
 import os
 
 from autowsgr.constants.data_roots import MAP_ROOT
-from autowsgr.fight.event.event import Event
+from autowsgr.fight.event.event import Event, parse_map_value
 from autowsgr.fight.normal_fight import NormalFightInfo, NormalFightPlan
 from autowsgr.timer import Timer
 
 
-NODE_POSITION = (
-    None,
-    (0.17708333333333334, 0.3148148148148148),
-    (0.17395833333333333, 0.725925925925926),
-    (0.5010416666666667, 0.29814814814814816),
-    (0.490625, 0.7462962962962963),
-    (0.8135416666666667, 0.29444444444444445),
-    (0.8125, 0.7462962962962963),
-)
+# 活动地图选择界面节点位置(相对坐标), 字母 A~F 即地图编号 1~6
+NODE_POSITION = {
+    'A': [0.08798017348203221, 0.2251655629139073],
+    'B': [0.5947955390334573, 0.2240618101545254],
+    'C': [0.7856257744733581, 0.20750551876379691],
+    'D': [0.19640644361833953, 0.5242825607064018],
+    'E': [0.47026022304832715, 0.6401766004415012],
+    'F': [0.7806691449814126, 0.7483443708609272],
+}
+# 补充数字键(1~6 对应 A~F), 使 NODE_POSITION[map_id] 可直接索引
+NODE_POSITION |= {ord(k) - ord('A') + 1: v for k, v in NODE_POSITION.items()}
 
 
 class EventFightPlan(Event, NormalFightPlan):
@@ -37,7 +27,7 @@ class EventFightPlan(Event, NormalFightPlan):
         auto_answer_question=False,
         from_alpha=None,
         fleet_id=None,
-        event='20260730',
+        event='20260930',
     ) -> None:
         """Args:
         fleet_id : 新的舰队参数, 优先级高于 plan 文件, 如果为 None 则使用计划参数.
@@ -57,15 +47,16 @@ class EventFightPlan(Event, NormalFightPlan):
         Event.__init__(self, timer, event)
 
         # 入口优先级: 显式入参 > 地图名(a/b) > plan 文件 from_alpha
+        map_entrance = parse_map_value(self.config.map)[1]
         if from_alpha is not None:
             self.from_alpha = from_alpha
-        elif self.info.entrance is not None:
-            self.from_alpha = self.info.entrance == 'a'  # a=α→True, b=β→False
+        elif map_entrance is not None:
+            self.from_alpha = map_entrance == 'a'  # a=α→True, b=β→False
         else:
             self.from_alpha = self.config.from_alpha
 
     def _load_fight_info(self):
-        self.info = EventFightInfo20260730(self.timer, self.config.chapter, self.config.map)
+        self.info = EventFightInfo20260930(self.timer, self.config.chapter, self.config.map)
         self.info.load_point_positions(os.path.join(MAP_ROOT, 'event', self.event_name))
 
     def _change_fight_map(self, chapter_id, map_id):
@@ -73,7 +64,6 @@ class EventFightPlan(Event, NormalFightPlan):
         self.change_difficulty(chapter_id)
 
     def _go_map_page(self):
-        # TODO: 根据 20260730 实机界面确认进入活动地图的点击逻辑与 event_image 引用
         self.timer.go_main_page()
         self.timer.click_image(self.event_image[5], timeout=10)
         if self.timer.wait_image(self.event_image[6], timeout=2):
@@ -81,10 +71,12 @@ class EventFightPlan(Event, NormalFightPlan):
             self._go_map_page()
 
     def _is_alpha(self):
-        # 根据所选地图名(plan 中 map 的 a/b 入口)判断当前入口。
-        # 新活动入口绑定在地图文件名上, 无需像素检测。
-        # 若实机发现进入地图后仍需切换入口, 请改回屏幕检测(如 check_pixel)。
-        return self.info.entrance == 'a'
+        # 像素检测当前入口: α 入口按钮高亮为橙色(RGB (37, 146, 249) 的 BGR 表示)
+        return self.timer.check_pixel(
+            (794, 312),
+            (249, 146, 37),
+            screen_shot=True,
+        )  # 蓝 绿 红
 
     def _go_fight_prepare_page(self) -> None:
         if self.timer.image_exist(
@@ -102,8 +94,9 @@ class EventFightPlan(Event, NormalFightPlan):
         if not self.timer.image_exist(self.info.event_image[1]):
             self.timer.relative_click(*NODE_POSITION[self.info.map_id])
 
-        # 选择入口: _is_alpha 根据地图名, 与 from_alpha(同样来自地图名)一致时无需切换
-        if self._is_alpha() != self.from_alpha:
+        # 选择入口: 地图标明 α/β 入口(map 带 a/b)时才检测切换; 未标明则自动跳过
+        entrance = parse_map_value(self.config.map)[1]
+        if entrance is not None and self._is_alpha() != self.from_alpha:
             entrance_position = [(797, 369), (795, 317)]
             self.timer.click(*entrance_position[int(self.from_alpha)])
 
@@ -121,8 +114,8 @@ class EventFightPlan(Event, NormalFightPlan):
             self._go_fight_prepare_page()
 
 
-class EventFightInfo20260730(Event, NormalFightInfo):
-    def __init__(self, timer: Timer, chapter_id, map_id, event='20260730') -> None:
+class EventFightInfo20260930(Event, NormalFightInfo):
+    def __init__(self, timer: Timer, chapter_id, map_id, event='20260930') -> None:
         NormalFightInfo.__init__(self, timer, chapter_id, map_id)
         Event.__init__(self, timer, event)
         self.map_image = (

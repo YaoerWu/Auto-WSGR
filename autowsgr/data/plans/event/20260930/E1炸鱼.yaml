@@ -1,0 +1,6 @@
+chapter: E
+map: 1
+selected_nodes: [A, B]
+node_defaults:
+  proceed: False
+  formation: 5
