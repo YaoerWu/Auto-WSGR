@@ -28,6 +28,11 @@ def parse_map_value(map_value) -> tuple[int, str | None]:
 
 
 class Event:
+    # 混入宿主类(如 NormalFightInfo)时由宿主提供的属性
+    chapter: str | int
+    map: str | int
+    point_positions: dict | None
+
     def __init__(self, timer: Timer, event_name: str) -> None:
         self.timer = timer
         self.logger = timer.logger
@@ -52,21 +57,21 @@ class Event:
         这里同时有检查 _go_map_page 是否成功的功能
         如果未能检测到难度图标，但是检测到进入活动地图，默认没有通过简单难度，返回简单 0.
         """
-        # 活动页面标志(event_image[2], 如标题横幅)受光效影响实测匹配度仅 ~0.77, 需降低置信度检测
+        # 活动页面标志(event_image[2], 如标题横幅), 需与难度图标同帧检测
         ACTIVITY_PAGE_CONFIDENCE = 0.85
-        # 已在活动页面(如无难度切换 UI 的活动)时, 直接视为简单难度
-        if self.timer.image_exist(self.event_image[2], confidence=ACTIVITY_PAGE_CONFIDENCE):
+        # 在活动页面且没有任何难度图标(无难度切换 UI 的活动)时, 才视为简单难度
+        _ = self.timer.wait_image(
+            self.event_image[2],
+            confidence=ACTIVITY_PAGE_CONFIDENCE,
+        )
+        if not self.timer.image_exist(
+            self.common_image.hard + self.common_image.easy,
+            need_screen_shot=False,
+        ):
+            self.logger.info(
+                '成功进入活动页面，未检测到切换难度图标，默认为通关简单难度',
+            )
             return 0
-        res = self.timer.wait_images(self.common_image.hard + self.common_image.easy)
-        if res is None:
-            self.logger.warning('ImageNotFoundErr: difficulty image not found')
-            if self.timer.wait_image(self.event_image[2], confidence=ACTIVITY_PAGE_CONFIDENCE):
-                self.logger.info(
-                    '成功进入活动页面，未检测到切换难度图标，请检查是否通关简单难度',
-                )
-                return 0
-            self.timer.log_screen()
-            raise ImageNotFoundErr
 
         if self.timer.image_exist(self.common_image.hard, need_screen_shot=False):
             return 0
@@ -94,10 +99,11 @@ class Event:
 
     def load_point_positions(self, map_path):
         """加载活动地图节点位置文件(覆盖 NormalFightInfo 的实现)。
-        按 '-' 分割地图文件名匹配, 不依赖活动中文名前缀, 兼容两种命名:
+        按 '-' 分割地图文件名匹配, 不依赖活动中文名前缀, 兼容多种命名:
           - 旧活动: {chapter}-{map}.yaml, 如 E-1.yaml
           - 新活动: {名}{H?}-Ex-{map}-{α|β?}.yaml, 如 激斗漩涡-Ex-1-α.yaml, 最强之舟-Ex-1.yaml
             前缀段以 H 结尾表示困难难度; α/β 段可选, 文件带入口时须与 plan 的 map 一致
+            连续编号的活动(如 最强之舟-Ex-1 ~ Ex-12)没有 H 前缀文件, H1~H6 对应 Ex-{map+6}(即 E7~E12)
         """
         map_id, entrance = parse_map_value(self.map)
         self.map_id = map_id  # 供 plan 的 NODE_POSITION / _is_alpha 使用
@@ -110,27 +116,35 @@ class Event:
             self.point_positions = yaml_to_dict(legacy)
             return
 
-        for fname in os.listdir(map_path):
-            if not fname.endswith('.yaml'):
-                continue
-            parts = fname.removesuffix('.yaml').split('-')
-            if 'Ex' not in parts:
-                continue
-            i = parts.index('Ex')
-            if i + 1 >= len(parts) or parts[i + 1] != str(map_id):
-                continue
-            # 入口: 文件名带 α/β 时须与 plan 一致, 不带则任意入口均可
-            if len(parts) > i + 2 and GREEK_TO_ENTRANCE.get(parts[i + 2]) != entrance:
-                continue
-            if parts[0].endswith('H') != hard:
-                continue
-            self.point_positions = yaml_to_dict(os.path.join(map_path, fname))
-            return
+        def find_map_file(number, want_hard):
+            """查找编号为 number、难度匹配的 Ex 地图文件, 返回完整路径或 None"""
+            for fname in sorted(os.listdir(map_path)):
+                if not fname.endswith('.yaml'):
+                    continue
+                parts = fname.removesuffix('.yaml').split('-')
+                if 'Ex' not in parts:
+                    continue
+                i = parts.index('Ex')
+                if i + 1 >= len(parts) or parts[i + 1] != str(number):
+                    continue
+                # 入口: 文件名带 α/β 时须与 plan 一致, 不带则任意入口均可
+                if len(parts) > i + 2 and GREEK_TO_ENTRANCE.get(parts[i + 2]) != entrance:
+                    continue
+                if parts[0].endswith('H') != want_hard:
+                    continue
+                return os.path.join(map_path, fname)
+            return None
 
-        raise FileNotFoundError(
-            f'在 {map_path} 未找到地图 {self.map!r}(chapter={self.chapter}) 的节点位置文件; '
-            f'若活动有 α/β 入口, plan 的 map 需写如 {map_id}a/{map_id}b',
-        )
+        map_file = find_map_file(map_id, hard)
+        if map_file is None and hard:
+            # 无 H 前缀文件的连续编号活动: H1~H6 对应 Ex-{map+6}
+            map_file = find_map_file(map_id + 6, False)
+        if map_file is None:
+            raise FileNotFoundError(
+                f'在 {map_path} 未找到地图 {self.map!r}(chapter={self.chapter}) 的节点位置文件; '
+                f'若活动有 α/β 入口, plan 的 map 需写如 {map_id}a/{map_id}b',
+            )
+        self.point_positions = yaml_to_dict(map_file)
 
 
 class PatrollingEvent(Event):
