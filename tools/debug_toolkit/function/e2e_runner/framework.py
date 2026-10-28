@@ -18,6 +18,7 @@ from __future__ import annotations
 
 # 处理 Windows GBK 编码兼容性 (中文输出在默认代码页下可能乱码)
 import sys
+import threading
 import time
 from contextlib import ExitStack
 from dataclasses import dataclass, field
@@ -245,6 +246,7 @@ class E2ERunner:
         self.static_clicks = static_clicks  # 前几次点击只记录不落地
         self.state = RunnerState()
         self.ctx: Any = None  # 已绑定的 dispatch ContextHandle (prepare() 成功后可用)
+        self.interrupt: Any = None  # 断点开关 (prepare() 成功后可用; 默认不置位)
         self._runtime: Any = None  # RuntimeBindings: 设备、配置和 OCR 服务引用
         self._scope_stack: Any = None  # ExitStack: 持有本次运行的任务上下文作用域
         self._launcher: Any = None  # 已连接的设备服务
@@ -281,9 +283,7 @@ class E2ERunner:
         )
         if not self._prepare_readonly(config=config):
             return False
-        if self.action('游戏就绪 (启动 → 首页)', ensure_ready, self.ctx) is self.FAILED:
-            return False
-        return True
+        return self.action('游戏就绪 (启动 → 首页)', ensure_ready, self.ctx) is not self.FAILED
 
     def _prepare_readonly(self, *, config: Any = None) -> bool:
         """连接设备并绑定 dispatch 任务上下文 (不启动游戏、不执行页面操作)。
@@ -355,10 +355,18 @@ class E2ERunner:
             ctrl: 已就绪的运行时设备引用。
             config: 运行时配置引用; 只读运行没有配置可注入。
         """
-        from autowsgr.dispatch.context import ContextTemplate, RuntimeBindings, context
+        from autowsgr.dispatch.context import (
+            ContextTemplate,
+            InterruptSignals,
+            RuntimeBindings,
+            context,
+        )
 
         # OCR 引擎仍在迁移中; 只读运行也只消费设备引用。
         self._runtime = RuntimeBindings(ctrl=ctrl, config=config, ocr=None, ship_ocr=None)
+        # 断点开关: 默认两个都不置位, 对不碰断点的 case 完全透明;
+        # 断点演练 case 自己 set/clear, 模拟处理器发出的暂停与终止。
+        self.interrupt = InterruptSignals(pause=threading.Event(), stop=threading.Event())
         self._scope_stack = ExitStack()
         self._scope_stack.enter_context(
             context.bind(
@@ -369,6 +377,7 @@ class E2ERunner:
                     event_stage=self.event_stage,
                 ),
                 runtime=self._runtime,
+                interrupt=self.interrupt,
             ),
         )
         self.ctx = context.request()
