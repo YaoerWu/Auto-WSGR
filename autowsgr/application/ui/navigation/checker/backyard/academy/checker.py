@@ -4,7 +4,7 @@
 - application.ui.navigation：确认学院二级页是否到达或离开。
 
 下层依赖：
-- application.vision：读取模板事实。
+- common.vision：读取模板事实。
 
 边界：只做识别并返回结论，不执行点击、不计算路由、不上报识别错误。
 """

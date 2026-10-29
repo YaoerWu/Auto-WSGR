@@ -15,6 +15,7 @@ from typing import Any
 import pytest
 
 from autowsgr.application.ui.navigation.checker.login import checker
+from autowsgr.common.vision import Template
 
 
 # 导航确认入口有自己的默认节奏（等弹层动画），其余入口保持单帧。
@@ -80,6 +81,31 @@ def test_check_entry_defaults(
     assert options['absent'] is False
     assert options['attempts'] == expected_attempts
     assert options['interval_seconds'] == 0.5
+
+
+# 模板入口与它们各自要交给能力层的模板个数。
+_TEMPLATE_ENTRIES = [
+    ('check_black_screen', 1),
+    ('check_login_page', 2),
+    ('check_server_select', 1),
+]
+
+
+@pytest.mark.parametrize(('entry', 'expected_count'), _TEMPLATE_ENTRIES)
+def test_template_entries_hand_loaded_templates(
+    monkeypatch: pytest.MonkeyPatch,
+    entry: str,
+    expected_count: int,
+) -> None:
+    """模板入口交出去的是加载好的 Template，不是等加载的命名空间元组。"""
+    captured = _capture(monkeypatch, 'expect_template')
+
+    assert getattr(checker, entry)(object()) is True
+    templates = captured['options']['template']
+    if expected_count == 1:
+        templates = (templates,)
+    assert len(templates) == expected_count
+    assert all(isinstance(item, Template) for item in templates)
 
 
 def test_read_server_position_scans_server_rois(monkeypatch: pytest.MonkeyPatch) -> None:

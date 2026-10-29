@@ -5,7 +5,7 @@
 - application.ui.navigation.service：启动流程按顺序判断当前画面。
 
 下层依赖：
-- application.vision：读取模板与 OCR 事实。
+- common.vision：读取模板与 OCR 事实。
 
 边界：只暴露画面判断与区服定位，不做点击、导航或启动编排。
 """
@@ -193,12 +193,11 @@ def check_login_page(
     Returns:
         断言满足时为真。
     """
-    namespace = TEMPLATE_NAMESPACE
     return expect_template(
         ctx,
         template=(
-            (namespace, ENTER_BUTTON_TEMPLATE),
-            (namespace, SWITCH_ENTRY_TEMPLATE),
+            _load_template(ENTER_BUTTON_TEMPLATE),
+            _load_template(SWITCH_ENTRY_TEMPLATE),
         ),
         absent=absent,
         attempts=attempts,
