@@ -55,17 +55,19 @@ class _InterruptProbe:
     def __init__(self, ctx: Any, signals: InterruptSignals) -> None:
         self.sites: list[str] = []
         self.fired = False
+        self.hit: str | None = None
         self._signals = signals
         self._kind: str | None = None
-        self._site: str | None = None
+        self._targets: set[str] = set()
         self._origin = ctx.check_interrupt
         ctx.check_interrupt = self
 
-    def arm(self, kind: str | None, site: str | None) -> None:
-        """准备一轮: kind 为 None 只记账; site 指定只在哪个位置注入。"""
+    def arm(self, kind: str | None, targets: set[str] | None = None) -> None:
+        """准备一轮: kind 为 None 只记账; targets 是这一轮待打的断点位置。"""
         self._kind = kind
-        self._site = site
+        self._targets = set(targets or ())
         self.fired = False
+        self.hit = None
         self.sites.clear()
 
     def disarm(self) -> None:
@@ -87,8 +89,9 @@ class _InterruptProbe:
         if frame is not None:
             site = f'{Path(frame.f_code.co_filename).name}:{frame.f_lineno}'
         self.sites.append(site)
-        if self._kind is not None and not self.fired and site == self._site:
+        if self._kind is not None and not self.fired and site in self._targets:
             self.fired = True
+            self.hit = site
             if self._kind == 'stop':
                 self._signals.stop.set()
             else:
@@ -268,7 +271,7 @@ def _run_detect(
     session: Any,
 ) -> dict[str, Any]:
     """不注入信号走一遍链路, 收集断点落在哪些位置。"""
-    probe.arm(None, None)
+    probe.arm(None)
     sites: list[str] = []
     failures: list[str] = []
 
@@ -282,8 +285,13 @@ def _run_detect(
             print(f'FAIL [detect {index}/{len(steps)}] -> {name}: {exc}', flush=True)
             break
 
-    # 回退断点独有一条路径: 链路上全是 navigate_to, 回退要单独退一步再回来。
+    # 回退断点独有一条路径: 链路上全是 navigate_to, 而且走完全链后历史栈已经很深,
+    # 直接回退算出的路径不可信。所以清栈另造一个干净的两页栈再回退。
     try:
+        session.clear_pages()
+        navigator.navigate_to(page_name.HOME)
+        navigator.navigate_to(page_name.BACKYARD)
+        sites.extend(probe.take_sites())
         navigator.navigate_back()
         sites.extend(probe.take_sites())
         navigator.navigate_to(page_name.HOME)
@@ -309,7 +317,7 @@ def _fire(
     probe: _InterruptProbe,
     *,
     kind: str,
-    site: str | None,
+    targets: set[str],
     forward_target: Any = None,
     forward_params: dict[str, Any] | None = None,
     run_back: bool = False,
@@ -317,7 +325,7 @@ def _fire(
     """走一步并尝试在 site 注入; 返回 (结局, 是否真的打断过)。"""
     from autowsgr.application.signals import TaskPaused, TaskStopped
 
-    probe.arm(kind, site)
+    probe.arm(kind, targets)
     outcome = 'reached'
     try:
         _make_executor(
@@ -339,7 +347,7 @@ def _attempt(
     session: Any,
     *,
     kind: str,
-    site: str | None,
+    targets: set[str],
     dimension: str,
     step: int,
     page: str,
@@ -354,7 +362,7 @@ def _attempt(
         rt,
         probe,
         kind=kind,
-        site=site,
+        targets=targets,
         forward_target=forward_target,
         forward_params=forward_params,
         run_back=mode == 'backward',
@@ -363,7 +371,7 @@ def _attempt(
         'dimension': dimension,
         'step': step,
         'page': page,
-        'site': site,
+        'site': probe.hit,
         'mode': mode,
         'outcome': outcome,
         'fired': fired,
@@ -394,25 +402,78 @@ def _attempt(
         # 用户暂停: 处理器清栈, 恢复时按实时识别重建 (见 dispatch.processor)。
         session.clear_pages()
     record['stack_kept'] = session.current_page()
-    # 暂停重启会清栈, 回退本身已无栈可用; 恢复一律从实时识别重建后重新导航。
-    resume_back = mode == 'backward' and dimension != 'restart'
+    # 让路结束后任务继续: 无论打断的是前进还是回退, 都从当前实际页面重新导航到这一步的目标。
     try:
-        _make_executor(
-            rt,
-            target=None if resume_back else forward_target,
-            params=forward_params,
-        ).run()
-        if resume_back:
-            # 回退打断后没有「目标页」可比, 只要求能继续走完。
-            record['ok'] = True
-        else:
-            record['ok'] = session.current_page() == forward_target.value
-            if not record['ok']:
-                record['error'] = f'恢复后停在 {session.current_page()!r}'
+        _make_executor(rt, target=forward_target, params=forward_params).run()
+        record['ok'] = session.current_page() == forward_target.value
+        if not record['ok']:
+            record['error'] = f'恢复后停在 {session.current_page()!r}'
     except Exception as exc:
         record['ok'] = False
         record['error'] = f'恢复失败: {type(exc).__name__}: {exc}'
     return record
+
+
+def _drain_backward(
+    rt: Any,
+    probe: _InterruptProbe,
+    session: Any,
+    page_name: Any,
+    dimension: str,
+    kind: str,
+    pending: set[str],
+) -> list[dict[str, Any]]:
+    """把只剩回退路径才出现的断点逐个打掉。
+
+    回退断点是否触发取决于栈顶和历史栈深度, 所以每个位置单独造一个干净的两页栈:
+    主页 -> 后院 -> 回退一步。这样打断点必定出现, 恢复语义也和前进一致。
+    """
+    records: list[dict[str, Any]] = []
+    for site in sorted(pending):
+        session.clear_pages()
+        try:
+            _make_executor(rt, target=page_name.HOME).run()
+            _make_executor(rt, target=page_name.BACKYARD).run()
+        except Exception as exc:
+            records.append(
+                {
+                    'dimension': dimension,
+                    'step': 0,
+                    'page': 'BACKYARD',
+                    'mode': 'backward',
+                    'site': site,
+                    'outcome': 'skipped',
+                    'fired': False,
+                    'sites': [],
+                    'skipped': True,
+                    'ok': True,
+                    'error': f'造栈失败: {type(exc).__name__}: {exc}',
+                }
+            )
+            continue
+        record = _attempt(
+            rt,
+            probe,
+            session,
+            kind=kind,
+            targets={site},
+            dimension=dimension,
+            step=0,
+            page='BACKYARD',
+            home_value=page_name.HOME.value,
+            forward_target=page_name.BACKYARD,
+            mode='backward',
+        )
+        records.append(record)
+        mark = 'PASS' if record['ok'] else 'FAIL'
+        print(
+            f'[{mark}] [{dimension} back] BACKYARD site={record["site"]} '
+            f'outcome={record["outcome"]}',
+            flush=True,
+        )
+        if record['fired']:
+            pending.discard(site)
+    return records
 
 
 def _run_dimension(
@@ -424,20 +485,19 @@ def _run_dimension(
     dimension: str,
     known_sites: list[str],
 ) -> dict[str, Any]:
-    """把链路的每一步都打断, 直到每一个已知断点位置都被真正触发过。"""
+    """沿链路逐步走, 走到哪个断点就打哪个, 直到每个已知位置都被真正打断过。"""
     kind = 'stop' if dimension == 'stop' else 'pause'
-    pending = list(known_sites)
+    pending = set(known_sites)
     records: list[dict[str, Any]] = []
 
     for index, (name, params) in enumerate(steps, start=1):
         target = page_name[name]
-        site = pending[0] if pending else None
         record = _attempt(
             rt,
             probe,
             session,
             kind=kind,
-            site=site,
+            targets=pending,
             dimension=dimension,
             step=index,
             page=name,
@@ -446,41 +506,25 @@ def _run_dimension(
             forward_params=params,
         )
         records.append(record)
-        if record['fired'] and site in pending:
-            pending.remove(site)
-
-        # 回退断点只出现在 navigate_back 上, 位置迟迟没被触发就补一次回退。
-        if site in pending and session.current_page() not in (None, page_name.HOME.value):
-            back = _attempt(
-                rt,
-                probe,
-                session,
-                kind=kind,
-                site=site,
-                dimension=dimension,
-                step=index,
-                page=name,
-                home_value=page_name.HOME.value,
-                forward_target=target,
-                mode='backward',
-            )
-            records.append(back)
-            if back['fired'] and site in pending:
-                pending.remove(site)
+        if probe.hit:
+            pending.discard(probe.hit)
 
         mark = 'PASS' if record['ok'] else 'FAIL'
-        extra = ' (跳过: 本步不经过该位置)' if record.get('skipped') else ''
+        extra = ' (跳过: 本步没有待打的断点)' if record.get('skipped') else ''
         print(
             f'[{mark}] [{dimension} {index}/{len(steps)}] {name} '
-            f'site={site} outcome={record["outcome"]}{extra}',
+            f'site={record["site"]} outcome={record["outcome"]}{extra}',
             flush=True,
         )
+
+    if pending:
+        records.extend(_drain_backward(rt, probe, session, page_name, dimension, kind, pending))
 
     failed = [item for item in records if not item['ok']]
     print(flush=True)
     print(f'  {dimension}: {len(records)} 次打断, 失败 {len(failed)}', flush=True)
     if pending:
-        print(f'  {dimension}: 仍未触发的位置 {pending}', flush=True)
+        print(f'  {dimension}: 仍未触发的位置 {sorted(pending)}', flush=True)
     return {
         'name': dimension,
         'ok': not failed,
