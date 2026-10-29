@@ -29,6 +29,7 @@ from typing import TYPE_CHECKING, Any
 
 from autowsgr.application.signals import TaskPaused, TaskStopped
 from autowsgr.common.system.logger import get_logger
+from autowsgr.dispatch.context.state import InterruptSignals
 
 
 if TYPE_CHECKING:
@@ -60,8 +61,10 @@ class BaseExecutor:
         """处理器下发的业务类型。"""
         self.progress = progress if progress is not None else {}
         """任务级进度 (如 fought 计数), 暂停重跑后由处理器传入同一 dict 保留。"""
-        self._pause = pause if pause is not None else threading.Event()
-        self._stop = stop if stop is not None else threading.Event()
+        self._signals = InterruptSignals(
+            pause=pause if pause is not None else threading.Event(),
+            stop=stop if stop is not None else threading.Event(),
+        )
         self._on_event = on_event
 
     def run(self) -> Any:
@@ -89,15 +92,8 @@ class BaseExecutor:
 
     def _wait(self, seconds: float) -> None:
         """唯一等待出口 = 业务侧免费断点: 等待前查信号。"""
-        self._check_pause()
+        self._signals.check()
         time.sleep(seconds)
-
-    def _check_pause(self) -> None:
-        """断点检查: 处理器发了暂停或终止就抛出, 收尾交给 run()。"""
-        if self._stop.is_set():
-            raise TaskStopped
-        if self._pause.is_set():
-            raise TaskPaused
 
     def _navigate_to_home(self) -> None:
         """终止收尾: 清掉不可信的导航栈, 不看断点地把游戏带回主页。

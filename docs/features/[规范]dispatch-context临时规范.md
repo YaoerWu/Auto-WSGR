@@ -207,6 +207,10 @@ ContextScope，`ContextHandle.runtime` 在作用域内返回该 bundle。dispatc
 它不是任务事实，不参与 `ContextTemplate`；导航器只通过 `ContextHandle.check_interrupt()`
 读取，不直接访问开关。
 
+判定只有一份实现：`InterruptSignals.check()` 先看 `stop`（终止优先），再看 `pause`，
+命中就抛 `TaskStopped` / `TaskPaused`。`ContextHandle.check_interrupt()` 与执行器基类的
+等待出口都转调它，各层不再各写一遍判定。
+
 ## 3. 持有关系
 
 ```text
@@ -324,7 +328,7 @@ ContextHandle 统一提供两类内容，但必须分开持有：
 | --- | --- | --- |
 | RuntimeBindings | ContextScope，由 runtime composition root 注入 | 只保存运行时服务引用，不复制或管理其生命周期 |
 | TaskContext | 按 `ContextTemplate` 懒创建 | 只保存跨模块、跨步骤的任务事实 |
-| InterruptSignals | ContextScope，由 dispatch 注入 | 只保存 `pause` / `stop` 两个 Event 引用，是让路信号，不是任务事实 |
+| InterruptSignals | ContextScope，由 dispatch 注入 | 只保存 `pause` / `stop` 两个 Event 引用，是让路信号，不是任务事实；`check()` 是唯一的判定实现 |
 
 RuntimeBindings 的字段按当前真实消费者增量定义，例如设备控制器、配置、OCR 引擎或
 其他稳定运行时服务。dispatch core 只持有 opaque bundle，不导入这些服务的具体实现。

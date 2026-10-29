@@ -17,6 +17,7 @@ from autowsgr.dispatch.context import (
     InterruptSignals,
     RuntimeBindings,
 )
+from autowsgr.dispatch.context.manager import _ACTIVE_BINDING
 
 
 def test_context_is_lazy_and_keeps_navigation_facts() -> None:
@@ -145,3 +146,32 @@ def test_check_interrupt_prefers_stop_over_pause() -> None:
     stop.set()
     with pytest.raises(TaskStopped):
         _check_interrupt_with(ContextManager(), pause, stop)
+
+
+def test_close_drops_interrupt_switches_with_the_scope() -> None:
+    manager = ContextManager()
+    runtime = RuntimeBindings(ctrl=object(), config=object(), ocr=None, ship_ocr=None)
+    signals = InterruptSignals(pause=threading.Event(), stop=threading.Event())
+
+    with manager.bind(
+        'closing-task',
+        template=ContextTemplate.for_task('navigation_checker'),
+        runtime=runtime,
+        interrupt=signals,
+    ):
+        manager.request()
+        manager.close()
+
+        binding = _ACTIVE_BINDING.get()
+        assert binding is not None
+        assert binding.runtime is None
+        assert binding.interrupt is None
+
+
+def test_blank_task_id_is_rejected() -> None:
+    manager = ContextManager()
+    with (
+        pytest.raises(ContextFieldError),
+        manager.bind('   ', template=ContextTemplate.for_task('navigation_checker')),
+    ):
+        pass

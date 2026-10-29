@@ -290,7 +290,7 @@ class Processor:
         self._stop = stop if stop is not None else threading.Event()
         self._current_priority = MAX_PRIORITY
         self._current_request: Request | None = None
-        self._interrupt_kind: str | None = None
+        self._clear_pages_on_pause = False
         self._recover = recover or self._default_recover
         self._soft_retries = max(0, soft_retries)
         self._hard_retries = max(0, hard_retries)
@@ -323,7 +323,7 @@ class Processor:
             request = replace(request, priority=priority, extre=True)
             should_pause = self._current_request is not None
             if should_pause:
-                self._interrupt_kind = 'handoff'
+                self._clear_pages_on_pause = False
         _log.info('[Processor] 加急请求打断当前任务: {} (prio={})', request.task_type, priority)
         if should_pause:
             self._pause.set()
@@ -331,7 +331,7 @@ class Processor:
 
     def pause(self) -> None:
         """请求当前执行器在最近断点暂停; 恢复时因为栈不可信会按实时识别重建。"""
-        self._interrupt_kind = 'pause'
+        self._clear_pages_on_pause = True
         self._pause.set()
 
     def stop(self) -> None:
@@ -520,10 +520,10 @@ class Processor:
                 return 'failed', str(exc)
             except TaskPaused:
                 _log.info('[Processor] 任务被打断, 保留进度: {}', request.progress)
-                if self._interrupt_kind == 'pause':
+                if self._clear_pages_on_pause:
                     # 用户暂停期间可能亲手操作过游戏, 栈不可信; 恢复时重新识别当前页。
                     get_session().clear_pages()
-                self._interrupt_kind = None
+                self._clear_pages_on_pause = False
                 self._pause.clear()
                 return 'paused', None
             except TaskStopped:

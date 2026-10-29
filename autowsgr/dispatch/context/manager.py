@@ -7,10 +7,9 @@ from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from autowsgr.application.signals import TaskPaused, TaskStopped
-
 from .errors import ContextClosedError, ContextFieldError, ContextNotBoundError, ContextScopeError
 from .state import InterruptSignals, TaskContextState
+from .template import _require_text
 
 
 if TYPE_CHECKING:
@@ -125,10 +124,7 @@ class ContextHandle:
         signals = self._state().interrupt
         if signals is None:
             return
-        if signals.stop.is_set():
-            raise TaskStopped
-        if signals.pause.is_set():
-            raise TaskPaused
+        signals.check()
 
     def _state(self) -> TaskContextState:
         return self._manager._require_state(self._task_id)
@@ -191,9 +187,7 @@ class ContextManager:
         if state is None:
             raise ContextClosedError(f'任务上下文尚未创建: {binding.task_id}')
         state.closed = True
-        _ACTIVE_BINDING.set(
-            _Binding(self, binding.task_id, binding.template, None, binding.interrupt)
-        )
+        _ACTIVE_BINDING.set(_Binding(self, binding.task_id, binding.template, None, None))
 
     def _require_runtime(self, task_id: str) -> RuntimeBindings:
         binding = _ACTIVE_BINDING.get()
@@ -208,12 +202,6 @@ class ContextManager:
         if state is None or state.closed:
             raise ContextClosedError(f'任务上下文不可用: {task_id}')
         return state
-
-
-def _require_text(value: str, field_name: str) -> str:
-    if not isinstance(value, str) or not value.strip():
-        raise ContextFieldError(f'{field_name} 必须是非空字符串')
-    return value.strip()
 
 
 __all__ = ['ContextHandle', 'ContextManager']

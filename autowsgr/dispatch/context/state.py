@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+from autowsgr.application.signals import TaskPaused, TaskStopped
+
 
 if TYPE_CHECKING:
     import threading
@@ -27,6 +29,18 @@ class InterruptSignals:
 
     stop: threading.Event
     """终止时置位。"""
+
+    def check(self) -> None:
+        """读到终止或暂停信号就让出执行权; 两个都没置位时直接返回。
+
+        Raises:
+            TaskStopped: 终止信号已置位。
+            TaskPaused: 暂停或插队信号已置位。
+        """
+        if self.stop.is_set():
+            raise TaskStopped
+        if self.pause.is_set():
+            raise TaskPaused
 
 
 @dataclass(slots=True)
