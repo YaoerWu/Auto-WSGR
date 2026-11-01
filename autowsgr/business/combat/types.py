@@ -62,34 +62,6 @@ class SearchEnemyAction(StrEnum):
     refresh = 'refresh'
 
 
-class ShipType(StrEnum):
-    """舰船类型。"""
-
-    CV = '航母'
-    CVL = '轻母'
-    AV = '装母'
-    BB = '战列'
-    BBV = '航战'
-    BC = '战巡'
-    CA = '重巡'
-    CAV = '航巡'
-    CLT = '雷巡'
-    CL = '轻巡'
-    BM = '重炮'
-    DD = '驱逐'
-    SSG = '导潜'
-    SS = '潜艇'
-    SC = '炮潜'
-    NAP = '补给'
-    ASDG = '导驱'
-    AADG = '防驱'
-    KP = '导巡'
-    CG = '防巡'
-    CBG = '大巡'
-    BG = '导战'
-    Other = '其他'
-
-
 class ConditionFlag(StrEnum):
     """战斗流程状态标记。"""
 

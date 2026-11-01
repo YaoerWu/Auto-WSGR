@@ -49,7 +49,7 @@ _PAGE_TEMPLATES: tuple[tuple[PageName, str], ...] = (
 
 # 校准基准 1280x720；由 出征准备页ROI_720P.yaml 的 roi_px=[767, 99, 928, 140] 换算，
 # 区域比 160x40 的模板各边大 1px。
-BATTLE_PREPARATION_ROI = ROI(0.59921875, 0.1375, 0.725, 0.19444444)
+BATTLE_PREPARATION_ROI = ROI(0.5993, 0.1375, 0.725, 0.1945)
 
 
 # ── 进入准备页的等待窗口 ────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ def read_battle_preparation_layer(
     *,
     attempts: int = _ATTEMPTS,
     interval_seconds: float = _INTERVAL_SECONDS,
-) -> PageName | None:
+) -> tuple[PageName, ...]:
     """读取当前停在哪一种出征准备页。
 
     四个准备页共用同一块区域，只有快捷按钮的占用格数不同，因此一次截图就能把四种
@@ -78,7 +78,7 @@ def read_battle_preparation_layer(
         interval_seconds: 两次识别之间的等待秒数。
 
     Returns:
-        当前准备页；不是准备页或识别不到时为空。
+        当前准备页；不是准备页或识别不到时为空元组。
     """
     result = expect_template(
         ctx,
@@ -87,10 +87,11 @@ def read_battle_preparation_layer(
         attempts=attempts,
         interval_seconds=interval_seconds,
     )
-    for (page, _), match in zip(_PAGE_TEMPLATES, result.observation, strict=True):
-        if match.matched:
-            return page
-    return None
+    return tuple(
+        page
+        for (page, _), match in zip(_PAGE_TEMPLATES, result.observation, strict=True)
+        if match.matched
+    )
 
 
 # ── 私有辅助 ────────────────────────────────────────────────────────────────

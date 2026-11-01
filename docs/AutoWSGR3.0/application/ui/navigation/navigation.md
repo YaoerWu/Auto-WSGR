@@ -82,20 +82,20 @@ common.vision（识别算法） / dispatch.session（导航栈）
 
 | 能力 | 对外入口 | 所在文件 | 输入 | 输出/副作用 | 负责内容 | 不负责内容 |
 | --- | --- | --- | --- | --- | --- | --- |
-| 导航到目标页面 | `NavigationService.navigate_to` | `service.py` | 目标页、透传参数 | 点击、确认、压栈 | 算路并执行 | 业务动作、恢复决策 |
+| 导航到目标页面 | `NavigationService.navigate_to` | `service.py` | 目标页、透传参数 | 点击、确认、记栈 | 算路并执行 | 业务动作、恢复决策 |
 | 回退上一页 | `NavigationService.navigate_back` | `service.py` | 无 | 弹栈、点击、确认 | 按栈回退一层 | 跨多层回退 |
 | 启动段 | `NavigationService.navigate_to_login` | `service.py` | 无 | 识别启动信号 | 把游戏带到登录页 | 拉起进程、换区 |
-| 断点让路 | 无（执行器内部调 `ContextHandle.check_interrupt`） | `executor.py` | 无 | 抛 `TaskPaused` / `TaskStopped` | 每跳确认到达并压栈之后问一次 dispatch | 判断该不该停、打断后的收尾 |
+| 断点让路 | 无（执行器内部调 `ContextHandle.check_interrupt`） | `executor.py` | 无 | 抛 `TaskPaused` / `TaskStopped` | 每跳确认到达并记栈之后问一次 dispatch | 判断该不该停、打断后的收尾 |
 
-模块当前规模：**30 个已接入页面、49 条可达边、3 个页面共 8 个标签、3 个域探针**；
-`PageName` 共 32 个成员，其余 2 个是尚未接入导航图的预留页面（军阶室技能列表、选择舰船）。
+模块当前规模：**31 个已接入页面（14 个由域探针一帧判族、17 个逐页登记）、55 条可达边、3 个页面共 8 个标签、3 个域探针**；
+`PageName` 共 33 个成员，其余 2 个是尚未接入导航图的预留页面（军阶室技能列表、选择舰船）。
 对未接入页面调用 `navigate_to` 会抛「没有可达路径」，这是预期行为。
 
 ## 4. 导航到目标页面：navigate_to
 
 ### 4.1 能力说明
 
-把游戏从当前页带到目标页。当前页优先取导航栈顶；栈空时遍历全部确认入口识别一次并压栈。
+把游戏从当前页带到目标页。当前页优先取导航栈顶；栈空时遍历全部确认入口识别一帧再建栈。
 
 ### 4.2 稳定入口
 
@@ -105,7 +105,7 @@ NavigationService.navigate_to(target: PageName, **params: object) -> None
 
 - `target`：目标页面；
 - `**params`：透传给边动作的参数（例如活动章节的 `stage`、区服的 `server`、页面标签的 `tab`）；
-- 副作用：执行点击、按确认结果压栈；起点即目标时直接返回（只记一条 INFO 日志）。
+- 副作用：执行点击、按确认结果记栈；起点即目标时直接返回（只记一条 INFO 日志）。
 
 ### 4.3 调用示例
 
@@ -126,10 +126,28 @@ navigate_to(target, **params)
   ① _current_page()   栈顶有就用栈顶；栈空则按页面深度遍历全部 checker 认出当前页
   ② 起点即目标        → 短路返回
   ③ registry.find_path()  BFS 在可达表上找最短路径；到不了抛 NavigationError
-  ④ executor.walk_forward()  逐边执行：边的动作 → 到达确认（或标签确认）→ 压栈 → 过断点
+  ④ executor.walk_forward()  逐边执行：边的动作 → 到达确认（或标签确认）→ 记栈 → 过断点
 ~~~
 
-### 4.5 错误和副作用
+### 4.5 导航栈怎么记
+
+栈里一格是**一个页面**，不是一次点击。四条规则合起来决定每一跳记什么：
+
+| 情形 | 记账 | 理由 |
+| --- | --- | --- |
+| 目标是浮窗（`registry.is_overlay_page`） | 不动 | 浮窗只是页面里的一层覆盖，关掉就回到原页面 |
+| 目标和栈顶是同一个页面 | 不动 | 画面没变 |
+| 目标和栈顶同域（`registry.domain_of` 相等） | 替换栈顶 | 同一套画面框架里换标签，旧标签已经不在画面上 |
+| 跨域 | 压一格 | 真的换了一层画面，回退要退到这里 |
+
+所以「首页 → 演习页 → 对手浮窗 → 演习准备页」记成 `[首页, 演习页, 演习准备页]`：
+浮窗不占格，演习页和出征页同域所以互相替换。从准备页 `navigate_back` 弹一格回到演习页，
+正是画面实际回到的那一页——浮窗那层根本没进栈，不会弹到一个已经被挑战按钮消费掉的页面上。
+
+栈空时（冷启动）先扫一帧再建栈：扫到的浮窗（`_OVERLAY_PAGES`）先关掉，栈落在它下面那层。
+公告浮窗把主页模板整个挡住、扫不出下面那层时，兜底 `PageName.HOME`。
+
+### 4.6 错误和副作用
 
 | 场景 | 行为 | 异常/结果 | 处理者 |
 | --- | --- | --- | --- |
@@ -196,7 +214,8 @@ NavigationService.navigate_to_login() -> None
 ## 7. 当前页识别（service 内部）
 
 `_current_page` 是 `service.py` 的私有实现：栈顶有页面就直接用；栈空时调
-[executor](<./executor.md>).detect_layer 按页面深度扫一遍，命中即压栈。
+[executor](<./executor.md>).detect_layer 按页面深度扫一遍；扫到的第一层是浮窗就先关掉它，
+栈记在它下面那层（扫不到下面那层时兜底主页）。
 扫描期间识别细节日志整体静默，结束后只留一条汇总（耗时 + 结果）。
 
 ## 8. 统一配置
@@ -259,7 +278,7 @@ ApplicationError
 3. 在 [registry](<./registry.md>) 的 `_PAGE_CHECKERS` 注册确认；
 4. 在 `_NAV_TARGETS` 至少补一条入边与一条出边。
 
-做完这四步，`navigate_to(PageName.XXX)` 立即可用：算路、点击、前后确认、压栈都是现成的。
+做完这四步，`navigate_to(PageName.XXX)` 立即可用：算路、点击、前后确认、记栈都是现成的。
 
 ### 12.2 加一条边 / 一个标签
 

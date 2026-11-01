@@ -107,11 +107,12 @@ def read_home_layer(
     *,
     attempts: int = _OVERLAY_ATTEMPTS,
     interval_seconds: float = _OVERLAY_INTERVAL_SECONDS,
-) -> PageName | None:
-    """读取当前停在主页的哪一层。
+) -> tuple[PageName, ...]:
+    """读取当前停在主页的哪几层。
 
-    命中组合是互斥的：确认浮窗盖在奖励上、奖励盖在主页上、公告盖住整页。
-    今天已经处理过的浮窗直接跳过，不再参与判定。
+    浮窗是叠在主页上的：确认浮窗压着奖励浮窗、奖励浮窗压着主页、公告遮住整页。
+    一次截图把七块模板全部比完，按由深到浅返回能同时看到的层；今天已经处理过的
+    浮窗直接跳过，不再参与判定。
 
     Args:
         ctx: 提供设备服务和截图事实的 dispatch 上下文句柄。
@@ -119,21 +120,22 @@ def read_home_layer(
         interval_seconds: 两次识别之间的等待秒数。
 
     Returns:
-        当前层；一个都没命中时为空。
+        当前能同时看到的层，由深到浅；一个都没命中时为空元组。
     """
     home, news_text, news_checked, news_unchecked, reward_text, reward_claim, reward_confirm = (
         _read_home_hits(ctx, attempts=attempts, interval_seconds=interval_seconds)
     )
     session = get_session()
+    layers: list[PageName] = []
     if reward_confirm and not session.popup_settled(DailyPopup.REWARD_CONFIRM):
-        return PageName.HOME_REWARD_CONFIRM
+        layers.append(PageName.HOME_REWARD_CONFIRM)
     if (reward_text or reward_claim) and not session.popup_settled(DailyPopup.REWARD):
-        return PageName.HOME_REWARD
+        layers.append(PageName.HOME_REWARD)
     if (news_text or news_checked or news_unchecked) and not session.popup_settled(DailyPopup.NEWS):
-        return PageName.HOME_NEWS
+        layers.append(PageName.HOME_NEWS)
     if home:
-        return PageName.HOME
-    return None
+        layers.append(PageName.HOME)
+    return tuple(layers)
 
 
 # ── 页面确认 ────────────────────────────────────────────────────────────────
@@ -159,7 +161,7 @@ def mark_popups_settled(ctx: ContextHandle) -> None:
         return
     if all(session.popup_settled(popup) for popup in DailyPopup):
         return
-    if read_home_layer(ctx, attempts=1) is not PageName.HOME:
+    if read_home_layer(ctx, attempts=1) != (PageName.HOME,):
         return
     for popup in DailyPopup:
         session.mark_popup_settled(popup)

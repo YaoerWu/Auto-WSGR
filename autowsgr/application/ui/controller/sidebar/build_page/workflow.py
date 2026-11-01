@@ -26,7 +26,7 @@ from autowsgr.application.vision.resources import Templates
 
 if TYPE_CHECKING:
     from autowsgr.common.device.service import DeviceService
-    from autowsgr.business.combat.types import ShipType
+    from autowsgr.application.ui.ships.types import ShipType
 
 
 _log = get_logger('ui.sidebar.build_page.workflow')

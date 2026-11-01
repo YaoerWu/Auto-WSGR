@@ -91,6 +91,7 @@ def test_tabs_are_registered_without_becoming_pages() -> None:
         'campaign',
         'decisive',
     }
+    assert set(registry.get_tabs(PageName.EXERCISE)) == {'exercise'}
     assert set(registry.get_tabs(PageName.BUILD)) == {'destroy'}
     assert set(registry.get_tabs(PageName.INTENSIFY)) == {'remold', 'skill'}
     assert registry.get_tabs(PageName.HOME) == {}
@@ -170,6 +171,66 @@ def test_sub_page_cross_visit_goes_through_backyard() -> None:
     path = registry.find_path(PageName.RANK_ROOM, PageName.BATH)
 
     assert [edge.target for edge in path] == [PageName.BACKYARD, PageName.BATH]
+
+
+# ── 域表与浮窗 ──────────────────────────────────────────────────────────────
+
+
+def test_every_overlay_page_is_probed_by_a_domain() -> None:
+    """浮窗页必须由某个域探针负责，否则冷启动扫不到、也清不掉。"""
+    assert registry._OVERLAY_PAGES <= registry._DOMAIN_PAGES
+
+
+def test_overlay_pages_come_from_the_domain_table() -> None:
+    """浮窗名单由域表第三列算出，不另手写——加浮窗时只改一处。"""
+    declared = frozenset(
+        page for _prober, _pages, overlays in registry._DOMAINS for page in overlays
+    )
+
+    assert declared == registry._OVERLAY_PAGES
+
+
+def test_overlay_pages_are_not_listed_as_interchangeable() -> None:
+    """一个页面不能既算互斥页面又算浮窗，否则记栈时自相矛盾。"""
+    for _prober, pages, overlays in registry._DOMAINS:
+        assert not pages & overlays
+
+
+def test_domain_pages_report_their_domain() -> None:
+    """域页面都能报出所属域；域外页面一律 None。"""
+    for page in registry._DOMAIN_PAGES:
+        assert registry.domain_of(page) is not None, page
+    assert registry.domain_of(PageName.SIDEBAR) is None
+    assert registry.domain_of(PageName.SHIP_SELECTION) is None
+
+
+def test_domain_pages_have_no_page_checker() -> None:
+    """由域探针负责的页面不再登记逐页确认入口。"""
+    for page in registry._DOMAIN_PAGES:
+        assert registry.get_checker(page) is None, page
+
+
+# ── 演习 ────────────────────────────────────────────────────────────────────
+
+
+def test_exercise_chain_is_reachable_from_home() -> None:
+    """主页 → 演习页 → 对手浮窗 → 演习准备页，三跳直达。"""
+    path = registry.find_path(PageName.HOME, PageName.EXERCISE_PREPARATION)
+
+    assert [edge.target for edge in path] == [
+        PageName.EXERCISE,
+        PageName.EXERCISE_RIVAL_CONFIRM,
+        PageName.EXERCISE_PREPARATION,
+    ]
+    assert path[0].tab == 'exercise'
+
+
+def test_exercise_preparation_returns_to_exercise_not_overlay() -> None:
+    """准备页退回的是演习页，不是已经被挑战按钮消费掉的浮窗。"""
+    path = registry.find_path(PageName.EXERCISE_PREPARATION, PageName.EXERCISE)
+
+    assert len(path) == 1
+    assert path[0].target is PageName.EXERCISE
 
 
 def test_sub_pages_return_home_through_popup_chain() -> None:

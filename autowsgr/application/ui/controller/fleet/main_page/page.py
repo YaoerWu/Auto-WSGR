@@ -39,8 +39,8 @@ if TYPE_CHECKING:
         FleetSnapshot,
     )
     from autowsgr.application.ui.controller.fleet.support.repair import RepairStrategy
+    from autowsgr.application.ui.ships.types import ShipType
     from autowsgr.business.combat.fleet_models import FleetSlotRule
-    from autowsgr.business.combat.types import ShipType
     from autowsgr.business.logistics.types import ShipDamageState
     from autowsgr.common.device.service import DeviceService
 

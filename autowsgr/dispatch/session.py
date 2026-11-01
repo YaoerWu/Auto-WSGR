@@ -75,6 +75,17 @@ class SessionState:
         """弹出导航栈顶的页面值。"""
         return self._pages.pop() if self._pages else None
 
+    def replace_page(self, page: str) -> None:
+        """把栈顶换成另一个页面。
+
+        同一个域里的页面共用一套画面框架，换来换去只认「当前是哪个页面」这一个
+        事实，栈里不该留下一串已经不在画面上的旧标签页。
+        """
+        if self._pages:
+            self._pages[-1] = page
+        else:
+            self._pages.append(page)
+
     def clear_pages(self) -> None:
         """清空导航栈；游戏被强杀重开后栈里的页面已经不存在。"""
         self._pages.clear()

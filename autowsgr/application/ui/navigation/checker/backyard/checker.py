@@ -53,15 +53,6 @@ _BACKYARD_ENTRY_ATTEMPTS = 5
 _NAV_CONFIRM_INTERVAL_SECONDS = 1.0
 
 
-# 键与 BackyardTarget 枚举名一致；四个入口都在 backyard 根命名空间下。
-_ENTRIES = {
-    'canteen': (CANTEEN_ENTRY_TEMPLATE, CANTEEN_ENTRY_ROI),
-    'academy': (ACADEMY_ENTRY_TEMPLATE, ACADEMY_ENTRY_ROI),
-    'rank_room': (RANK_ROOM_ENTRY_TEMPLATE, RANK_ROOM_ENTRY_ROI),
-    'bath': (BATH_ENTRY_TEMPLATE, BATH_ENTRY_ROI),
-}
-
-
 def check_backyard_page(
     ctx: ContextHandle,
     *,
@@ -102,7 +93,12 @@ def read_canteen_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
     Returns:
         入口模板命中时的归一化中心；未命中时为空。
     """
-    return _read_entry_center(ctx, 'canteen')
+    return expect_template_center(
+        ctx,
+        template=_load_template(CANTEEN_ENTRY_TEMPLATE),
+        roi=CANTEEN_ENTRY_ROI,
+        attempts=1,
+    )
 
 
 def read_academy_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
@@ -114,7 +110,12 @@ def read_academy_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
     Returns:
         入口模板命中时的归一化中心；未命中时为空。
     """
-    return _read_entry_center(ctx, 'academy')
+    return expect_template_center(
+        ctx,
+        template=_load_template(ACADEMY_ENTRY_TEMPLATE),
+        roi=ACADEMY_ENTRY_ROI,
+        attempts=1,
+    )
 
 
 def read_rank_room_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
@@ -126,7 +127,12 @@ def read_rank_room_entry_center(ctx: ContextHandle) -> tuple[float, float] | Non
     Returns:
         入口模板命中时的归一化中心；未命中时为空。
     """
-    return _read_entry_center(ctx, 'rank_room')
+    return expect_template_center(
+        ctx,
+        template=_load_template(RANK_ROOM_ENTRY_TEMPLATE),
+        roi=RANK_ROOM_ENTRY_ROI,
+        attempts=1,
+    )
 
 
 def read_bath_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
@@ -138,7 +144,12 @@ def read_bath_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
     Returns:
         入口模板命中时的归一化中心；未命中时为空。
     """
-    return _read_entry_center(ctx, 'bath')
+    return expect_template_center(
+        ctx,
+        template=_load_template(BATH_ENTRY_TEMPLATE),
+        roi=BATH_ENTRY_ROI,
+        attempts=1,
+    )
 
 
 # ── 私有辅助 ────────────────────────────────────────────────────────────────
@@ -147,12 +158,6 @@ def read_bath_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
 def _load_template(filename: str) -> Template:
     """加载本模块模板。"""
     return load_ui_template(TEMPLATE_NAMESPACE, filename)
-
-
-def _read_entry_center(ctx: ContextHandle, key: str) -> tuple[float, float] | None:
-    """读取某个入口模板命中的中心；未命中时为 None，调用方用静态坐标兜底。"""
-    filename, roi = _ENTRIES[key]
-    return expect_template_center(ctx, template=_load_template(filename), roi=roi, attempts=1)
 
 
 __all__ = [

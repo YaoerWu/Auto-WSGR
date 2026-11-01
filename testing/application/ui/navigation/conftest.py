@@ -62,15 +62,15 @@ def accept_path(monkeypatch: pytest.MonkeyPatch) -> Callable[[PageName], None]:
                 page,
                 lambda _ctx, *, absent=False, _m=matched, **_kwargs: _m != absent,
             )
-        # 域探针不经过逐页注册表：目标在域里时让它返回目标，否则当作没命中。
+        # 域探针不经过逐页注册表：目标在域里时让它报出目标这一层，否则当作没命中。
         if registry.is_domain_page(target):
             monkeypatch.setattr(
                 registry,
                 '_DOMAIN_PROBERS',
-                (lambda _ctx, **_options: target,),
+                (lambda _ctx, **_options: (target,),),
             )
         else:
-            monkeypatch.setattr(registry, '_DOMAIN_PROBERS', (lambda _ctx, **_options: None,))
+            monkeypatch.setattr(registry, '_DOMAIN_PROBERS', (lambda _ctx, **_options: (),))
         monkeypatch.setattr(
             home,
             'read_news_overlay',

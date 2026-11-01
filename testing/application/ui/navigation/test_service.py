@@ -183,4 +183,58 @@ def test_login_to_home_clicks_enter_game(ctx: Any, accept_path: Any) -> None:
     assert ctx.runtime.ctrl.clicks == [login_constants.CLICK_ENTER_GAME]
 
 
+# ── 冷启动清浮窗 ────────────────────────────────────────────────────────────
+
+
+def test_cold_start_dismisses_overlay_and_keeps_underlying_page(
+    ctx: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """冷启动停在演习浮窗上：先清掉浮窗，栈只落到底下那层演习页。"""
+    from autowsgr.application.ui.navigation import executor as executor_module
+    from autowsgr.application.ui.navigation.checker.sortie import exercise
+
+    monkeypatch.setattr(executor_module.time, 'sleep', lambda _seconds: None)
+    monkeypatch.setattr(registry, 'probe_domains', lambda _ctx, **_options: (PageName.EXERCISE,))
+    monkeypatch.setattr(exercise, 'read_overlay_close_center', lambda _ctx: None)
+
+    session = SessionState()
+    service = NavigationService(ctx, session=session)
+    layers = iter(
+        [
+            (PageName.EXERCISE_RIVAL_CONFIRM, PageName.EXERCISE),
+            (PageName.EXERCISE,),
+        ]
+    )
+    monkeypatch.setattr(service._executor, 'detect_layer', lambda **_options: next(layers))
+
+    assert service._current_page() is PageName.EXERCISE
+    assert session.pop_page() == PageName.EXERCISE.value
+    assert session.pop_page() is None
+
+
+def test_cold_start_dismisses_news_overlay_to_home(
+    ctx: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """冷启动停在公告上：公告把主页整个挡住，清完浮窗链后落到主页。"""
+    from autowsgr.application.ui.navigation import executor as executor_module
+
+    monkeypatch.setattr(executor_module.time, 'sleep', lambda _seconds: None)
+    monkeypatch.setattr(registry, 'probe_domains', lambda _ctx, **_options: (PageName.HOME,))
+    monkeypatch.setattr(
+        home, 'read_news_overlay', lambda _ctx, **_options: SimpleNamespace(matched=False)
+    )
+    monkeypatch.setattr(home, 'check_home_reward_overlay', lambda _ctx, **_options: False)
+    monkeypatch.setattr(home, 'check_home_reward_confirm', lambda _ctx, **_options: False)
+    monkeypatch.setattr(registry.sidebar, 'check_sidebar_page', lambda _ctx, **_options: False)
+
+    session = SessionState()
+    service = NavigationService(ctx, session=session)
+    layers = iter([(PageName.HOME_NEWS,), (PageName.HOME,)])
+    monkeypatch.setattr(service._executor, 'detect_layer', lambda **_options: next(layers))
+
+    assert service._current_page() is PageName.HOME
+    assert session.pop_page() == PageName.HOME.value
+    assert session.pop_page() is None
+
+
 # ── 侧边栏域与页面内标签 ──────────────────────────────────────────────────────

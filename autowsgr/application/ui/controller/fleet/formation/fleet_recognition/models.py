@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from autowsgr.business.combat.types import ShipType
+    from autowsgr.application.ui.ships.types import ShipType
 
 
 @dataclass(slots=True)

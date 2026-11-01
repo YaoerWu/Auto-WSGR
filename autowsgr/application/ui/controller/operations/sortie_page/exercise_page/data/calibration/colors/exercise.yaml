@@ -1,4 +1,0 @@
-# 演习面板颜色 (配对坐标见 coordinates/exercise.yaml)
-
-challenge_blue: {rgb: [33, 132, 226], tolerance: 50.0}  # 挑战按钮蓝色 (可挑战)
-arrow_gray: {rgb: [177, 171, 176], tolerance: 60.0}     # 列表箭头灰色 (已到顶/底)

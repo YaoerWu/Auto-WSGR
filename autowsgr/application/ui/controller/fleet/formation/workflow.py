@@ -27,8 +27,8 @@ if TYPE_CHECKING:
         FleetSnapshot,
     )
     from autowsgr.application.ui.controller.fleet.main_page import BattlePreparationPage
+    from autowsgr.application.ui.ships.types import ShipType
     from autowsgr.business.combat.fleet_models import FleetSlotRule
-    from autowsgr.business.combat.types import ShipType
 
 
 def adjust_fleet(

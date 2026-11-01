@@ -23,7 +23,7 @@ from autowsgr.application.ui.controller.fleet.formation.fleet_recognition.models
 from autowsgr.application.ui.controller.fleet.main_page.constants import BLOOD_BAR_PROBE
 from autowsgr.application.vision.shipnames import SHIPNAMES, normalize_ship_name, ship_name_identity
 from autowsgr.common.system.logger import get_logger
-from autowsgr.business.combat.types import ShipType
+from autowsgr.application.ui.ships.types import ShipType
 from autowsgr.business.logistics.types import ShipDamageState
 from autowsgr.common.vision import PixelChecker, ocr
 from autowsgr.application.vision.damage_recognition import classify_blood

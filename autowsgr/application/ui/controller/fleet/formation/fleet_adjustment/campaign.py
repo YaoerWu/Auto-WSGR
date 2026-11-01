@@ -27,8 +27,8 @@ if TYPE_CHECKING:
     from autowsgr.application.ui.controller.fleet.formation.fleet_recognition import (
         FleetSnapshot,
     )
+    from autowsgr.application.ui.ships.types import ShipType
     from autowsgr.business.combat.fleet_models import FleetSlotRule, ShipSelector
-    from autowsgr.business.combat.types import ShipType
 
 
 _log = get_logger('ui.fleet.formation.fleet_adjustment')

@@ -1,13 +1,13 @@
-"""模块功能：验证演习页面的状态读取和挑战边界。
+"""模块功能：验证演习页控制器的对手定位与浮窗按钮落点。
 
 上层调用：
-- pytest：执行演习页面模块的无设备单元检查。
+- pytest：执行演习页控制器的无设备单元检查。
 
 下层依赖：
-- application.ui.controller.operations.sortie_page.exercise_page：提供页面门面和下层能力。
+- application.ui.controller.sortie.exercise：提供页面控制器。
 
 边界：
-本模块只使用 mock 控制器验证页面编排，不连接真实设备或修改业务层调用方。
+本模块只使用 mock 控制器验证落点选择，不连接真实设备、不读写识别结果。
 """
 
 from __future__ import annotations
@@ -17,97 +17,82 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from autowsgr.application.ui.controller.operations.sortie_page.exercise_page import (
-    ExercisePage,
-)
-from autowsgr.application.ui.controller.operations.sortie_page.exercise_page import (
-    page as page_module,
-)
+from autowsgr.application.ui.controller.sortie.exercise import ExercisePage
+from autowsgr.application.ui.controller.sortie.exercise import page as page_module
 
 
-def _make_page() -> tuple[ExercisePage, MagicMock]:
-    """创建绑定 mock 控制器的演习页面。"""
+def _make_page(monkeypatch: pytest.MonkeyPatch) -> tuple[ExercisePage, MagicMock]:
+    """创建绑定 mock 控制器的演习页，并跳过滑动后的等待。"""
+    monkeypatch.setattr(page_module, 'time', SimpleNamespace(sleep=lambda _seconds: None))
     ctrl = MagicMock()
-    ctx = SimpleNamespace(ctrl=ctrl, ocr=MagicMock(), ui_stack=MagicMock())
+    ctx = SimpleNamespace(runtime=SimpleNamespace(ctrl=ctrl))
     return ExercisePage(ctx), ctrl
 
 
-def test_read_status_reads_first_four_then_fifth_rival(
+def test_select_first_rival_slides_to_top_and_clicks_first_slot(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """状态读取先读顶部四个对手，再滑到底部读取第五个对手。"""
-    page, ctrl = _make_page()
-    first_screen = object()
-    second_screen = object()
-    ctrl.screenshot.side_effect = [first_screen, second_screen]
-    check_available = MagicMock(side_effect=[True, False, True, False, True])
-    swipe_top = MagicMock()
-    swipe_bottom = MagicMock()
-    monkeypatch.setattr(page_module.recognition, 'check_rival_list_at_top', lambda _: True)
-    monkeypatch.setattr(
-        page_module.recognition,
-        'check_rival_challenge_available',
-        check_available,
-    )
-    monkeypatch.setattr(page_module.operations, 'swipe_rival_list_to_top', swipe_top)
-    monkeypatch.setattr(page_module.operations, 'swipe_rival_list_to_bottom', swipe_bottom)
+    """选前四个对手时先把列表滑到顶部，再点多出来的那一格。"""
+    page, ctrl = _make_page(monkeypatch)
 
-    status = page.read_exercise_rival_status()
+    page.select_rival(2)
 
-    assert status.rivals == [True, False, True, False, True]
-    assert status.challengeable_count == 3
-    assert status.first_challengeable() == 1
-    swipe_top.assert_not_called()
-    swipe_bottom.assert_called_once_with(ctrl)
-    assert check_available.call_args_list[-1].args == (second_screen, 3)
+    ctrl.swipe.assert_called_once_with(*page_module._SWIPE_TO_TOP)
+    ctrl.click.assert_called_once_with(*page_module._RIVAL_CHALLENGE_POSITIONS[1])
 
 
-def test_challenge_rival_fifth_slot_moves_to_bottom(
+def test_select_fifth_rival_slides_to_bottom_and_clicks_last_slot(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """挑战第五个对手时定位到底部第四个可见槽位。"""
-    page, ctrl = _make_page()
-    ctrl.screenshot.return_value = object()
-    swipe_bottom = MagicMock()
-    click_rival = MagicMock()
-    click_rival_refresh = MagicMock()
-    click_start_battle = MagicMock()
-    wait_for_page = MagicMock()
-    monkeypatch.setattr(
-        page_module.recognition,
-        'check_rival_list_at_bottom',
-        MagicMock(return_value=False),
-    )
-    monkeypatch.setattr(page_module.operations, 'swipe_rival_list_to_bottom', swipe_bottom)
-    monkeypatch.setattr(page_module.operations, 'click_rival', click_rival)
-    monkeypatch.setattr(page_module.operations, 'click_rival_refresh', click_rival_refresh)
-    monkeypatch.setattr(page_module.operations, 'click_start_battle', click_start_battle)
-    monkeypatch.setattr(page_module, 'wait_for_page', wait_for_page)
-    monkeypatch.setattr(page_module.time, 'sleep', lambda _seconds: None)
+    """第五个对手在列表底部，滑到底后落在第四格。"""
+    page, ctrl = _make_page(monkeypatch)
 
-    page.challenge_rival(5, refresh_rival=True)
+    page.select_rival(5)
 
-    click_rival_refresh.assert_called_once_with(ctrl)
-    swipe_bottom.assert_called_once_with(ctrl)
-    click_rival.assert_called_once_with(ctrl, 3)
-    click_start_battle.assert_called_once_with(ctrl)
-    wait_for_page.assert_called_once()
+    ctrl.swipe.assert_called_once_with(*page_module._SWIPE_TO_BOTTOM)
+    ctrl.click.assert_called_once_with(*page_module._RIVAL_CHALLENGE_POSITIONS[3])
 
 
-def test_challenge_rival_rejects_invalid_index_before_device_access() -> None:
-    """无效对手序号在任何截图和设备操作前被拒绝。"""
-    page, ctrl = _make_page()
+@pytest.mark.parametrize('rival_index', [0, 6, -1])
+def test_select_rival_rejects_index_out_of_range(
+    rival_index: int,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """序号越界在任何设备动作前被拒绝。"""
+    page, ctrl = _make_page(monkeypatch)
 
     with pytest.raises(ValueError, match='1-5'):
-        page.challenge_rival(6)
+        page.select_rival(rival_index)
 
-    ctrl.screenshot.assert_not_called()
+    ctrl.swipe.assert_not_called()
     ctrl.click.assert_not_called()
 
 
-def test_page_does_not_expose_intermediate_rival_steps() -> None:
-    """页面门面不暴露中间拼装入口，挑战流程集中在一个页面方法内。"""
-    assert not hasattr(ExercisePage, 'select_exercise_rival')
-    assert not hasattr(ExercisePage, 'enter_exercise_battle')
-    assert not hasattr(ExercisePage, 'read_rival_formation')
-    assert not hasattr(ExercisePage, 'refresh_rival')
+def test_overlay_buttons_prefer_detected_center(monkeypatch: pytest.MonkeyPatch) -> None:
+    """导航器传进来的模板中心优先于固定兜底坐标。"""
+    page, ctrl = _make_page(monkeypatch)
+
+    page.click_overlay_close((0.1, 0.2))
+    page.click_overlay_refresh((0.3, 0.4))
+    page.click_overlay_challenge((0.5, 0.6))
+
+    assert [call.args for call in ctrl.click.call_args_list] == [
+        (0.1, 0.2),
+        (0.3, 0.4),
+        (0.5, 0.6),
+    ]
+
+
+def test_overlay_buttons_fall_back_to_fixed_points(monkeypatch: pytest.MonkeyPatch) -> None:
+    """读不到模板中心时退回固定落点，不会连点空坐标。"""
+    page, ctrl = _make_page(monkeypatch)
+
+    page.click_overlay_close()
+    page.click_overlay_refresh()
+    page.click_overlay_challenge()
+
+    assert [call.args for call in ctrl.click.call_args_list] == [
+        page_module._CLICK_OVERLAY_CLOSE,
+        page_module._CLICK_OVERLAY_REFRESH,
+        page_module._CLICK_OVERLAY_CHALLENGE,
+    ]

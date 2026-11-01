@@ -11,14 +11,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from autowsgr.application.ui.navigation.checker.sortie import read_sortie_tab_layer
+from autowsgr.application.ui.navigation.checker.sortie import read_sortie_layer
 
 
 if TYPE_CHECKING:
     from autowsgr.application.ui.navigation.types import PageName
 
 
-DESC = '出征页域探针静态验证: 一次读五模板判当前标签页'
+DESC = '出征页域探针静态验证: 一次读六模板判当前标签页'
 
 # 外挂截图目录；样本是各标签激活时的整页截图。
 _SHOT_DIR = Path('C:/ShiinaKuroko/01.Project/debug/nav/静态模板/出征')
@@ -43,9 +43,12 @@ def run(rt: Any) -> bool:
 
     for filename, expected in _samples():
         rt.use_frame(_SHOT_DIR / filename)
-        actual = rt.action(f'识别 {filename}', read_sortie_tab_layer, ctx)
+        actual = rt.action(f'识别 {filename}', read_sortie_layer, ctx)
         if actual is rt.FAILED:
             return False
-        if not rt.check(f'{filename} → {expected.value}', lambda: actual == expected):
+        if not rt.check(
+            f'{filename} → {expected.value}',
+            lambda _actual=actual, _expected=expected: _actual == (_expected,),
+        ):
             return False
     return True

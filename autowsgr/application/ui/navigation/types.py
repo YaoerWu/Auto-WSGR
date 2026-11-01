@@ -36,6 +36,7 @@ class PageName(StrEnum):
     HOME_REWARD_CONFIRM = '每日奖励确认'
     SORTIE_MAP = '出征页面'
     EXERCISE = '演习页面'
+    EXERCISE_RIVAL_CONFIRM = '演习对手浮窗'
     EXPEDITION = '远征页面'
     CAMPAIGN = '战役页面'
     BATTLE_PREPARATION = '出征准备'

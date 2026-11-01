@@ -33,18 +33,18 @@ def add_arguments(parser: Any) -> None:
 def run(rt: Any) -> bool:
     """执行初始化链路并验证终态契约。"""
     from autowsgr.application.ui.navigation.checker import home
+    from autowsgr.application.ui.navigation.types import PageName
     from autowsgr.dispatch.startup import ensure_ready
 
     ctx = rt.ctx
     ctrl = ctx.runtime.ctrl
 
     # ① 初始状态记录 (对照用, 不参与判定)
-    rt.note(f'初始是否在主页: {home.read_home_layer(ctx) is PageName.HOME}')
+    rt.note(f'初始是否在主页: {home.read_home_layer(ctx) == (PageName.HOME,)}')
 
     # ② --pre: 先用生产导航前往指定页面，测带栈与不带栈两种初始化入口
     if rt.args.pre is not None:
         from autowsgr.application.ui.navigation.service import NavigationService
-        from autowsgr.application.ui.navigation.types import PageName
 
         target = PageName[rt.args.pre]
         navigator = NavigationService(ctx)
@@ -63,7 +63,7 @@ def run(rt: Any) -> bool:
         return False
 
     # ④ 终态契约验证: 首页 + 浮层已清
-    rt.check('终态: 在主页', lambda: home.read_home_layer(ctx) is PageName.HOME)
+    rt.check('终态: 在主页', lambda: home.read_home_layer(ctx) == (PageName.HOME,))
     rt.check('终态: 公告浮窗已清', lambda: not home.check_home_news_overlay(ctx).matched)
     rt.check('终态: 奖励浮窗已清', lambda: not home.check_home_reward_overlay(ctx))
     return rt.state.failed == 0

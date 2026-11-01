@@ -14,14 +14,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from autowsgr.common.system.logger import get_logger
-
 
 if TYPE_CHECKING:
     from autowsgr.dispatch.context import ContextHandle
-
-
-_log = get_logger('ui.sortie.battle_preparation')
 
 
 # ── 校准 ────────────────────────────────────────────────────────────────────
@@ -46,7 +41,6 @@ class BattlePreparationPage:
 
     def go_back(self) -> None:
         """点击返回按钮，退回到出征页。"""
-        _log.info('[UI] 出征准备页 → 返回：position={!r}', CLICK_BACK)
         self._ctx.runtime.ctrl.click(*CLICK_BACK)
 
 

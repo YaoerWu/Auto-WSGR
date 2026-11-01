@@ -67,11 +67,11 @@ def test_reports_the_page_whose_template_matched(
     """命中哪个模板就报哪个页面。"""
     _install_recognition(monkeypatch, hit_index=hit_index, calls=[])
 
-    assert battle_preparation.read_battle_preparation_layer(object()) is expected
+    assert battle_preparation.read_battle_preparation_layer(object()) == (expected,)
 
 
 def test_reports_nothing_when_no_template_matched(monkeypatch: pytest.MonkeyPatch) -> None:
-    """四个模板都不命中时返回空。"""
+    """四个模板都不命中时返回空元组。"""
     _install_recognition(monkeypatch, hit_index=None, calls=[])
 
-    assert battle_preparation.read_battle_preparation_layer(object()) is None
+    assert battle_preparation.read_battle_preparation_layer(object()) == ()

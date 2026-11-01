@@ -24,17 +24,17 @@ def test_executor_skips_arrival_when_edge_does_not_confirm(
     ctx: Any, accept_path: Any, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """边声明不确认时，到达确认直接跳过（浮窗链的中间步靠这个）。"""
-    accept_path(PageName.HOME_REWARD)
+    accept_path(PageName.SIDEBAR)
 
     def _unexpected(_ctx: Any, **_kwargs: object) -> bool:
         raise AssertionError('不该调用确认入口')
 
-    monkeypatch.setitem(registry._PAGE_CHECKERS, PageName.HOME_REWARD, _unexpected)
+    monkeypatch.setitem(registry._PAGE_CHECKERS, PageName.SIDEBAR, _unexpected)
     session = SessionState()
-    session.push_page(PageName.HOME_NEWS.value)
+    session.push_page(PageName.HOME.value)
     executor = NavigationExecutor(ctx, session)
     edge = NavTarget(
-        PageName.HOME_REWARD,
+        PageName.SIDEBAR,
         lambda *_args, **_kwargs: None,
         '测试边',
         confirm=False,
@@ -42,7 +42,7 @@ def test_executor_skips_arrival_when_edge_does_not_confirm(
 
     executor.walk_forward((edge,), {})
 
-    assert session.current_page() == PageName.HOME_REWARD.value
+    assert session.current_page() == PageName.SIDEBAR.value
 
 
 def test_executor_enters_tab_with_tab_checker(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -72,6 +72,24 @@ def test_executor_enters_tab_with_tab_checker(monkeypatch: pytest.MonkeyPatch) -
 
     assert clicks == ['click']
     assert checked == ['check']
+
+
+def test_executor_applies_edge_tab_on_every_hop(monkeypatch: pytest.MonkeyPatch) -> None:
+    """多跳路径里，中间那条边自己声明的标签也要切。"""
+    executor = NavigationExecutor(object(), SessionState(), checkpoint=False)
+    entered: list[tuple[PageName, str]] = []
+    confirmed: list[PageName] = []
+    monkeypatch.setattr(executor, '_enter_tab', lambda page, tab: entered.append((page, tab)))
+    monkeypatch.setattr(executor, '_confirm_arrival', lambda edge: confirmed.append(edge.target))
+
+    path = (
+        NavTarget(PageName.EXERCISE, lambda *_args, **_kwargs: None, '甲', tab='exercise'),
+        NavTarget(PageName.EXERCISE_RIVAL_CONFIRM, lambda *_args, **_kwargs: None, '乙'),
+    )
+    executor.walk_forward(path, {})
+
+    assert entered == [(PageName.EXERCISE, 'exercise')]
+    assert confirmed == [PageName.EXERCISE_RIVAL_CONFIRM]
 
 
 def test_executor_rejects_unknown_tab(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -143,7 +161,7 @@ def test_executor_confirms_domain_arrival_with_probes(
 
 
 def test_executor_reports_domain_arrival_failure(monkeypatch: pytest.MonkeyPatch) -> None:
-    """域探针没认出目标页时报到达确认失败。"""
+    """域探针认出的最深层不是目标页时报到达确认失败。"""
     from autowsgr.application.ui.navigation import executor as executor_module
 
     monkeypatch.setattr(executor_module.time, 'sleep', lambda _seconds: None)
@@ -157,7 +175,7 @@ def test_executor_reports_domain_arrival_failure(monkeypatch: pytest.MonkeyPatch
     executor = NavigationExecutor(object(), SessionState())
     edge = NavTarget(PageName.SORTIE_MAP, lambda *_args, **_kwargs: None, '首页 → 出征页')
 
-    with pytest.raises(NavigationError, match='未识别到'):
+    with pytest.raises(NavigationError, match='当前层是'):
         executor._confirm_arrival(edge)
 
 
@@ -178,12 +196,10 @@ class _CheckpointRecorder:
 
 
 def _two_edges() -> tuple[NavTarget, NavTarget]:
-    """两条都不做到达确认的边，避开真实识别。"""
+    """两条都不做到达确认的边，避开真实识别；两页跨域，各占一格栈。"""
     return (
-        NavTarget(PageName.HOME_REWARD, lambda *_args, **_kwargs: None, '甲', confirm=False),
-        NavTarget(
-            PageName.HOME_REWARD_CONFIRM, lambda *_args, **_kwargs: None, '乙', confirm=False
-        ),
+        NavTarget(PageName.SIDEBAR, lambda *_args, **_kwargs: None, '甲', confirm=False),
+        NavTarget(PageName.MISSION, lambda *_args, **_kwargs: None, '乙', confirm=False),
     )
 
 
@@ -196,7 +212,7 @@ def test_executor_checks_interrupt_at_entry_and_after_each_forward_edge() -> Non
     NavigationExecutor(recorder, session).walk_forward(_two_edges(), {})
 
     assert recorder.calls == 3
-    assert session.current_page() == PageName.HOME_REWARD_CONFIRM.value
+    assert session.current_page() == PageName.MISSION.value
 
 
 def test_executor_checks_interrupt_after_each_backward_edge() -> None:
@@ -235,4 +251,56 @@ def test_executor_leaves_complete_backtrack_after_interrupt() -> None:
     with pytest.raises(TaskPaused):
         NavigationExecutor(recorder, session).walk_forward(_two_edges(), {})
 
-    assert session.current_page() == PageName.HOME_REWARD.value
+    assert session.current_page() == PageName.SIDEBAR.value
+
+
+# ── 栈记账 ──────────────────────────────────────────────────────────────────
+
+
+def test_executor_does_not_stack_overlay() -> None:
+    """浮窗不占栈：到达浮窗后栈顶仍是底下那层页面。"""
+    session = SessionState()
+    session.push_page(PageName.EXERCISE.value)
+    executor = NavigationExecutor(object(), session)
+
+    executor._record_page(PageName.EXERCISE_RIVAL_CONFIRM)
+
+    assert session.current_page() == PageName.EXERCISE.value
+
+
+def test_executor_replaces_stack_top_inside_same_domain() -> None:
+    """同域换页只替换栈顶，不新压一格。"""
+    session = SessionState()
+    session.push_page(PageName.HOME.value)
+    session.push_page(PageName.EXERCISE.value)
+    executor = NavigationExecutor(object(), session)
+
+    executor._record_page(PageName.CAMPAIGN)
+
+    assert session.pop_page() == PageName.CAMPAIGN.value
+    assert session.pop_page() == PageName.HOME.value
+    assert session.pop_page() is None
+
+
+def test_executor_pushes_across_domains() -> None:
+    """跨域才是真的换一层画面，压一格。"""
+    session = SessionState()
+    session.push_page(PageName.EXERCISE.value)
+    executor = NavigationExecutor(object(), session)
+
+    executor._record_page(PageName.EXERCISE_PREPARATION)
+
+    assert session.pop_page() == PageName.EXERCISE_PREPARATION.value
+    assert session.pop_page() == PageName.EXERCISE.value
+
+
+def test_executor_keeps_stack_when_page_unchanged() -> None:
+    """关掉浮窗回到原页面时栈不变。"""
+    session = SessionState()
+    session.push_page(PageName.EXERCISE.value)
+    executor = NavigationExecutor(object(), session)
+
+    executor._record_page(PageName.EXERCISE)
+
+    assert session.pop_page() == PageName.EXERCISE.value
+    assert session.pop_page() is None

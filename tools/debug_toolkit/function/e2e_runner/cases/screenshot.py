@@ -26,7 +26,7 @@ def run(rt: Any) -> bool:
 
     page = rt.action(
         '检查首页并处理浮窗',
-        lambda _ctx: home.read_home_layer(_ctx) is PageName.HOME,
+        lambda _ctx: home.read_home_layer(_ctx) == (PageName.HOME,),
         ctx,
     )
     if page is rt.FAILED:

@@ -113,19 +113,20 @@ checker 的能力按页面分组，每组提供「确认」与（部分页面的
 | --- | --- | --- | --- | --- | --- |
 | 登录流程确认 | `login.check_black_screen` / `check_update_prompt` / `check_loading` / `check_login_page` / `check_server_select` | `login/` | `ctx` + 三件套 | `bool` | 启动画面与登录页判断 |
 | 区服定位 | `login.resolve_server_index` / `login.find_server_position` | `login/` | `ctx`、区服名 | `int` / `int \| None` | OCR 定位 + 静态映射兜底 |
-| 主页与浮窗判层 | `home.read_home_layer` | `home/` | `ctx` | `PageName \| None` | 一帧读七个模板，判当前层 |
+| 主页与浮窗判层 | `home.read_home_layer` | `home/` | `ctx` | `tuple[PageName, ...]` | 一帧读七个模板，由深到浅返回这一帧能看到的全部层 |
 | 主页浮窗事实 | `home.read_news_overlay` / `check_home_reward_overlay` / `check_home_reward_confirm` / `check_news_checked` | `home/` | `ctx` | 事实模型 / `bool` | 浮窗存在性、勾选状态 |
 | 浮窗标记 | `home.mark_popups_settled` | `home/` | `ctx` | 无 | 回到干净主页后写三个浮窗处理标记 |
 | 后院与二级页确认 | `backyard.check_backyard_page` 与四个二级页入口 | `backyard/` | `ctx` + 三件套 | `bool` | 后院主页与四个二级页身份 |
 | 侧边栏体系确认 | `sidebar.check_sidebar_page` / `check_build_submenu` / `check_intensify_submenu` / `check_friend_page` | `sidebar/` | `ctx` + 三件套 | `bool` | 侧边栏、二级菜单、好友页 |
 | 建造与强化标签 | `sidebar.build.check_dismantle_tab` / `sidebar.intensify.check_remold_tab` / `check_skill_tab` | `sidebar/` | `ctx` | `bool` | 页面内标签激活 |
-| 出征页标签判层 | `sortie.read_sortie_tab_layer` | `sortie/` | `ctx` | `PageName \| None` | 一帧读五个标签模板，判当前落在哪个标签页 |
+| 出征域判层 | `sortie.read_sortie_layer` | `sortie/` | `ctx` | `tuple[PageName, ...]` | 一帧读浮窗标题 + 五个标签模板，由深到浅返回能同时看到的全部层 |
 | 任务页与领奖 | `mission.check_mission_page` / `check_claim_all_button` / `check_mission_reward_confirm` | `mission/` | `ctx` + 三件套 | `bool` | 任务页身份与领奖浮窗 |
 | 活动页面 | `event.stage_push.check_event_map_page` / `check_event_sortie_prepare` / `check_event_entry` | `event/` | `ctx`、活动标识 | `bool` | 活动入口、地图、章节浮窗 |
 | 活动事实与解析 | `event.stage_push.read_event_map_state` / `read_event_type` / `read_event_stage` / `parse_stage` | `event/` | `ctx`、章节标识 | 事实模型 / 标识 / 执行参数 | 难度结论、任务绑定读取、章节解析 |
 | 登录页按钮中心 | `login.read_enter_button_center` / `read_switch_entry_center` | `login/` | `ctx` | 归一化中心或 `None` | 给出按钮与换区入口中心 |
 | 后院入口中心 | `backyard.read_canteen_entry_center` / `read_academy_entry_center` / `read_rank_room_entry_center` / `read_bath_entry_center` | `backyard/` | `ctx` | 归一化中心或 `None` | 给出四个入口中心供控制器点击 |
-| 出征准备页判层 | `sortie.battle_preparation.read_battle_preparation_layer` | `sortie/battle_preparation/` | `ctx` | `PageName \| None` | 一帧读四个准备页模板（共用同一 ROI），判是哪一种准备页 |
+| 出征准备页判层 | `sortie.battle_preparation.read_battle_preparation_layer` | `sortie/battle_preparation/` | `ctx` | `tuple[PageName, ...]` | 一帧读四个准备页模板（共用同一 ROI），返回命中的准备页 |
+| 演习浮窗按钮中心 | `sortie.exercise.read_overlay_close_center` / `read_overlay_refresh_center` / `read_overlay_challenge_center` | `sortie/exercise/` | `ctx` | 归一化中心或 `None` | 给出浮窗关闭 / 刷新 / 挑战按钮中心，供控制器点击 |
 | 出征页内导航 | `sortie.battle.ensure_chapter` | `sortie/battle/` | `ctx`、`chapter`、`map_id` | 无（点击副作用） | 从当前章走到目标章、再翻到目标节点 |
 | 活动按钮中心 | `event.stage_push.read_mode_button_center` / `read_sortie_prepare_center` | `event/` | `ctx`、活动标识 | 归一化中心或 `None` | 给出难度按钮与确认出征按钮中心 |
 | 活动难度等待 | `event.stage_push.wait_event_mode` | `event/` | `ctx`、活动标识、目标难度 | `bool` | 重读难度直到切到目标值 |
@@ -224,7 +225,8 @@ def check_xxx_page(
 | --- | --- | --- | --- |
 | `login.check_login_page` 等 | `login/__init__.py` | 注册为到达确认、按顺序判断启动画面 | 依赖内部识别细节 |
 | `home.read_home_layer` | `home/__init__.py` | 注册为主页判层入口 | 自行拼装浮窗判断 |
-| `sortie.read_sortie_tab_layer` | `sortie/__init__.py` | 注册为域探针、按标签判层 | 复用它的模板自己拼别的判定 |
+| `sortie.read_sortie_layer` | `sortie/__init__.py` | 注册为域探针、按标签与浮窗判层 | 复用它的模板自己拼别的判定 |
+| `sortie.exercise.read_overlay_*_center` | `sortie/exercise/__init__.py` | 由浮窗边动作读中心后传给控制器 | 用固定坐标代替模板中心 |
 | `sortie.battle.ensure_chapter` | `sortie/battle/__init__.py` | 由导航边按参数调用 | 在别处重复实现选章选节 |
 | `sortie.battle_preparation.read_battle_preparation_layer` | `sortie/battle_preparation/__init__.py` | 注册为域探针 | 逐个准备页写 checker 重复截图 |
 | `event.stage_push.*` | `event/stage_push/__init__.py` | 注册确认、读活动事实与解析章节 | 绕过 `event_type` 校验 |
@@ -255,8 +257,11 @@ def check_xxx_page(
 
 ### 11.2.1 域探针入口的写法
 
-一次 `expect_template` 传齐本域全部模板，命中谁就是谁，按「误命中风险从低到高」排序后取首个命中：
-`read_sortie_tab_layer` 与 `read_battle_preparation_layer` 都是这个形状，共用的 ROI 只声明一份。
+一次 `expect_template` 传齐本域全部模板，**返回这一帧能同时看到的全部层**（`tuple[PageName, ...]`，
+按「上层在前」排序），而不是只返回第一层：浮窗出现时顶部标签栏往往没被遮住，两层会同时命中。
+`read_home_layer`、`read_sortie_layer`、`read_battle_preparation_layer` 都是这个形状，共用的 ROI 只声明一份。
+
+判断「到没到某个域页面」时取 `max(layers, key=depth_of)` 比目标页，不能用 `in`（会放过「上一层还开着」）。
 
 ### 11.3 新增一个活动玩法
 

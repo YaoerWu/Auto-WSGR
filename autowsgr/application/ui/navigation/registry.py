@@ -26,9 +26,6 @@ from autowsgr.application.ui.controller.home.event_page import EventPage
 from autowsgr.application.ui.controller.home.main_page import HomePage, Target
 from autowsgr.application.ui.controller.login import LoginPage
 from autowsgr.application.ui.controller.operations.mission_page import MissionPage
-from autowsgr.application.ui.controller.operations.sortie.battle_preparation import (
-    BattlePreparationPage,
-)
 from autowsgr.application.ui.controller.operations.sortie_page.battle_page import BattlePage
 from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
     SortiePage,
@@ -41,6 +38,7 @@ from autowsgr.application.ui.controller.sidebar.intensify_page import (
     IntensifyTab,
 )
 from autowsgr.application.ui.controller.sidebar.main_page import SidebarPage, SidebarTarget
+from autowsgr.application.ui.controller.sortie import BattlePreparationPage, ExercisePage
 from autowsgr.application.ui.navigation.checker import (
     backyard,
     home,
@@ -51,7 +49,7 @@ from autowsgr.application.ui.navigation.checker import (
 from autowsgr.application.ui.navigation.checker.event import stage_push
 from autowsgr.application.ui.navigation.checker.sidebar import build, intensify
 from autowsgr.application.ui.navigation.checker.sidebar.friend import check_friend_page
-from autowsgr.application.ui.navigation.checker.sortie import read_sortie_tab_layer
+from autowsgr.application.ui.navigation.checker.sortie import exercise, read_sortie_layer
 from autowsgr.application.ui.navigation.checker.sortie.battle import ensure_chapter
 from autowsgr.application.ui.navigation.checker.sortie.battle_preparation import (
     read_battle_preparation_layer,
@@ -147,9 +145,7 @@ def probe_domains(
     """
     hits: list[PageName] = []
     for prober in _DOMAIN_PROBERS:
-        layer = prober(ctx, attempts=attempts, interval_seconds=interval_seconds)
-        if layer is not None:
-            hits.append(layer)
+        hits.extend(prober(ctx, attempts=attempts, interval_seconds=interval_seconds))
     return tuple(hits)
 
 
@@ -163,6 +159,38 @@ def is_domain_page(page: PageName) -> bool:
         该页面由域探针负责时为真。
     """
     return page in _DOMAIN_PAGES
+
+
+def domain_of(page: PageName) -> int | None:
+    """返回页面所属域的编号。
+
+    同一个域里的页面共用一套画面框架，换页不换框架；跨域才是真的换了一层画面。
+    导航栈靠这个分别「替换栈顶」和「压一格」。
+
+    Args:
+        page: 待查询的页面。
+
+    Returns:
+        域的序号；不属于任何域时为 None。
+    """
+    for index, (_prober, pages, overlays) in enumerate(_DOMAINS):
+        if page in pages or page in overlays:
+            return index
+    return None
+
+
+def is_overlay_page(page: PageName) -> bool:
+    """判断页面是不是浮窗。
+
+    浮窗是页面里的一层覆盖，不是独立页面，所以不占导航栈。
+
+    Args:
+        page: 待查询的页面。
+
+    Returns:
+        是浮窗时为真。
+    """
+    return page in _OVERLAY_PAGES
 
 
 def get_tabs(page: PageName) -> dict[str, NavTab]:
@@ -400,33 +428,86 @@ def _sortie_map_to_preparation(ctx: ContextHandle, **params: object) -> None:
     BattlePage(ctx).click_enter_sortie()
 
 
+# 演习
+def _exercise_to_rival_overlay(ctx: ContextHandle, **params: object) -> None:
+    """打开指定对手的详情浮窗。
+
+    Args:
+        ctx: 提供设备服务和截图事实的 dispatch 上下文句柄。
+        **params: 必填的 rival（对手序号，1-5）。
+
+    Raises:
+        ValueError: 缺少对手序号入参。
+    """
+    rival = params.get('rival')
+    if rival is None:
+        raise ValueError('打开演习对手浮窗需要 rival 入参')
+    ExercisePage(ctx).select_rival(int(rival))
+
+
 # ── 识别表 ──────────────────────────────────────────────────────────────────
 
 # 一个域一次读一帧：同域页面共享同一组识别数据，逐页读会把同一帧读好几遍。
-_DOMAIN_PROBERS: tuple[Callable[..., PageName | None], ...] = (
-    home.read_home_layer,
-    read_sortie_tab_layer,
-    read_battle_preparation_layer,
+# 每个探针返回这一帧能同时看到的全部层，由深到浅。一行登记一个域：探针、域内
+# 互斥的页面（同一时刻只有一个）、叠在它们上面的浮窗。浮窗和它盖住的页面同域，
+# 所以写在同一个域里；区分两者的是第三列，不是「在不在这个域里」。
+_DOMAINS: tuple[
+    tuple[Callable[..., tuple[PageName, ...]], frozenset[PageName], frozenset[PageName]],
+    ...,
+] = (
+    (
+        home.read_home_layer,
+        frozenset({PageName.HOME}),
+        frozenset(
+            {
+                PageName.HOME_NEWS,
+                PageName.HOME_REWARD,
+                PageName.HOME_REWARD_CONFIRM,
+            }
+        ),
+    ),
+    (
+        read_sortie_layer,
+        frozenset(
+            {
+                PageName.SORTIE_MAP,
+                PageName.EXERCISE,
+                PageName.EXPEDITION,
+                PageName.CAMPAIGN,
+                PageName.DECISIVE_BATTLE,
+            }
+        ),
+        frozenset({PageName.EXERCISE_RIVAL_CONFIRM}),
+    ),
+    (
+        read_battle_preparation_layer,
+        frozenset(
+            {
+                PageName.BATTLE_PREPARATION,
+                PageName.DECISIVE_BATTLE_PREPARATION,
+                PageName.EXERCISE_PREPARATION,
+                PageName.CAMPAIGN_PREPARATION,
+            }
+        ),
+        frozenset(),
+    ),
+)
+
+_DOMAIN_PROBERS: tuple[Callable[..., tuple[PageName, ...]], ...] = tuple(
+    prober for prober, _pages, _overlays in _DOMAINS
+)
+
+# 由域探针负责的页面（含浮窗）；它们不再登记到逐页注册表。
+_DOMAIN_PAGES: frozenset[PageName] = frozenset(
+    page for _prober, pages, overlays in _DOMAINS for page in pages | overlays
 )
 
 
-# 由域探针负责的页面；它们不再登记到逐页注册表。
-_DOMAIN_PAGES: frozenset[PageName] = frozenset(
-    {
-        PageName.HOME,
-        PageName.HOME_NEWS,
-        PageName.HOME_REWARD,
-        PageName.HOME_REWARD_CONFIRM,
-        PageName.SORTIE_MAP,
-        PageName.EXERCISE,
-        PageName.EXPEDITION,
-        PageName.CAMPAIGN,
-        PageName.DECISIVE_BATTLE,
-        PageName.BATTLE_PREPARATION,
-        PageName.DECISIVE_BATTLE_PREPARATION,
-        PageName.EXERCISE_PREPARATION,
-        PageName.CAMPAIGN_PREPARATION,
-    }
+# 浮窗不建栈：它只是页面里的一层覆盖，栈里只记页面本身。冷启动停在浮窗上时，
+# 先把它清掉再建栈，栈就自然落在它下面那层。名单由域表第三列算出，不另手写，
+# 免得加浮窗时改了一处漏了另一处。
+_OVERLAY_PAGES: frozenset[PageName] = frozenset(
+    overlay for _prober, _pages, overlays in _DOMAINS for overlay in overlays
 )
 
 
@@ -461,38 +542,47 @@ _TABS: dict[PageName, dict[str, NavTab]] = {
         'sortie': NavTab(
             lambda ctx: SortiePage(ctx).go_to(SortieTab.SORTIE),
             lambda ctx: (
-                read_sortie_tab_layer(ctx, attempts=_SORTIE_TAB_ATTEMPTS) is PageName.SORTIE_MAP
+                read_sortie_layer(ctx, attempts=_SORTIE_TAB_ATTEMPTS) == (PageName.SORTIE_MAP,)
             ),
             '出征',
         ),
         'exercise': NavTab(
             lambda ctx: SortiePage(ctx).go_to(SortieTab.EXERCISE),
             lambda ctx: (
-                read_sortie_tab_layer(ctx, attempts=_SORTIE_TAB_ATTEMPTS) is PageName.EXERCISE
+                read_sortie_layer(ctx, attempts=_SORTIE_TAB_ATTEMPTS) == (PageName.EXERCISE,)
             ),
             '演习',
         ),
         'expedition': NavTab(
             lambda ctx: SortiePage(ctx).go_to(SortieTab.EXPEDITION),
             lambda ctx: (
-                read_sortie_tab_layer(ctx, attempts=_SORTIE_TAB_ATTEMPTS) is PageName.EXPEDITION
+                read_sortie_layer(ctx, attempts=_SORTIE_TAB_ATTEMPTS) == (PageName.EXPEDITION,)
             ),
             '远征',
         ),
         'campaign': NavTab(
             lambda ctx: SortiePage(ctx).go_to(SortieTab.CAMPAIGN),
             lambda ctx: (
-                read_sortie_tab_layer(ctx, attempts=_SORTIE_TAB_ATTEMPTS) is PageName.CAMPAIGN
+                read_sortie_layer(ctx, attempts=_SORTIE_TAB_ATTEMPTS) == (PageName.CAMPAIGN,)
             ),
             '战役',
         ),
         'decisive': NavTab(
             lambda ctx: SortiePage(ctx).go_to(SortieTab.DECISIVE),
             lambda ctx: (
-                read_sortie_tab_layer(ctx, attempts=_SORTIE_TAB_ATTEMPTS)
-                is PageName.DECISIVE_BATTLE
+                read_sortie_layer(ctx, attempts=_SORTIE_TAB_ATTEMPTS) == (PageName.DECISIVE_BATTLE,)
             ),
             '决战',
+        ),
+    },
+    # 演习页只有一个前台标签：从首页进来时靠它把顶栏切到演习并确认没有浮窗。
+    PageName.EXERCISE: {
+        'exercise': NavTab(
+            lambda ctx: SortiePage(ctx).go_to(SortieTab.EXERCISE),
+            lambda ctx: (
+                read_sortie_layer(ctx, attempts=_SORTIE_TAB_ATTEMPTS) == (PageName.EXERCISE,)
+            ),
+            '演习',
         ),
     },
     PageName.BUILD: {
@@ -547,6 +637,12 @@ _NAV_TARGETS: dict[PageName, tuple[NavTarget, ...]] = {
             lambda ctx, **_: HomePage(ctx).go_to(Target.SORTIE),
             '首页 → 出征页',
             tab='sortie',
+        ),
+        NavTarget(
+            PageName.EXERCISE,
+            lambda ctx, **_: HomePage(ctx).go_to(Target.SORTIE),
+            '首页 → 演习页',
+            tab='exercise',
         ),
         NavTarget(
             PageName.EVENT_MAP,
@@ -760,6 +856,11 @@ _NAV_TARGETS: dict[PageName, tuple[NavTarget, ...]] = {
             '出征页 → 出征准备页',
         ),
         NavTarget(
+            PageName.EXERCISE,
+            lambda ctx, **_: SortiePage(ctx).go_to(SortieTab.EXERCISE),
+            '出征页 → 演习页',
+        ),
+        NavTarget(
             PageName.HOME_NEWS,
             lambda ctx, **_: SortiePage(ctx).go_back(),
             '出征页 → 主页（经每日浮窗链）',
@@ -768,6 +869,11 @@ _NAV_TARGETS: dict[PageName, tuple[NavTarget, ...]] = {
     ),
     # 出征四个标签页：进得去就得回得来；标签间怎么切是页内行为，回主页走同一条返回链路。
     PageName.EXERCISE: (
+        NavTarget(
+            PageName.EXERCISE_RIVAL_CONFIRM,
+            _exercise_to_rival_overlay,
+            '演习页 → 演习对手浮窗',
+        ),
         NavTarget(
             PageName.HOME_NEWS,
             lambda ctx, **_: SortiePage(ctx).go_back(),
@@ -797,6 +903,30 @@ _NAV_TARGETS: dict[PageName, tuple[NavTarget, ...]] = {
             lambda ctx, **_: SortiePage(ctx).go_back(),
             '决战页 → 主页（经每日浮窗链）',
             confirm=False,
+        ),
+    ),
+    # 浮窗上两个出口：关掉回演习页，点挑战进准备页。
+    PageName.EXERCISE_RIVAL_CONFIRM: (
+        NavTarget(
+            PageName.EXERCISE_PREPARATION,
+            lambda ctx, **_: ExercisePage(ctx).click_overlay_challenge(
+                exercise.read_overlay_challenge_center(ctx)
+            ),
+            '演习对手浮窗 → 演习准备页',
+        ),
+        NavTarget(
+            PageName.EXERCISE,
+            lambda ctx, **_: ExercisePage(ctx).click_overlay_close(
+                exercise.read_overlay_close_center(ctx)
+            ),
+            '演习对手浮窗 → 演习页',
+        ),
+    ),
+    PageName.EXERCISE_PREPARATION: (
+        NavTarget(
+            PageName.EXERCISE,
+            lambda ctx, **_: BattlePreparationPage(ctx).go_back(),
+            '演习准备页 → 演习页',
         ),
     ),
     # 只维护退回一条边：选章选节是进入方向的职责，返回不需要入参。
@@ -865,11 +995,13 @@ _NAV_TARGETS: dict[PageName, tuple[NavTarget, ...]] = {
 
 __all__ = [
     'depth_of',
+    'domain_of',
     'find_path',
     'get_checker',
     'get_tabs',
     'get_targets',
     'is_domain_page',
+    'is_overlay_page',
     'on_arrival',
     'popups_all_settled',
     'probe_domains',

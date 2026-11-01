@@ -75,21 +75,21 @@ def test_read_home_layer_returns_clean_home(monkeypatch: pytest.MonkeyPatch) -> 
     _install_recognition(monkeypatch, home_visible=True)
     _fresh_session(monkeypatch)
 
-    assert home.read_home_layer(object()) is PageName.HOME
+    assert home.read_home_layer(object()) == (PageName.HOME,)
 
 
 def test_read_home_layer_returns_reward_when_overlay_visible(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """奖励浮窗命中时当前层是奖励，不是背后的主页。"""
+    """奖励浮窗命中时当前层是奖励，背后的主页仍在画面里。"""
     _install_recognition(monkeypatch, home_visible=True, reward_matches=(True, False))
     _fresh_session(monkeypatch)
 
-    assert home.read_home_layer(object()) is PageName.HOME_REWARD
+    assert home.read_home_layer(object()) == (PageName.HOME_REWARD, PageName.HOME)
 
 
 def test_read_home_layer_prefers_confirm_when_stacked(monkeypatch: pytest.MonkeyPatch) -> None:
-    """确认浮窗盖在奖励上时当前层是确认。"""
+    """确认浮窗盖在奖励上时三层从深到浅都报出来。"""
     _install_recognition(
         monkeypatch,
         home_visible=True,
@@ -98,17 +98,21 @@ def test_read_home_layer_prefers_confirm_when_stacked(monkeypatch: pytest.Monkey
     )
     _fresh_session(monkeypatch)
 
-    assert home.read_home_layer(object()) is PageName.HOME_REWARD_CONFIRM
+    assert home.read_home_layer(object()) == (
+        PageName.HOME_REWARD_CONFIRM,
+        PageName.HOME_REWARD,
+        PageName.HOME,
+    )
 
 
 def test_read_home_layer_returns_none_when_nothing_matches(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """一个模板都没命中时没有当前层。"""
+    """一个模板都没命中时没有任何层。"""
     _install_recognition(monkeypatch)
     _fresh_session(monkeypatch)
 
-    assert home.read_home_layer(object()) is None
+    assert home.read_home_layer(object()) == ()
 
 
 def test_read_home_layer_skips_settled_overlay(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -117,7 +121,7 @@ def test_read_home_layer_skips_settled_overlay(monkeypatch: pytest.MonkeyPatch) 
     session = _fresh_session(monkeypatch)
     session.mark_popup_settled(DailyPopup.NEWS)
 
-    assert home.read_home_layer(object()) is PageName.HOME
+    assert home.read_home_layer(object()) == (PageName.HOME,)
 
 
 def test_news_overlay_reads_checked_state(monkeypatch: pytest.MonkeyPatch) -> None:

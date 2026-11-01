@@ -11,7 +11,7 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.operations.sortie.battle_preparation.page import (
+from autowsgr.application.ui.controller.sortie.battle_preparation.page import (
     BattlePreparationPage,
 )
 

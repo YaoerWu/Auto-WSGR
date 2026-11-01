@@ -30,7 +30,7 @@ from autowsgr.application.vision.ship_list import (
 if TYPE_CHECKING:
     import numpy
 
-    from autowsgr.business.combat.types import ShipType
+    from autowsgr.application.ui.ships.types import ShipType
     from autowsgr.common.vision import OCREngine
 
 

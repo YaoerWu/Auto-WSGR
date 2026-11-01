@@ -90,7 +90,7 @@ class NavigationExecutor:
     def walk_forward(self, path: tuple[NavTarget, ...], params: dict[str, object]) -> None:
         """前进：按路径从当前页走向目标页。
 
-        每跳依次执行：边的动作 → 到达确认 → 压栈；每条边都会压，压完立刻过断点。
+        每跳依次执行：边的动作 → 到达确认 → 记栈；记完立刻过断点。
 
         Args:
             path: 已经算好的路径。
@@ -101,21 +101,21 @@ class NavigationExecutor:
             TaskPaused: 断点收到暂停或插队信号。
             TaskStopped: 断点收到终止信号。
         """
-        # 标签优先取调用方参数，其次取边自己声明的（如「首页 → 出征页」固定切回出征）。
+        # 调用方显式要的标签只落在最后一跳：走到目的地再切，中途切了还得切回来。
         requested = params.get('tab')
         tab = requested if isinstance(requested, str) else None
-        if tab is None and len(path) == 1 and path[0].tab is not None:
-            tab = path[0].tab
         self._check_interrupt()
         for index, edge in enumerate(path):
             _log.debug('[UI] 导航执行 → 前进：edge={!r}', edge.description)
             edge.action(self._ctx, **params)
-            # 标签只落在最后一跳：中间跳的目标页面没有这个标签，也不该切。
-            if tab is not None and index == len(path) - 1:
-                self._enter_tab(edge.target, tab)
+            # 标签跟着这一跳走：边自己声明的是「到达这一页就先切到哪个标签」
+            # （如「首页 → 演习页」固定切演习），多跳路径里中间那一跳同样要切。
+            target_tab = tab if tab is not None and index == len(path) - 1 else edge.tab
+            if target_tab is not None:
+                self._enter_tab(edge.target, target_tab)
             else:
                 self._confirm_arrival(edge)
-            self._session.push_page(edge.target.value)
+            self._record_page(edge.target)
             # 断点放在确认到达并压栈之后：此时回退路径完整，让路不丢位置。
             self._check_interrupt()
 
@@ -139,6 +139,36 @@ class NavigationExecutor:
             edge.action(self._ctx)
             self._confirm_arrival(edge)
             self._check_interrupt()
+
+    # ── 栈记账 ──────────────────────────────────────────────────────────────
+
+    def _record_page(self, page: PageName) -> None:
+        """把刚到达的页面记进导航栈。
+
+        记法由三件事决定：浮窗只是页面里的一层覆盖，不占格；同一域里的页面共用
+        一套画面框架，换页只把栈顶换掉；换了域才是真的换了一层画面，压一格。
+
+        Args:
+            page: 刚确认到达的页面。
+        """
+        if registry.is_overlay_page(page):
+            return
+        current = self._session.current_page()
+        if current is None:
+            self._session.push_page(page.value)
+            return
+        current_page = PageName(current)
+        if current_page is page:
+            return
+        # 浮窗不占格，栈顶正常不会是浮窗；真遇上了就顺势换掉，保证栈里只剩页面。
+        if registry.is_overlay_page(current_page):
+            self._session.replace_page(page.value)
+            return
+        domain = registry.domain_of(page)
+        if domain is None or domain != registry.domain_of(current_page):
+            self._session.push_page(page.value)
+            return
+        self._session.replace_page(page.value)
 
     # ── 断点 ────────────────────────────────────────────────────────────────
 
@@ -210,6 +240,40 @@ class NavigationExecutor:
         _log.debug('[UI] 导航执行 → 全层扫描：hits={!r}', [page.value for page in ordered])
         return ordered
 
+    def read_layers_clearing_overlay(
+        self,
+        *,
+        attempts: int = 1,
+        interval_seconds: float = 0.2,
+    ) -> tuple[PageName, ...]:
+        """扫一帧；顶上若压着浮窗，先清掉再重扫，返回可以直接建栈的页面层。
+
+        浮窗不建栈，冷启动停在浮窗上时栈没有落点，必须先把它清掉；清路的过程本身
+        会把下面那层页面记进栈。返回的层由深到浅，浮窗已经滤掉。
+
+        Args:
+            attempts: 每个确认入口的识别次数，默认只读一帧。
+            interval_seconds: 两次识别之间的等待秒数。
+
+        Returns:
+            当前画面上能作栈的页面层，按深度降序；一层都没有时为空元组。
+        """
+        layers = self.detect_layer(attempts=attempts, interval_seconds=interval_seconds)
+        if layers and registry.is_overlay_page(layers[0]):
+            # 浮窗下面那层就是它盖住的页面；看不见时（公告整个挡住主页）落到主页。
+            underlying = next(
+                (page for page in layers[1:] if not registry.is_overlay_page(page)),
+                PageName.HOME,
+            )
+            _log.debug(
+                '[UI] 导航执行 → 冷启动停在浮窗上：overlay={!r}，清向={!r}',
+                layers[0].value,
+                underlying.value,
+            )
+            self.walk_forward(registry.find_path(layers[0], underlying), {})
+            layers = self.detect_layer(attempts=attempts, interval_seconds=interval_seconds)
+        return tuple(page for page in layers if not registry.is_overlay_page(page))
+
     def _enter_tab(self, page: PageName, tab: str) -> None:
         """切到目标页内的标签，并用该标签自己的 checker 确认。
 
@@ -260,12 +324,15 @@ class NavigationExecutor:
         if edge.target in (PageName.HOME, PageName.SIDEBAR) and not registry.popups_all_settled():
             time.sleep(_ARRIVAL_SETTLE_SECONDS)
         # 域页面由探针一次判完整族：动作刚点下去画面还在切换，先等稳定再读一帧。
+        # 探针返回这一帧能同时看到的全部层，只有最深的那个才是当前层——点关闭没关掉时
+        # 浮窗和底下的页面会一起命中，按「目标在不在」放行就会误判到达。
         if registry.is_domain_page(edge.target):
             time.sleep(_DOMAIN_ARRIVAL_SETTLE_SECONDS)
-            if edge.target not in registry.probe_domains(self._ctx):
-                raise NavigationError(
-                    f'到达确认失败：{edge.description!r}，未识别到 {edge.target.value!r}'
-                )
+            layers = registry.probe_domains(self._ctx)
+            current = max(layers, key=registry.depth_of) if layers else None
+            if current is not edge.target:
+                detail = '未识别到任何页面' if current is None else f'当前层是 {current.value!r}'
+                raise NavigationError(f'到达确认失败：{edge.description!r}，{detail}')
             registry.on_arrival(self._ctx, edge.target)
             _log.debug('[UI] 导航执行 → 到达确认：page={!r}，结果=成功', edge.target.value)
             return

@@ -158,39 +158,42 @@ class NavigationService:
     # ── 当前页识别 ──────────────────────────────────────────────────────────
 
     def _current_page(self) -> PageName:
-        """返回当前页面：优先取导航栈顶，栈空时遍历确认入口识别一次。
+        """返回当前页面：优先取导航栈顶，栈空时扫一遍并据此重建栈。
 
-        识别到的页面会立刻压栈，后续导航就能直接复用。
+        栈空时会把挡在画面上面的浮窗清掉再建栈，所以这一步会在设备上产生点击。
 
         Raises:
             NavigationError: 栈空且所有确认入口都识别不到。
         """
-        session = self._session
-        current = session.current_page()
+        current = self._session.current_page()
         if current is not None:
             return PageName(current)
 
-        # 栈空：交给执行器按页面深度扫一遍（覆盖层更深，会先被认出来）。
+        # 栈空：交给执行器扫一遍（覆盖层更深，会先被认出来；浮窗由它一并清掉）。
         # 扫描期间的识别细节日志整体静默，结束后只留一条汇总。
         started = time.monotonic()
-        layers = self._executor.detect_layer()
+        pages = self._executor.read_layers_clearing_overlay()
         elapsed_ms = int((time.monotonic() - started) * 1000)
 
-        if not layers:
+        if not pages:
             _log.warning(
                 '[UI] 导航 → 遍历识别当前页：耗时={}ms，结果=未识别到',
                 elapsed_ms,
             )
             raise NavigationError('无法识别当前页面')
 
-        # 按层级压栈：浅的在下、深的在上，栈顶就是当前层。
-        # 多层同时可见时（浮窗盖在侧边栏上）都要记进来，回退才有层次可退。
-        for page in reversed(layers):
-            session.push_page(page.value)
+        # 清浮窗的过程本身已经把下面那层记进栈了，别重复压。
+        recorded = self._session.current_page()
+        if recorded is not None:
+            return PageName(recorded)
+
+        # 浅的在下、深的在上，栈顶就是当前层。
+        for page in reversed(pages):
+            self._session.push_page(page.value)
         _log.info(
             '[UI] 导航 → 遍历识别当前页：page={!r}，层数={}，耗时={}ms',
-            layers[0].value,
-            len(layers),
+            pages[0].value,
+            len(pages),
             elapsed_ms,
         )
-        return layers[0]
+        return pages[0]

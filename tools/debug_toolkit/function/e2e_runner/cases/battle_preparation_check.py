@@ -48,6 +48,9 @@ def run(rt: Any) -> bool:
         actual = rt.action(f'识别 {filename}', read_battle_preparation_layer, ctx, attempts=1)
         if actual is rt.FAILED:
             return False
-        if not rt.check(f'{filename} → {expected.value}', lambda: actual == expected):
+        if not rt.check(
+            f'{filename} → {expected.value}',
+            lambda _actual=actual, _expected=expected: _actual == (_expected,),
+        ):
             return False
     return True
