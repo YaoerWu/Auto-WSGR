@@ -11,7 +11,4 @@
 本模块只导出稳定的页面入口和标签类型，不执行页面操作或创建运行时上下文。
 """
 
-from autowsgr.application.ui.controller.sidebar.build_page.page import BuildPage, BuildTab
-
-
-__all__ = ['BuildPage', 'BuildTab']
+__all__: list[str] = []

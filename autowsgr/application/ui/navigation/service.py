@@ -18,8 +18,8 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller import login
 from autowsgr.application.ui.navigation import registry
-from autowsgr.application.ui.navigation.checker import login
 from autowsgr.application.ui.navigation.executor import NavigationExecutor
 from autowsgr.application.ui.navigation.types import (
     ManualUpdateRequiredError,

@@ -51,6 +51,8 @@ from autowsgr.application.combat.recognizer import (
     CombatRecognizer,
     CombatStopRequestedError,
 )
+
+
 __all__ = [
     'SHIP_DROP_PAGE_SIGNATURE',
     'CombatEngine',

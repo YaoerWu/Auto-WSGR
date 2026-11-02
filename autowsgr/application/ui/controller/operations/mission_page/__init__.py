@@ -11,7 +11,5 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.operations.mission_page.page import MissionPage
 
-
-__all__ = ['MissionPage']
+__all__: list[str] = []

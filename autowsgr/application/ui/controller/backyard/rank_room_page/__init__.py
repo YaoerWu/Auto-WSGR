@@ -11,7 +11,5 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.backyard.rank_room_page.page import RankRoomPage
 
-
-__all__ = ['RankRoomPage']
+__all__: list[str] = []

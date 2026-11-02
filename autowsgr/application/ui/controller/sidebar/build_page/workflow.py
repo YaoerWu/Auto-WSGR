@@ -19,14 +19,14 @@ import time
 from typing import TYPE_CHECKING
 
 from autowsgr.application.ui.controller.sidebar.build_page import constants, operations
+from autowsgr.application.vision.resources import Templates
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import ImageChecker
-from autowsgr.application.vision.resources import Templates
 
 
 if TYPE_CHECKING:
-    from autowsgr.common.device.service import DeviceService
     from autowsgr.application.ui.ships.types import ShipType
+    from autowsgr.common.device.service import DeviceService
 
 
 _log = get_logger('ui.sidebar.build_page.workflow')

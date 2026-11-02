@@ -10,14 +10,12 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, Literal
 
+from autowsgr.application.controller.sortie import SortieTab
+from autowsgr.application.controller.sortie.battle import BattlePage
 from autowsgr.application.errors import ActionFailedError, ManualRepairRequiredError
 from autowsgr.application.ui.controller.fleet import BattlePreparationPage, RepairStrategy
 from autowsgr.application.ui.controller.home.event_page import BaseEventPage
-from autowsgr.application.ui.controller.operations.sortie_page.battle_page import (
-    BattlePage,
-    recognition,
-)
-from autowsgr.application.ui.controller.operations.sortie_page.main_page import SortieTab
+from autowsgr.application.ui.controller.operations.sortie_page.battle_page import recognition
 from autowsgr.application.ui.navigation import (
     goto_bath_from_event_sortie,
     goto_bath_from_normal_sortie,

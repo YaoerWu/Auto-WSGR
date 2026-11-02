@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from autowsgr.application.ui.navigation.checker.sortie.battle import checker as battle_checker
+from autowsgr.application.controller.sortie.battle import checker as battle_checker
 from autowsgr.common.vision import TextDetection
 
 

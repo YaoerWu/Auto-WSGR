@@ -16,10 +16,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from autowsgr.application.ui.controller.fleet.formation.ship_selection import constants
+from autowsgr.application.ui.navigation.interaction import (
+    click_and_wait_for_page,
+    wait_for_page,
+    wait_leave_page,
+)
+from autowsgr.application.ui.navigation.types import PageMatch, PageName
 from autowsgr.common.system.logger import get_logger
-from autowsgr.application.ui.navigation.types import PageName
-from autowsgr.application.ui.navigation.interaction import click_and_wait_for_page, wait_for_page, wait_leave_page
-from autowsgr.application.ui.navigation.types import PageMatch
 from autowsgr.common.vision import PixelChecker
 
 

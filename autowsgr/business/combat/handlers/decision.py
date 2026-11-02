@@ -21,9 +21,9 @@ from autowsgr.application.combat import (
 from autowsgr.application.combat.history import CombatEvent, CombatHistory, EventType
 from autowsgr.business.combat.plan import CombatMode, CombatPlan, NodeDecision
 from autowsgr.business.combat.rules import RuleResult, check_blood
+from autowsgr.common.device.interaction import wait_leave_page
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.types import ConditionFlag, Formation, ShipDamageState
-from autowsgr.common.device.interaction import wait_leave_page
 from autowsgr.common.vision import ImageChecker
 from autowsgr.common.vision.resources import TemplateKey
 

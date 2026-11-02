@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from autowsgr.application.ui.navigation.checker.login import checker
+from autowsgr.application.controller.login import checker
 from autowsgr.common.vision import Template
 
 

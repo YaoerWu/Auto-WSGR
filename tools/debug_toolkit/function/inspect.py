@@ -149,7 +149,8 @@ def run_ocr_on_roi(
     out_dir: Path = DEFAULT_OUTPUT_DIR,
 ) -> None:
     """对指定 ROI 区域执行 OCR 测试。"""
-    from autowsgr.common.vision import RecognitionProfile, ocr as run_ocr
+    from autowsgr.common.vision import RecognitionProfile
+    from autowsgr.common.vision import ocr as run_ocr
 
     x1, y1, x2, y2 = roi
     cropped = _crop(screen, x1, y1, x2, y2)

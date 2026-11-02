@@ -58,8 +58,8 @@ def run(rt: Any) -> bool:
 
 def _switch_difficulty(rt: Any, ctx: Any, mode: str) -> bool:
     """切到目标难度; 已经在目标难度时跳过。"""
+    from autowsgr.application.controller.event import stage_push
     from autowsgr.application.ui.controller.home.event_page import EventPage
-    from autowsgr.application.ui.navigation.checker.event import stage_push
 
     target = stage_push.EventMode(mode)
     state = stage_push.read_event_map_state(ctx, event_type=_EVENT_TYPE)
@@ -90,7 +90,7 @@ def _switch_difficulty(rt: Any, ctx: Any, mode: str) -> bool:
 
 def _click_stage(rt: Any, ctx: Any, navigator: Any, stage: str) -> bool:
     """点一个章节入口、校验浮窗指向, 再关掉浮窗回地图。"""
-    from autowsgr.application.ui.navigation.checker.event import stage_push
+    from autowsgr.application.controller.event import stage_push
     from autowsgr.application.ui.navigation.types import PageName
 
     if (

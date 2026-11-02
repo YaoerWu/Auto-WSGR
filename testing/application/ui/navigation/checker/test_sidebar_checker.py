@@ -12,21 +12,21 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.navigation.checker import sidebar
-from autowsgr.application.ui.navigation.checker.sidebar import checker as sidebar_checker
-from autowsgr.application.ui.navigation.checker.sidebar.build import (
+from autowsgr.application.controller import sidebar
+from autowsgr.application.controller.sidebar import checker as sidebar_checker
+from autowsgr.application.controller.sidebar.build import (
     check_build_page,
     check_dismantle_tab,
 )
-from autowsgr.application.ui.navigation.checker.sidebar.build import checker as build_checker
-from autowsgr.application.ui.navigation.checker.sidebar.friend import check_friend_page
-from autowsgr.application.ui.navigation.checker.sidebar.friend import checker as friend_checker
-from autowsgr.application.ui.navigation.checker.sidebar.intensify import (
+from autowsgr.application.controller.sidebar.build import checker as build_checker
+from autowsgr.application.controller.sidebar.friend import check_friend_page
+from autowsgr.application.controller.sidebar.friend import checker as friend_checker
+from autowsgr.application.controller.sidebar.intensify import (
     check_intensify_page,
     check_remold_tab,
     check_skill_tab,
 )
-from autowsgr.application.ui.navigation.checker.sidebar.intensify import (
+from autowsgr.application.controller.sidebar.intensify import (
     checker as intensify_checker,
 )
 

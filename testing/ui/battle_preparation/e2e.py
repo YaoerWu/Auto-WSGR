@@ -41,8 +41,10 @@ if TYPE_CHECKING:
 
 def run_test(runner: UIControllerTestRunner) -> None:
     from autowsgr.application.ui.controller.fleet import BattlePreparationPage, Panel
-    from autowsgr.application.ui.controller.fleet.support.supply import recognition
-    from autowsgr.application.ui.controller.fleet.support.supply import switch_auto_supply
+    from autowsgr.application.ui.controller.fleet.support.supply import (
+        recognition,
+        switch_auto_supply,
+    )
 
     bp_page = BattlePreparationPage(runner.ctx)
 
@@ -128,15 +130,13 @@ def _navigate_to(
     """
     import time
 
-    from autowsgr.application.ui.controller.home.main_page import HomePage
-    from autowsgr.application.ui.controller.operations.sortie_page.battle_page import (
-        BattlePage,
-        constants,
-    )
-    from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
+    from autowsgr.application.controller.home import HomePage
+    from autowsgr.application.controller.sortie import (
         SortiePage,
         SortieTab,
     )
+    from autowsgr.application.controller.sortie.battle import BattlePage
+    from autowsgr.application.ui.controller.operations.sortie_page.battle_page import constants
 
     if not reset_to_main_page(ctrl, pause):
         return

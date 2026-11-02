@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from autowsgr.application.ui.navigation.checker.sortie.battle_preparation import (
+from autowsgr.application.controller.sortie.battle_preparation import (
     read_battle_preparation_layer,
 )
 

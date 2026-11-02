@@ -7,7 +7,11 @@ from unittest.mock import MagicMock, call
 
 import pytest
 
-from autowsgr.application.ui.controller.home.main_page import HomePage, operations, recognition
+from autowsgr.application.controller.home import HomePage
+from autowsgr.application.ui.controller.home.main_page import (
+    operations,
+    recognition,
+)
 from autowsgr.application.ui.controller.home.main_page import page as page_module
 from autowsgr.application.ui.controller.home.main_page.constants import DISMISS_POSITIONS
 from autowsgr.common.vision import ImageChecker

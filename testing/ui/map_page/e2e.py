@@ -42,15 +42,13 @@ if TYPE_CHECKING:
 
 def run_test(runner: UIControllerTestRunner) -> None:
     """执行地图页面控制器完整测试序列。"""
-    from autowsgr.application.ui.controller.home.main_page import HomePage
-    from autowsgr.application.ui.controller.operations.sortie_page.battle_page import (
-        BattlePage,
-        recognition,
-    )
-    from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
+    from autowsgr.application.controller.home import HomePage
+    from autowsgr.application.controller.sortie import (
         SortiePage,
         SortieTab,
     )
+    from autowsgr.application.controller.sortie.battle import BattlePage
+    from autowsgr.application.ui.controller.operations.sortie_page.battle_page import recognition
 
     sortie_page = SortiePage(runner.ctx)
     battle_page = BattlePage(runner.ctx)
@@ -121,7 +119,7 @@ def _navigate_to(ctrl: AndroidController, pause: float) -> None:
     """从任意已知页面导航到地图页面（出征面板）。"""
     import time
 
-    from autowsgr.application.ui.controller.home.main_page import HomePage
+    from autowsgr.application.controller.home import HomePage
 
     if not reset_to_main_page(ctrl, pause):
         return
@@ -141,7 +139,7 @@ def main() -> None:
     from loguru import logger
 
     logger.info('=== 地图页面 e2e 测试开始 ===')
-    from autowsgr.application.ui.controller.operations.sortie_page.main_page import SortiePage
+    from autowsgr.application.controller.sortie import SortiePage
 
     if not ensure_page(
         ctrl,

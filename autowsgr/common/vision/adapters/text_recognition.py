@@ -43,13 +43,7 @@ class RecognitionProfile(StrEnum):
     SINGLE_LINE = 'single_line'
 
 
-# ── OCR 基础执行器 ──────────────────────────────────────────────────────────
-
-
-@cache
-def _ocr_executor() -> OCRExecutor:
-    """按需创建并复用唯一的 OCR 原子执行器。"""
-    return OCRExecutor()
+# ── 共享执行器 ──────────────────────────────────────────────────────────────
 
 
 _OPENCV = OpenCVExecutor()
@@ -166,7 +160,6 @@ def recognize_text(
         if profile is RecognitionProfile.SINGLE_LINE
         else executor.recognize(source_image, allowlist)
     )
-
     _log.debug(
         '[VISION] OCR → 识别结果：profile={!r}, detection_count={}',
         profile.value,
@@ -223,6 +216,18 @@ def recognize_prepared_text(
         recognition_profile=recognition_profile,
         candidates=candidates,
     )
+
+
+# ── 私有辅助 ────────────────────────────────────────────────────────────────
+
+
+@cache
+def _ocr_executor() -> OCRExecutor:
+    """按需创建并复用唯一的 OCR 原子执行器。
+
+    OCRExecutor 构造时要加载识别模型，代价远高于一次识别，必须复用同一个实例。
+    """
+    return OCRExecutor()
 
 
 __all__ = [

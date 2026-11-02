@@ -11,7 +11,5 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.backyard.bath_page.page import BathPage
 
-
-__all__ = ['BathPage']
+__all__: list[str] = []

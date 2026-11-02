@@ -291,7 +291,7 @@ class BattlePreparationPage:
 
     def go_back(self) -> None:
         """点击回退按钮并确认已经返回 sortie 页面。"""
-        from autowsgr.application.ui.controller.operations.sortie_page.main_page import SortiePage
+        from autowsgr.application.controller.sortie import SortiePage
 
         _log.debug('[UI] 出征准备 -> 回退')
         click_and_wait_for_page(

@@ -18,12 +18,12 @@ from __future__ import annotations
 
 import time
 
+from autowsgr.application.controller.sortie import SortiePage
 from autowsgr.application.ui.controller.operations.sortie_page.expedition_page import (
     constants,
     operations,
     recognition,
 )
-from autowsgr.application.ui.controller.operations.sortie_page.main_page import SortiePage
 from autowsgr.application.ui.navigation.interaction import (
     NavigationError,
     confirm_operation,

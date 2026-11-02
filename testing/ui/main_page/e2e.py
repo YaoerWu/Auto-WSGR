@@ -68,16 +68,18 @@ if TYPE_CHECKING:
 
 def run_test(runner: UIControllerTestRunner) -> None:  # noqa: PLR0911, C901, PLR0912, PLR0915
     """执行主页面控制器完整测试序列。"""
-    from autowsgr.application.ui.controller.backyard.main_page import BackyardPage
-    from autowsgr.application.ui.controller.home.main_page import (
+    from autowsgr.application.controller.backyard import BackyardPage
+    from autowsgr.application.controller.home import (
         HomePage,
         Target,
+    )
+    from autowsgr.application.controller.mission import MissionPage
+    from autowsgr.application.controller.sidebar import SidebarPage
+    from autowsgr.application.controller.sortie import SortiePage
+    from autowsgr.application.ui.controller.home.main_page import (
         check_expedition_ready,
         check_task_ready,
     )
-    from autowsgr.application.ui.controller.operations.mission_page import MissionPage
-    from autowsgr.application.ui.controller.operations.sortie_page.main_page import SortiePage
-    from autowsgr.application.ui.controller.sidebar.main_page import SidebarPage
 
     main_page = HomePage(runner.ctrl)
     sortie_page = SortiePage(runner.ctx)
@@ -295,7 +297,7 @@ def main() -> None:
 
     logger.info('=== 主页面 e2e 测试开始 ===')
 
-    from autowsgr.application.ui.controller.home.main_page import HomePage
+    from autowsgr.application.controller.home import HomePage
 
     if not ensure_page(
         ctrl,

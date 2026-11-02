@@ -11,7 +11,5 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.backyard.academy_page.page import AcademyPage
 
-
-__all__ = ['AcademyPage']
+__all__: list[str] = []

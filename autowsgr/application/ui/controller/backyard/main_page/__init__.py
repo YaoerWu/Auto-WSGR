@@ -11,10 +11,5 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.backyard.main_page.page import (
-    BackyardPage,
-    BackyardTarget,
-)
 
-
-__all__ = ['BackyardPage', 'BackyardTarget']
+__all__: list[str] = []

@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import pytest
 
+from autowsgr.application.controller import login
 from autowsgr.application.ui.navigation import registry
-from autowsgr.application.ui.navigation.checker import login
 from autowsgr.application.ui.navigation.types import NavigationError, PageName
 
 

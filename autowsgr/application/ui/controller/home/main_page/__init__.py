@@ -13,7 +13,6 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.home.main_page.page import HomePage, Target
 from autowsgr.application.ui.controller.home.main_page.recognition import (
     check_expedition_ready,
     check_task_ready,
@@ -21,8 +20,6 @@ from autowsgr.application.ui.controller.home.main_page.recognition import (
 
 
 __all__ = [
-    'HomePage',
-    'Target',
     'check_expedition_ready',
     'check_task_ready',
 ]

@@ -5,7 +5,8 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
-from autowsgr.common.vision.ocr.executor import OCREngine, TextDetection as OCRResult
+from autowsgr.common.vision.ocr.executor import OCREngine
+from autowsgr.common.vision.ocr.executor import TextDetection as OCRResult
 from autowsgr.common.vision.ocr_rules import LEVEL_OCR_ALLOWLIST, set_user_ship_name_aliases
 from autowsgr.common.vision.ship_list import (
     _parse_level_with_status,

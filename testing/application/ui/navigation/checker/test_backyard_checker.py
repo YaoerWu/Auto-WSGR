@@ -12,12 +12,12 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.navigation.checker import backyard
-from autowsgr.application.ui.navigation.checker.backyard import checker as backyard_checker
-from autowsgr.application.ui.navigation.checker.backyard.academy import checker as academy_checker
-from autowsgr.application.ui.navigation.checker.backyard.bath import checker as bath_checker
-from autowsgr.application.ui.navigation.checker.backyard.canteen import checker as canteen_checker
-from autowsgr.application.ui.navigation.checker.backyard.rank_room import (
+from autowsgr.application.controller import backyard
+from autowsgr.application.controller.backyard import checker as backyard_checker
+from autowsgr.application.controller.backyard.academy import checker as academy_checker
+from autowsgr.application.controller.backyard.bath import checker as bath_checker
+from autowsgr.application.controller.backyard.canteen import checker as canteen_checker
+from autowsgr.application.controller.backyard.rank_room import (
     checker as rank_room_checker,
 )
 

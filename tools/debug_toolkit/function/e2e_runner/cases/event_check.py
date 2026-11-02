@@ -11,8 +11,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from autowsgr.application.ui.navigation.checker.event import stage_push
-from autowsgr.application.ui.navigation.checker.event.stage_push import EventMode
+from autowsgr.application.controller.event import stage_push
+from autowsgr.application.controller.event.stage_push import EventMode
 
 
 DESC = '推图活动 checker 静态验证: 首页入口 / 地图难度 / 出征准备'

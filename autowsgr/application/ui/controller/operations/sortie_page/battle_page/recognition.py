@@ -22,13 +22,13 @@ from typing import TYPE_CHECKING
 import cv2
 
 from autowsgr.application.ui.controller.operations.sortie_page.battle_page import constants
-from autowsgr.common.system.logger import get_logger
-from autowsgr.common.vision import PixelChecker
 from autowsgr.application.vision.sortie_recognition import (
     LootShipCount,
     recognize_loot_count,
     recognize_ship_count,
 )
+from autowsgr.common.system.logger import get_logger
+from autowsgr.common.vision import PixelChecker
 
 
 if TYPE_CHECKING:

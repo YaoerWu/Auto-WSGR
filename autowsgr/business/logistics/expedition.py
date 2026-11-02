@@ -16,13 +16,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from autowsgr.application.runtime.executor import BaseExecutor
-from autowsgr.application.ui.controller.home.main_page import check_expedition_ready
-from autowsgr.application.ui.controller.operations.sortie_page.expedition_page import ExpeditionPage
-from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
+from autowsgr.application.controller.sortie import (
     SortiePage,
     SortieTab,
 )
+from autowsgr.application.runtime.executor import BaseExecutor
+from autowsgr.application.ui.controller.home.main_page import check_expedition_ready
+from autowsgr.application.ui.controller.operations.sortie_page.expedition_page import ExpeditionPage
 from autowsgr.application.ui.navigation import goto_page
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.types import PageName

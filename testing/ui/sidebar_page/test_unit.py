@@ -14,9 +14,12 @@ from typing import Any
 
 import pytest
 
-from autowsgr.application.ui.controller.sidebar.friend_page import FriendPage
+from autowsgr.application.controller.sidebar import (
+    SidebarPage,
+    SidebarTarget,
+)
+from autowsgr.application.controller.sidebar.friend import FriendPage
 from autowsgr.application.ui.controller.sidebar.friend_page import constants as friend_constants
-from autowsgr.application.ui.controller.sidebar.main_page import SidebarPage, SidebarTarget
 from autowsgr.application.ui.controller.sidebar.main_page import constants as sidebar_constants
 from autowsgr.application.ui.navigation.types import PageName
 

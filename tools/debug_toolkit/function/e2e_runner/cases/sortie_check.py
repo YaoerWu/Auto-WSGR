@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from autowsgr.application.ui.navigation.checker.sortie import read_sortie_layer
+from autowsgr.application.controller.sortie import read_sortie_layer
 
 
 if TYPE_CHECKING:

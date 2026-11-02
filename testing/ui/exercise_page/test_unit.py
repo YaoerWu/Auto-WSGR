@@ -17,7 +17,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from autowsgr.application.ui.controller.sortie.exercise import ExercisePage
+from autowsgr.application.controller.sortie.exercise import ExercisePage
 from autowsgr.application.ui.controller.sortie.exercise import page as page_module
 
 

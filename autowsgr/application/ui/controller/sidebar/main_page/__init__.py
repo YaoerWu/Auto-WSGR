@@ -11,10 +11,5 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.sidebar.main_page.page import (
-    SidebarPage,
-    SidebarTarget,
-)
 
-
-__all__ = ['SidebarPage', 'SidebarTarget']
+__all__: list[str] = []

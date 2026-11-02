@@ -9,6 +9,7 @@
 
 from __future__ import annotations
 
+from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -17,7 +18,12 @@ import pytest
 from autowsgr.common import vision
 from autowsgr.common.vision import service
 from autowsgr.common.vision.adapters import match_pixels, match_template, text_recognition
-from autowsgr.common.vision.adapters.pixel_matching import Color, PixelRule, PixelSignature
+from autowsgr.common.vision.adapters.pixel_matching import (
+    Color,
+    CompositePixelSignature,
+    PixelRule,
+    PixelSignature,
+)
 from autowsgr.common.vision.adapters.template_matching import ROI, Template
 from autowsgr.common.vision.ocr import TextDetection
 
@@ -53,11 +59,50 @@ def test_pixel_matching_composes_roi_sampling_and_rule_evaluation() -> None:
         rules=(PixelRule(0.5, 0.5, Color(10, 20, 30)),),
     )
 
-    result = match_pixels(image, signature, roi=ROI(0.0, 0.0, 1.0, 1.0))
+    results = match_pixels(image, signature, roi=ROI(0.0, 0.0, 1.0, 1.0))
 
-    assert result.matched
-    assert result.matched_count == 1
-    assert result.ratio == 1.0
+    assert len(results) == 1
+    assert results[0].matched
+    assert results[0].matched_signature == 'pixel'
+    assert results[0].ratio == 1.0
+
+
+def test_pixel_matching_evaluates_multiple_signatures_in_one_call() -> None:
+    """一次调用可判定多组签名，组合签名带出命中的候选名。"""
+    image = np.zeros((20, 30, 3), dtype=np.uint8)
+    image[10, 15] = (10, 20, 30)
+    expected = PixelSignature('normal', (PixelRule(0.5, 0.5, Color(10, 20, 30)),))
+    alternative = PixelSignature('severe', (PixelRule(0.5, 0.5, Color(200, 0, 0)),))
+    composite = CompositePixelSignature('probe', (alternative, expected))
+
+    results = match_pixels(image, (composite, composite, expected))
+
+    assert [result.matched_signature for result in results] == ['normal', 'normal', 'normal']
+    assert results[0].signature_name == 'probe'
+    assert results[0].matched_count == 1
+    assert results[0].total_count == 2
+
+
+def test_pixel_matching_reports_no_candidate_when_nothing_matches() -> None:
+    """组合签名全部不命中时结果为假，候选名为空。"""
+    image = np.zeros((20, 30, 3), dtype=np.uint8)
+    alternative = PixelSignature('severe', (PixelRule(0.5, 0.5, Color(200, 0, 0)),))
+    composite = CompositePixelSignature('probe', (alternative,))
+
+    result = match_pixels(image, composite)[0]
+
+    assert result.matched is False
+    assert result.matched_signature is None
+    assert result.matched_count == 0
+
+
+def test_pixel_matching_requires_matching_roi_count() -> None:
+    """roi 传序列时必须与签名数量一致。"""
+    image = np.zeros((20, 30, 3), dtype=np.uint8)
+    signature = PixelSignature('pixel', (PixelRule(0.5, 0.5, Color(0, 0, 0)),))
+
+    with pytest.raises(ValueError, match='roi 序列长度必须与签名数量一致'):
+        match_pixels(image, (signature, signature), roi=(ROI(0.0, 0.0, 1.0, 1.0),))
 
 
 def test_template_matching_returns_absolute_location_from_roi() -> None:
@@ -144,6 +189,74 @@ def test_ocr_expect_accepts_candidate_collection(monkeypatch: pytest.MonkeyPatch
     assert service.expect_ocr(object(), expect='最强之舟（困难）').satisfied is True
     assert service.expect_ocr(object(), expect=('最强之舟', '最强之舟（困难）')).satisfied is True
     assert service.expect_ocr(object(), expect=('最强之舟',)).satisfied is False
+
+
+def _stub_pixel_retry(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    matched_flags: tuple[bool, ...],
+    frames: list[object],
+) -> None:
+    """用替身接管像素匹配和重试循环，让一次调用就完成判定。"""
+    sentinel = object()
+
+    def fake_match(frame: object, *_args: object, **_kwargs: object) -> list[SimpleNamespace]:
+        frames.append(frame)
+        return [SimpleNamespace(matched=flag) for flag in matched_flags]
+
+    def fake_retry(
+        _ctx: object,
+        *,
+        observe: Callable[[object], object],
+        accept: Callable[[object], bool],
+        **_kwargs: object,
+    ) -> service.RecognitionResult[object]:
+        observation = observe(sentinel)
+        return service.RecognitionResult(accept(observation), observation, sentinel)
+
+    monkeypatch.setattr(service.adapters, 'match_pixels', fake_match)
+    monkeypatch.setattr(service, '_retry', fake_retry)
+
+
+def test_pixel_expect_evaluates_all_signatures_in_one_frame(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """像素期望在同一帧上判定全部签名，观测按签名顺序返回。"""
+    frames: list[object] = []
+    _stub_pixel_retry(monkeypatch, matched_flags=(True, False), frames=frames)
+
+    result = service.expect_pixels(object(), signature=(object(), object()))
+
+    assert len(frames) == 1
+    assert result.satisfied is True
+    assert [match.matched for match in result.observation] == [True, False]
+
+
+def test_pixel_expect_min_matches_controls_the_verdict(monkeypatch: pytest.MonkeyPatch) -> None:
+    """命中数量低于 min_matches 才算不满足，absent 再翻转一次。"""
+    frames: list[object] = []
+    _stub_pixel_retry(monkeypatch, matched_flags=(True, False), frames=frames)
+
+    assert service.expect_pixels(object(), signature=(object(), object())).satisfied is True
+    assert (
+        service.expect_pixels(object(), signature=(object(), object()), min_matches=2).satisfied
+        is False
+    )
+    assert (
+        service.expect_pixels(
+            object(),
+            signature=(object(), object()),
+            min_matches=2,
+            absent=True,
+        ).satisfied
+        is True
+    )
+
+
+def test_pixel_expect_rejects_invalid_min_matches() -> None:
+    """min_matches 必须是大于零的整数。"""
+    with pytest.raises(ValueError, match='min_matches 必须是大于零的整数'):
+        service.expect_pixels(object(), signature=object(), min_matches=0)
 
 
 def test_ocr_expect_rejects_empty_candidate_collection() -> None:

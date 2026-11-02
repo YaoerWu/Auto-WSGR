@@ -14,8 +14,8 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from autowsgr.application.ui.navigation.checker.sortie import battle_preparation
-from autowsgr.application.ui.navigation.checker.sortie.battle_preparation import (
+from autowsgr.application.controller.sortie import battle_preparation
+from autowsgr.application.controller.sortie.battle_preparation import (
     checker as battle_preparation_checker,
 )
 

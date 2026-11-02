@@ -14,9 +14,11 @@ from typing import Any
 
 import pytest
 
-from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
+from autowsgr.application.controller.sortie import (
     SortiePage,
     SortieTab,
+)
+from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
     constants,
     recognition,
 )

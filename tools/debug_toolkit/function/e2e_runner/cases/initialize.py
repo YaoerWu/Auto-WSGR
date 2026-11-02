@@ -32,7 +32,7 @@ def add_arguments(parser: Any) -> None:
 
 def run(rt: Any) -> bool:
     """执行初始化链路并验证终态契约。"""
-    from autowsgr.application.ui.navigation.checker import home
+    from autowsgr.application.controller import home
     from autowsgr.application.ui.navigation.types import PageName
     from autowsgr.dispatch.startup import ensure_ready
 

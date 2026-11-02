@@ -17,17 +17,17 @@ from __future__ import annotations
 
 import time
 
+from autowsgr.application.controller.sortie import (
+    SortiePage,
+    SortieTab,
+)
 from autowsgr.application.ui.controller.operations.sortie_page.campaign_page import (
     constants,
     recognition,
 )
-from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
-    SortiePage,
-    SortieTab,
-)
-from autowsgr.common.system.logger import get_logger
-from autowsgr.application.ui.navigation.types import PageName
 from autowsgr.application.ui.navigation.interaction import NavigationError, wait_for_page
+from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.common.system.logger import get_logger
 
 
 _log = get_logger('ui.campaign_page')

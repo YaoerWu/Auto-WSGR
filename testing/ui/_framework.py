@@ -488,22 +488,22 @@ def reset_to_main_page(ctrl: ADBController, pause: float = 1.5) -> bool:  # noqa
     bool
         成功回到主页面时返回 ``True``，超出重试次数仍未到达则返回 ``False``。
     """
+    from autowsgr.application.controller.backyard import BackyardPage
+    from autowsgr.application.controller.backyard.bath import BathPage
+    from autowsgr.application.controller.backyard.canteen import CanteenPage
+    from autowsgr.application.controller.home import HomePage
+    from autowsgr.application.controller.mission import MissionPage
+    from autowsgr.application.controller.sidebar import SidebarPage
+    from autowsgr.application.controller.sidebar.build import BuildPage
+    from autowsgr.application.controller.sidebar.friend import FriendPage
+    from autowsgr.application.controller.sidebar.intensify import IntensifyPage
+    from autowsgr.application.controller.sortie import SortiePage
     from autowsgr.application.runtime.context import GameContext
-    from autowsgr.application.ui.controller.backyard.bath_page import BathPage
-    from autowsgr.application.ui.controller.backyard.canteen_page import CanteenPage
-    from autowsgr.application.ui.controller.backyard.main_page import BackyardPage
     from autowsgr.application.ui.controller.fleet import BattlePreparationPage
     from autowsgr.application.ui.controller.home.event_page import BaseEventPage
-    from autowsgr.application.ui.controller.home.main_page import HomePage
-    from autowsgr.application.ui.controller.operations.mission_page import MissionPage
     from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.page import (
         DecisiveBattlePage,
     )
-    from autowsgr.application.ui.controller.operations.sortie_page.main_page import SortiePage
-    from autowsgr.application.ui.controller.sidebar.build_page import BuildPage
-    from autowsgr.application.ui.controller.sidebar.friend_page import FriendPage
-    from autowsgr.application.ui.controller.sidebar.intensify_page import IntensifyPage
-    from autowsgr.application.ui.controller.sidebar.main_page import SidebarPage
     from autowsgr.config import UserConfig
 
     ctx = GameContext(ctrl=ctrl, config=UserConfig())

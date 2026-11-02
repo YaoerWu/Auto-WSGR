@@ -2,7 +2,7 @@
 
 上层调用：
 - application.ui.navigation.service：记录导航栈与区服选择标记。
-- application.ui.navigation.checker 与 registry：读写每日浮窗的处理标记。
+- application.controller 与 registry：读写每日浮窗的处理标记。
 
 下层依赖：
 - common.system.enums：提供字符串枚举基类。

@@ -14,7 +14,8 @@ from typing import Any
 
 import pytest
 
-from autowsgr.application.ui.controller.login import LoginPage, constants
+from autowsgr.application.controller.login import LoginPage
+from autowsgr.application.ui.controller.login import constants
 
 
 class _Ctrl:

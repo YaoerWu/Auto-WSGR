@@ -13,8 +13,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from autowsgr.application.ui.controller.fleet.main_page.constants import BLOOD_BAR_PROBE
-from autowsgr.common.vision import PixelChecker
 from autowsgr.application.vision.damage_recognition import classify_blood
+from autowsgr.common.vision import PixelChecker
 
 
 if TYPE_CHECKING:

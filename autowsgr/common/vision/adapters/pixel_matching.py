@@ -16,22 +16,22 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import TYPE_CHECKING
 
 import numpy
 
 from autowsgr.common.system.logger import get_logger
+from autowsgr.common.vision.adapters.template_matching import ROI
 from autowsgr.common.vision.config import NUMPY_DEFAULT_PIXEL_TOLERANCE
 from autowsgr.common.vision.numpy.executor import NumpyExecutor
 
 
-if TYPE_CHECKING:
-    from autowsgr.common.vision.adapters.template_matching import ROI
-
-
 _log = get_logger('vision.pixel')
+
+
+_EXECUTOR = NumpyExecutor()
 
 
 # ── 像素规则模型 ────────────────────────────────────────────────────────────
@@ -128,6 +128,10 @@ class CompositePixelSignature:
     def __post_init__(self) -> None:
         object.__setattr__(self, 'signatures', tuple(self.signatures))
 
+    def __len__(self) -> int:
+        """返回子签名数量。"""
+        return len(self.signatures)
+
 
 @dataclass(frozen=True, slots=True)
 class PixelDetail:
@@ -141,13 +145,23 @@ class PixelDetail:
 
 @dataclass(frozen=True, slots=True)
 class PixelMatchResult:
-    """像素签名匹配结果。"""
+    """像素签名匹配结果。
+
+    Attributes:
+        matched: 本次匹配是否命中。
+        signature_name: 调用方给出的签名名；组合签名时是组合名。
+        matched_count: 命中的签名数量；单签名时只有 0 或 1。
+        total_count: 参与匹配的签名数量；单签名时为规则条数。
+        details: 逐规则采样详情，仅 with_details 为真时填充。
+        matched_signature: 命中的签名名；组合签名时是命中的子签名，未命中为 None。
+    """
 
     matched: bool
     signature_name: str
     matched_count: int
     total_count: int
     details: tuple[PixelDetail, ...] = field(default_factory=tuple)
+    matched_signature: str | None = None
 
     def __bool__(self) -> bool:
         return self.matched
@@ -158,153 +172,192 @@ class PixelMatchResult:
         return self.matched_count / self.total_count if self.total_count else 0.0
 
 
-class _PixelMatcher:
-    """组合 NumPy 采样、颜色计算和像素规则，完成一次像素匹配。"""
-
-    def __init__(self, executor: NumpyExecutor | None = None) -> None:
-        self._executor = executor or NumpyExecutor()
-
-    def match(
-        self,
-        image: numpy.ndarray,
-        signature: PixelSignature | CompositePixelSignature,
-        *,
-        roi: ROI | None = None,
-        with_details: bool = False,
-    ) -> PixelMatchResult:
-        """执行一次像素签名匹配。
-
-        Args:
-            image: 待检查的 RGB 图片数组。
-            signature: 单个像素签名或多个签名的组合。
-            roi: 可选的相对坐标检查区域。
-            with_details: 是否返回每条规则的采样详情。
-
-        Returns:
-            像素签名匹配结果。
-        """
-        # 1. 先限制检查区域，避免像素规则读取无关画面。
-        source_image = roi.crop(image) if roi is not None else image
-
-        # 2. 组合签名按顺序尝试，单个签名直接执行规则判定。
-        if isinstance(signature, CompositePixelSignature):
-            return self._match_composite(source_image, signature, with_details=with_details)
-        return self._match_signature(source_image, signature, with_details=with_details)
-
-    def _match_signature(
-        self,
-        image: numpy.ndarray,
-        signature: PixelSignature,
-        *,
-        with_details: bool,
-    ) -> PixelMatchResult:
-        rules = signature.rules
-        # 空规则只在 COUNT 阈值为零时命中，避免无依据地确认状态。
-        if not rules:
-            matched = signature.strategy is not MatchStrategy.COUNT or signature.threshold == 0
-            return PixelMatchResult(matched, signature.name, 0, 0)
-
-        # 3. 批量采样后统一计算颜色距离，保持规则顺序与详情顺序一致。
-        actual = self._executor.sample_pixels(image, [(rule.x, rule.y) for rule in rules])
-        expected = numpy.asarray([rule.color.as_tuple() for rule in rules], dtype=numpy.float32)
-        tolerances = numpy.asarray([rule.tolerance for rule in rules], dtype=numpy.float32)
-        distances = numpy.sqrt(
-            numpy.sum((actual.astype(numpy.float32) - expected) ** 2, axis=1),
-        )
-        matched_flags = distances <= tolerances
-        matched_count = int(matched_flags.sum())
-        matched = {
-            MatchStrategy.ALL: matched_count == len(rules),
-            MatchStrategy.ANY: matched_count > 0,
-            MatchStrategy.COUNT: matched_count >= signature.threshold,
-        }[signature.strategy]
-        details = (
-            tuple(
-                PixelDetail(
-                    rule=rule,
-                    actual=Color(*(int(channel) for channel in actual[index])),
-                    distance=float(distances[index]),
-                    matched=bool(matched_flags[index]),
-                )
-                for index, rule in enumerate(rules)
-            )
-            if with_details
-            else ()
-        )
-        return PixelMatchResult(matched, signature.name, matched_count, len(rules), details)
-
-    def _match_composite(
-        self,
-        image: numpy.ndarray,
-        composite: CompositePixelSignature,
-        *,
-        with_details: bool,
-    ) -> PixelMatchResult:
-        """依次匹配子签名并在首个命中时返回。
-
-        Args:
-            image: 已经完成 ROI 裁切的 RGB 图片数组。
-            composite: 按优先级排列的像素签名组合。
-            with_details: 是否保留每条规则的采样详情。
-
-        Returns:
-            首个命中的组合结果，或包含全部失败详情的未命中结果。
-        """
-        matched_count = 0
-        details: list[PixelDetail] = []
-        for signature in composite.signatures:
-            signature_result = self._match_signature(image, signature, with_details=with_details)
-            matched_count += signature_result.matched_count
-            if with_details:
-                details.extend(signature_result.details)
-            # 组合签名只需要第一个命中结果，后续签名不会改变业务结论。
-            if signature_result.matched:
-                return PixelMatchResult(
-                    True,
-                    composite.name,
-                    matched_count,
-                    len(composite),
-                    tuple(details),
-                )
-        return PixelMatchResult(
-            False,
-            composite.name,
-            matched_count,
-            len(composite),
-            tuple(details),
-        )
+# ── 像素匹配 ────────────────────────────────────────────────────────────────
 
 
 def match_pixels(
     image: numpy.ndarray,
-    signature: PixelSignature | CompositePixelSignature,
+    signature: (
+        PixelSignature
+        | CompositePixelSignature
+        | Sequence[PixelSignature | CompositePixelSignature]
+    ),
     *,
-    roi: ROI | None = None,
+    roi: ROI | Sequence[ROI | None] | None = None,
     with_details: bool = False,
-) -> PixelMatchResult:
+) -> list[PixelMatchResult]:
     """执行一次完整的 ROI 和 NumPy 像素签名匹配流程。
+
+    同一帧内可以依次匹配多组签名：传序列时每个元素独立匹配，roi 传序列时与签名
+    一一对应；单个签名或单个 roi 时按标量处理。
 
     Args:
         image: 待检查的 RGB 图片数组。
-        signature: 单个像素签名或多个签名的组合。
-        roi: 可选的相对坐标检查区域。
+        signature: 单个像素签名、签名组合，或需要逐个匹配的一组签名。
+        roi: 共享检查区域，或与签名一一对应的区域序列。
         with_details: 是否返回每条规则的采样详情。
 
     Returns:
-        像素签名匹配结果。
+        按签名顺序排列的匹配结果列表。
     """
-    match_result = _MATCHER.match(image, signature, roi=roi, with_details=with_details)
+    # 1. 先规范化签名和区域，让标量输入与序列输入走同一条路径。
+    signatures: tuple[PixelSignature | CompositePixelSignature, ...]
+    if isinstance(signature, (PixelSignature, CompositePixelSignature)):
+        signatures = (signature,)
+    elif isinstance(signature, Sequence) and not isinstance(signature, (str, bytes)):
+        signatures = tuple(signature)
+        if not signatures:
+            raise ValueError('签名序列不能为空')
+        if not all(
+            isinstance(item, (PixelSignature, CompositePixelSignature)) for item in signatures
+        ):
+            raise TypeError('签名序列中的元素必须是 PixelSignature 或 CompositePixelSignature')
+    else:
+        raise TypeError('signature 必须是 PixelSignature、CompositePixelSignature 或签名序列')
+
+    regions: tuple[ROI | None, ...]
+    if roi is None or isinstance(roi, ROI):
+        regions = (roi,) * len(signatures)
+    elif isinstance(roi, Sequence) and not isinstance(roi, (str, bytes)):
+        regions = tuple(roi)
+        if len(regions) != len(signatures):
+            raise ValueError('roi 序列长度必须与签名数量一致')
+        if not all(item is None or isinstance(item, ROI) for item in regions):
+            raise TypeError('roi 序列中的元素必须是 ROI 或 None')
+    else:
+        raise TypeError('roi 必须是 ROI、ROI 序列或 None')
+
+    # 2. 同一帧内按签名顺序逐个匹配，每个签名只裁自己那块区域。
+    match_results = [
+        _match_one(image, item, roi=region, with_details=with_details)
+        for item, region in zip(signatures, regions, strict=True)
+    ]
     _log.debug(
-        '[VISION] 像素匹配 → 匹配结果：signature={!r}, matched_count={}, total_count={}, matched={}',
-        match_result.signature_name,
-        match_result.matched_count,
-        match_result.total_count,
-        match_result.matched,
+        '[VISION] 像素匹配 → 匹配结果：signatures={!r}, matched_signatures={!r}',
+        [result.signature_name for result in match_results],
+        [result.matched_signature for result in match_results],
     )
-    return match_result
+    return match_results
 
 
-_MATCHER = _PixelMatcher()
+# ── 私有辅助 ────────────────────────────────────────────────────────────────
+
+
+def _match_one(
+    image: numpy.ndarray,
+    signature: PixelSignature | CompositePixelSignature,
+    *,
+    roi: ROI | None,
+    with_details: bool,
+) -> PixelMatchResult:
+    """在限定区域内匹配单个签名或签名组合。"""
+    # 1. 先限制检查区域，避免像素规则读取无关画面。
+    source_image = roi.crop(image) if roi is not None else image
+
+    # 2. 组合签名按顺序尝试，单个签名直接执行规则判定。
+    if isinstance(signature, CompositePixelSignature):
+        return _match_composite(source_image, signature, with_details=with_details)
+    return _match_signature(source_image, signature, with_details=with_details)
+
+
+def _match_signature(
+    image: numpy.ndarray,
+    signature: PixelSignature,
+    *,
+    with_details: bool,
+) -> PixelMatchResult:
+    """按签名策略判定单个像素签名的全部规则。"""
+    rules = signature.rules
+    # 空规则只在 COUNT 阈值为零时命中，避免无依据地确认状态。
+    if not rules:
+        matched = signature.strategy is not MatchStrategy.COUNT or signature.threshold == 0
+        return PixelMatchResult(
+            matched,
+            signature.name,
+            0,
+            0,
+            (),
+            signature.name if matched else None,
+        )
+
+    # 1. 批量采样后统一计算颜色距离，保持规则顺序与详情顺序一致。
+    actual = _EXECUTOR.sample_pixels(image, [(rule.x, rule.y) for rule in rules])
+    expected = numpy.asarray([rule.color.as_tuple() for rule in rules], dtype=numpy.float32)
+    tolerances = numpy.asarray([rule.tolerance for rule in rules], dtype=numpy.float32)
+    distances = numpy.sqrt(
+        numpy.sum((actual.astype(numpy.float32) - expected) ** 2, axis=1),
+    )
+    matched_flags = distances <= tolerances
+    matched_count = int(matched_flags.sum())
+
+    # 2. 按策略把命中条数换算成整体结论。
+    matched = {
+        MatchStrategy.ALL: matched_count == len(rules),
+        MatchStrategy.ANY: matched_count > 0,
+        MatchStrategy.COUNT: matched_count >= signature.threshold,
+    }[signature.strategy]
+    details = (
+        tuple(
+            PixelDetail(
+                rule=rule,
+                actual=Color(*(int(channel) for channel in actual[index])),
+                distance=float(distances[index]),
+                matched=bool(matched_flags[index]),
+            )
+            for index, rule in enumerate(rules)
+        )
+        if with_details
+        else ()
+    )
+    return PixelMatchResult(
+        matched,
+        signature.name,
+        matched_count,
+        len(rules),
+        details,
+        signature.name if matched else None,
+    )
+
+
+def _match_composite(
+    image: numpy.ndarray,
+    composite: CompositePixelSignature,
+    *,
+    with_details: bool,
+) -> PixelMatchResult:
+    """依次匹配子签名并在首个命中时返回。
+
+    Args:
+        image: 已经完成 ROI 裁切的 RGB 图片数组。
+        composite: 按优先级排列的像素签名组合。
+        with_details: 是否保留每条规则的采样详情。
+
+    Returns:
+        首个命中的组合结果，或包含全部失败详情的未命中结果。命中结果用
+        matched_signature 带出命中的子签名名，调用方据此区分是哪个候选。
+    """
+    details: list[PixelDetail] = []
+    for signature in composite.signatures:
+        signature_result = _match_signature(image, signature, with_details=with_details)
+        if with_details:
+            details.extend(signature_result.details)
+        # 组合签名只需要第一个命中结果，后续签名不会改变业务结论。
+        if signature_result.matched:
+            return PixelMatchResult(
+                True,
+                composite.name,
+                1,
+                len(composite.signatures),
+                tuple(details),
+                signature.name,
+            )
+    return PixelMatchResult(
+        False,
+        composite.name,
+        0,
+        len(composite.signatures),
+        tuple(details),
+    )
 
 
 __all__ = [

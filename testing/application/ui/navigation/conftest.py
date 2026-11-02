@@ -14,9 +14,9 @@ from typing import TYPE_CHECKING, Any
 
 import pytest
 
+from autowsgr.application.controller import home, login, sidebar
 from autowsgr.application.ui.navigation import executor as executor_module
 from autowsgr.application.ui.navigation import registry
-from autowsgr.application.ui.navigation.checker import home, login, sidebar
 from autowsgr.application.ui.navigation.types import NavTab, PageName
 
 

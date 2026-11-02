@@ -19,11 +19,9 @@ from unittest.mock import MagicMock
 import numpy as np
 import pytest
 
-from autowsgr.application.ui.controller.backyard.bath_page import (
-    BathPage,
-    recognition,
-)
+from autowsgr.application.controller.backyard.bath import BathPage
 from autowsgr.application.ui.controller.backyard.bath_page import page as page_module
+from autowsgr.application.ui.controller.backyard.bath_page import recognition
 from autowsgr.application.ui.controller.backyard.bath_page.recognition import RepairShipInfo
 from autowsgr.common.types import PageName
 from autowsgr.common.vision import PageMatch

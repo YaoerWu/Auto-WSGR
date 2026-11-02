@@ -15,8 +15,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from autowsgr.application.vision.shipnames import SHIPNAMES, normalize_ship_name
-from autowsgr.common.vision import ocr
 from autowsgr.application.vision.ocr_rules import get_user_ship_name_alias
 from autowsgr.application.vision.ship_list import (
     LevelOCRRetryNeededError,
@@ -25,6 +23,8 @@ from autowsgr.application.vision.ship_list import (
     read_ship_level_at_card,
     recognize_card_type_texts,
 )
+from autowsgr.application.vision.shipnames import SHIPNAMES, normalize_ship_name
+from autowsgr.common.vision import ocr
 
 
 if TYPE_CHECKING:

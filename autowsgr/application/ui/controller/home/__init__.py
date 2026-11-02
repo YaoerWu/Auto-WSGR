@@ -12,7 +12,4 @@
 本模块只负责区域级稳定导出，不执行页面注册、设备操作或导航动作。
 """
 
-from autowsgr.application.ui.controller.home.main_page import HomePage, Target
-
-
-__all__ = ['HomePage', 'Target']
+__all__: list[str] = []

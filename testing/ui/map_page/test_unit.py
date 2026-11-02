@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, call, patch
 import numpy as np
 import pytest
 
+from autowsgr.application.controller.sortie.battle import BattlePage
 from autowsgr.application.runtime.context import GameContext
 from autowsgr.application.ui.controller.operations.sortie_page import (
     battle_page,
@@ -15,7 +16,6 @@ from autowsgr.application.ui.controller.operations.sortie_page import (
     main_page,
 )
 from autowsgr.application.ui.controller.operations.sortie_page.battle_page import (
-    BattlePage,
     constants,
     recognition,
 )

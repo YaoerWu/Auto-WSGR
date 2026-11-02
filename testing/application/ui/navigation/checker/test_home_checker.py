@@ -12,8 +12,8 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.navigation.checker import home
-from autowsgr.application.ui.navigation.checker.home import checker as home_checker
+from autowsgr.application.controller import home
+from autowsgr.application.controller.home import checker as home_checker
 from autowsgr.application.ui.navigation.types import PageName
 from autowsgr.dispatch.session import DailyPopup, SessionState
 

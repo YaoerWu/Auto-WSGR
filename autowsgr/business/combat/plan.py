@@ -23,10 +23,10 @@ from autowsgr.application.combat import (
 )
 from autowsgr.business.combat.fleet import FleetPreset, fleet_presets_from_yaml
 from autowsgr.business.combat.rules import RuleEngine
-from autowsgr.common.system import load_yaml
-from autowsgr.common.system.logger import get_logger
 from autowsgr.business.combat.types import FightCondition, Formation
 from autowsgr.business.logistics.types import RepairMode
+from autowsgr.common.system import load_yaml
+from autowsgr.common.system.logger import get_logger
 from autowsgr.config_method import NodeConfig
 
 

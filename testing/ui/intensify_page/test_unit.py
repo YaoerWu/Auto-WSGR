@@ -15,8 +15,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
+from autowsgr.application.controller.sidebar.intensify import IntensifyPage
 from autowsgr.application.ui.controller.sidebar.intensify_page import (
-    IntensifyPage,
     constants,
     page,
 )

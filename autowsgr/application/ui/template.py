@@ -1,7 +1,7 @@
 """模块功能：加载 UI 层各模块共用的识别模板。
 
 上层调用：
-- application.ui.navigation.checker 下各识别模块：加载本模块模板。
+- application.controller 下各识别模块：加载本模块模板。
 
 下层依赖：
 - common.vision.adapters.template_matching：按相对路径加载模板。

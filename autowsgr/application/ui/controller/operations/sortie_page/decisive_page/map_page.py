@@ -79,18 +79,22 @@ from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.rec
     recognize_fleet_options,
     recognize_map_node,
 )
-from autowsgr.common.system.logger import get_logger
+from autowsgr.application.ui.navigation.interaction import (
+    NavConfig,
+    click_and_wait_for_page,
+    confirm_operation,
+)
+from autowsgr.application.vision.resources import Templates
 from autowsgr.business.combat.decisive.types import DecisivePhase
 from autowsgr.business.combat.types import FleetSelection
 from autowsgr.business.logistics.types import ShipDamageState
-from autowsgr.application.ui.navigation.interaction import NavConfig, click_and_wait_for_page, confirm_operation
+from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import (
     ROI,
     ImageChecker,
     PixelChecker,
     get_api_dll,
 )
-from autowsgr.application.vision.resources import Templates
 
 
 if TYPE_CHECKING:

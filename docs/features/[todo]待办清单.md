@@ -16,6 +16,7 @@
 | 5 | fleet_recognition 改能力层 | 编队控制器 | 未开始 | 另一 agent 的 formation 改动落地 |
 | 6 | fleet_adjustment 迁 `ContextHandle` | 编队控制器 | 未开始 | 同 5 |
 | 7 | 获得船整屏动画挡住主页 | 导航器 | 未开始 | 无 |
+| 8 | 准备页「开始出征」按钮接战斗 | 控制器 + 战斗域 | 未开始 | 战斗模块重写 |
 
 ## 1. 演习对手挑战状态上下文
 
@@ -148,3 +149,26 @@
 
 **注意**：不要为了这一条把 `detect_clean_layers` 改成无限重试；`_current_page` 的抛错是导航器唯一
 的「我不认识现在在哪」出口，改了会让真正的不认识也变成静默重试。
+
+## 8. 准备页「开始出征」按钮接战斗
+
+**现在什么状态**：出征准备页右下角「开始出征」按钮在四种准备页上都存在
+（OCR bbox (1050,653)–(1185,692)），点击即进入战斗。战斗模块（`business/combat`、
+`controller/sortie/battle/`）尚未重写，点了没有后续，所以
+`controller/sortie/battle_preparation/page.py` **目前不提供 `start_battle`**。
+
+**为什么现在不做**：见 `[任务书]出征准备页重写.md` §4.5——按钮本身只是「单次点击」，
+缺的是点击之后的整条战斗链路，不属于准备页切片的范围。
+
+**动手时改哪里**：
+
+1. `controller/sortie/battle_preparation/page.py` 加 `start_battle(position=None)`，
+   落点 `position or _CLICK_START_BATTLE`，候选兜底坐标 (0.8500, 0.9348)（旧 `CLICK_START_BATTLE`，
+   与 OCR 中心 (1117,672) → (0.8727, 0.9333) 相差约 28px，仍在按钮内，落地前用模板中心重新标定）；
+2. `checker/sortie/battle_preparation/checker.py` 加 `read_start_battle_center(ctx)`；
+3. 导航器加「准备页 → 战斗」边的目标页（`PageName` 需要一个战斗页成员），或者做成业务流程第一步；
+4. 点击前应确认编队合法（1 号位非空、战役/决战不左移），校验入口见
+   `docs/features/[知识]战斗域游戏结构 — 征战页与编队准备页通用规则.md`。
+
+**怎么算完**：四种准备页上点击都能进入战斗；编队非法时点击前就报错，不把空编队送进去；
+一条 focused 单测覆盖「拿不到模板中心时点兜底坐标」。

@@ -36,7 +36,10 @@ def collect_built_ships(
     allow_fast_build: bool = False,
 ) -> int:
     """收取已建造完成的舰船或装备。"""
-    from autowsgr.application.ui.controller.sidebar.build_page import BuildPage, BuildTab
+    from autowsgr.application.controller.sidebar.build import (
+        BuildPage,
+        BuildTab,
+    )
 
     _log.info('[OPS] 开始收取已建造完成的{}', '装备' if build_type == 'equipment' else '舰船')
     goto_page(ctx, PageName.BUILD)
@@ -63,7 +66,7 @@ def build_ship(
     allow_fast_build: bool = False,
 ) -> None:
     """建造舰船或装备。"""
-    from autowsgr.application.ui.controller.sidebar.build_page import BuildPage
+    from autowsgr.application.controller.sidebar.build import BuildPage
 
     _log.info('[OPS] 开始建造{}', '装备' if build_type == 'equipment' else '舰船')
     collect_built_ships(ctx, build_type=build_type, allow_fast_build=allow_fast_build)

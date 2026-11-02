@@ -14,9 +14,11 @@ from typing import Any
 
 import pytest
 
-from autowsgr.application.ui.controller.home.main_page import (
+from autowsgr.application.controller.home import (
     HomePage,
     Target,
+)
+from autowsgr.application.ui.controller.home.main_page import (
     constants,
     recognition,
 )

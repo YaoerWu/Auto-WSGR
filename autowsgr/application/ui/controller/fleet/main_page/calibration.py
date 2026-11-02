@@ -2,11 +2,9 @@
 
 from __future__ import annotations
 
-from autowsgr.application.vision.calibration._loader import color
+from autowsgr.application.vision.calibration._loader import color, point, points, signature
 from autowsgr.application.vision.calibration._loader import param as color_param
-from autowsgr.application.vision.calibration._loader import point, points
 from autowsgr.application.vision.calibration._loader import param as ocr_param
-from autowsgr.application.vision.calibration._loader import signature
 
 
 FLEET_ACTIVE = color('battle_prep', 'fleet_active')

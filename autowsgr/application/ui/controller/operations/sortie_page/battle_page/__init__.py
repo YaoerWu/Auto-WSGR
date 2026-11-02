@@ -14,7 +14,4 @@
 本包只导出普通出征页面的稳定入口，不聚合其他出征模式。
 """
 
-from autowsgr.application.ui.controller.operations.sortie_page.battle_page.page import BattlePage
-
-
-__all__ = ['BattlePage']
+__all__: list[str] = []

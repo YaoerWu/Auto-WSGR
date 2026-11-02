@@ -19,6 +19,10 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.sortie import (
+    SortiePage,
+    SortieTab,
+)
 from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.constants import (
     CLICK_BACK,
     CLICK_BUY_CONFIRM,
@@ -38,16 +42,15 @@ from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.con
 from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.recognition import (
     read_chapter_number,
 )
-from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
-    SortiePage,
-    SortieTab,
+from autowsgr.application.ui.navigation.interaction import (
+    click_and_wait_for_page,
+    confirm_operation,
 )
-from autowsgr.common.system.logger import get_logger
 from autowsgr.application.ui.navigation.types import PageName
-from autowsgr.business.combat.decisive.types import DecisiveEntryStatus
-from autowsgr.application.ui.navigation.interaction import click_and_wait_for_page, confirm_operation
-from autowsgr.common.vision import ImageChecker, PageMatch, PixelChecker
 from autowsgr.application.vision.resources import Templates
+from autowsgr.business.combat.decisive.types import DecisiveEntryStatus
+from autowsgr.common.system.logger import get_logger
+from autowsgr.common.vision import ImageChecker, PageMatch, PixelChecker
 
 
 if TYPE_CHECKING:
@@ -409,7 +412,7 @@ class DecisiveBattlePage:
 
     def go_back(self) -> None:
         """点击左上角返回按钮，回到母港主页。"""
-        from autowsgr.application.ui.controller.home.main_page import HomePage
+        from autowsgr.application.controller.home import HomePage
 
         _log.info('[决战] 总览页 -> 母港主页')
         click_and_wait_for_page(

@@ -12,8 +12,8 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.navigation.checker import mission
-from autowsgr.application.ui.navigation.checker.mission import checker as mission_checker
+from autowsgr.application.controller import mission
+from autowsgr.application.controller.mission import checker as mission_checker
 
 
 if TYPE_CHECKING:

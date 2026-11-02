@@ -11,7 +11,5 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.sidebar.friend_page.page import FriendPage
 
-
-__all__ = ['FriendPage']
+__all__: list[str] = []

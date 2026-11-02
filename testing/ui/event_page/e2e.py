@@ -66,9 +66,9 @@ if TYPE_CHECKING:
 
 def run_test(runner: UIControllerTestRunner) -> None:
     """执行活动地图页面控制器完整测试序列。"""
+    from autowsgr.application.controller.home import HomePage
     from autowsgr.application.runtime.context import GameContext
     from autowsgr.application.ui.controller.home.event_page import BaseEventPage
-    from autowsgr.application.ui.controller.home.main_page import HomePage
     from autowsgr.config import UserConfig
 
     ctx = GameContext(ctrl=runner.ctrl, config=UserConfig())
@@ -184,8 +184,8 @@ def _try_select_node(event_page: object, node_id: int) -> None:
 
 def _navigate_to(ctrl: AndroidController, pause: float) -> None:
     """从任意已知页面导航到活动地图页面。"""
+    from autowsgr.application.controller.home import HomePage
     from autowsgr.application.runtime.context import GameContext
-    from autowsgr.application.ui.controller.home.main_page import HomePage
     from autowsgr.config import UserConfig
 
     if not reset_to_main_page(ctrl, pause):

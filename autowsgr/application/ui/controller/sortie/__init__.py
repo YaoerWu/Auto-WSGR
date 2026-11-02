@@ -12,13 +12,5 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.sortie.battle_preparation import (
-    BattlePreparationPage,
-)
-from autowsgr.application.ui.controller.sortie.exercise import ExercisePage
 
-
-__all__ = [
-    'BattlePreparationPage',
-    'ExercisePage',
-]
+__all__: list[str] = []

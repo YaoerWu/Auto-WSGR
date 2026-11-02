@@ -37,8 +37,8 @@ def run(rt: Any) -> bool:
         rt.note('换船需要 OCR，请使用 --with-ocr')
         return False
 
+    from autowsgr.application.controller.home import HomePage
     from autowsgr.application.ui.controller.fleet import BattlePreparationPage
-    from autowsgr.application.ui.controller.home.main_page import HomePage
     from autowsgr.application.ui.navigation import goto_page
     from autowsgr.common.types import PageName
 

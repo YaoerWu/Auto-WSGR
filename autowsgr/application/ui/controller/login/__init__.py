@@ -11,7 +11,5 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.login.page import LoginPage
 
-
-__all__ = ['LoginPage']
+__all__: list[str] = []

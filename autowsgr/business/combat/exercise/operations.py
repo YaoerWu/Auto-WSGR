@@ -4,15 +4,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from autowsgr.application.controller.sortie import (
+    SortiePage,
+    SortieTab,
+)
+from autowsgr.application.controller.sortie.exercise import ExercisePage
 from autowsgr.application.ui.controller.fleet import (
     BattlePreparationPage,
     RepairStrategy,
 )
-from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
-    SortiePage,
-    SortieTab,
-)
-from autowsgr.application.ui.controller.sortie.exercise import ExercisePage
 from autowsgr.common.device.interaction import NavigationError
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.types import RepairMode, ShipDamageState

@@ -37,8 +37,8 @@ if TYPE_CHECKING:
 
 
 def run_test(runner: UIControllerTestRunner) -> None:
-    from autowsgr.application.ui.controller.sidebar.friend_page import FriendPage
-    from autowsgr.application.ui.controller.sidebar.main_page import SidebarPage
+    from autowsgr.application.controller.sidebar import SidebarPage
+    from autowsgr.application.controller.sidebar.friend import FriendPage
 
     friend_page = FriendPage(runner.ctx)
 
@@ -58,9 +58,9 @@ def _navigate_to(ctrl: AndroidController, pause: float) -> None:
     """从任意已知页面导航到好友页面。"""
     import time
 
+    from autowsgr.application.controller.home import HomePage
+    from autowsgr.application.controller.sidebar import SidebarPage
     from autowsgr.application.runtime.context import GameContext
-    from autowsgr.application.ui.controller.home.main_page import HomePage
-    from autowsgr.application.ui.controller.sidebar.main_page import SidebarPage
     from autowsgr.config import UserConfig
 
     if not reset_to_main_page(ctrl, pause):
@@ -86,7 +86,7 @@ def main() -> None:
     from loguru import logger
 
     logger.info('=== 好友页面 e2e 测试开始 ===')
-    from autowsgr.application.ui.controller.sidebar.friend_page import FriendPage
+    from autowsgr.application.controller.sidebar.friend import FriendPage
 
     if not ensure_page(
         ctrl,

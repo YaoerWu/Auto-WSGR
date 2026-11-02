@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from autowsgr.application.ui.navigation.checker import home
+from autowsgr.application.controller import home
 from autowsgr.application.ui.navigation.types import PageName
 
 

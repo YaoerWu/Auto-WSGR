@@ -17,7 +17,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from autowsgr.application.ui.controller.sidebar.build_page import BuildPage, BuildTab
+from autowsgr.application.controller.sidebar.build import (
+    BuildPage,
+    BuildTab,
+)
 from autowsgr.application.ui.controller.sidebar.build_page import operations as operations_module
 from autowsgr.application.ui.controller.sidebar.build_page import page as page_module
 from autowsgr.application.ui.controller.sidebar.build_page import workflow as workflow_module

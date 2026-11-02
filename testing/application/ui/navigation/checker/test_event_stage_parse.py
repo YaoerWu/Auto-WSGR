@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from autowsgr.application.ui.navigation.checker.event.stage_push import EventMode, parse_stage
+from autowsgr.application.controller.event.stage_push import EventMode, parse_stage
 
 
 @pytest.mark.parametrize(

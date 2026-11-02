@@ -18,42 +18,52 @@ import functools
 from collections import deque
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.controller.backyard.main_page import (
-    BackyardPage,
-    BackyardTarget,
-)
-from autowsgr.application.ui.controller.home.event_page import EventPage
-from autowsgr.application.ui.controller.home.main_page import HomePage, Target
-from autowsgr.application.ui.controller.login import LoginPage
-from autowsgr.application.ui.controller.operations.mission_page import MissionPage
-from autowsgr.application.ui.controller.operations.sortie_page.battle_page import BattlePage
-from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
-    SortiePage,
-    SortieTab,
-)
-from autowsgr.application.ui.controller.sidebar.build_page import BuildPage, BuildTab
-from autowsgr.application.ui.controller.sidebar.friend_page import FriendPage
-from autowsgr.application.ui.controller.sidebar.intensify_page import (
-    IntensifyPage,
-    IntensifyTab,
-)
-from autowsgr.application.ui.controller.sidebar.main_page import SidebarPage, SidebarTarget
-from autowsgr.application.ui.controller.sortie import BattlePreparationPage, ExercisePage
-from autowsgr.application.ui.navigation.checker import (
+from autowsgr.application.controller import (
     backyard,
     home,
     login,
     mission,
     sidebar,
 )
-from autowsgr.application.ui.navigation.checker.event import stage_push
-from autowsgr.application.ui.navigation.checker.sidebar import build, intensify
-from autowsgr.application.ui.navigation.checker.sidebar.friend import check_friend_page
-from autowsgr.application.ui.navigation.checker.sortie import exercise, read_sortie_layer
-from autowsgr.application.ui.navigation.checker.sortie.battle import ensure_chapter
-from autowsgr.application.ui.navigation.checker.sortie.battle_preparation import (
+from autowsgr.application.controller.backyard import (
+    BackyardPage,
+    BackyardTarget,
+)
+from autowsgr.application.controller.event import stage_push
+from autowsgr.application.controller.home import (
+    HomePage,
+    Target,
+)
+from autowsgr.application.controller.login import LoginPage
+from autowsgr.application.controller.mission import MissionPage
+from autowsgr.application.controller.sidebar import (
+    SidebarPage,
+    SidebarTarget,
+    build,
+    intensify,
+)
+from autowsgr.application.controller.sidebar.build import (
+    BuildPage,
+    BuildTab,
+)
+from autowsgr.application.controller.sidebar.friend import FriendPage, check_friend_page
+from autowsgr.application.controller.sidebar.intensify import (
+    IntensifyPage,
+    IntensifyTab,
+)
+from autowsgr.application.controller.sortie import (
+    SortiePage,
+    SortieTab,
+    exercise,
+    read_sortie_layer,
+)
+from autowsgr.application.controller.sortie.battle import BattlePage, ensure_chapter
+from autowsgr.application.controller.sortie.battle_preparation import (
+    BattlePreparationPage,
     read_battle_preparation_layer,
 )
+from autowsgr.application.controller.sortie.exercise import ExercisePage
+from autowsgr.application.ui.controller.home.event_page import EventPage
 from autowsgr.application.ui.navigation.types import (
     NavigationError,
     NavTab,

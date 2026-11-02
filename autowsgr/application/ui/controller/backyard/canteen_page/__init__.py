@@ -11,7 +11,5 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.backyard.canteen_page.page import CanteenPage
 
-
-__all__ = ['CanteenPage']
+__all__: list[str] = []

@@ -39,6 +39,8 @@ _log = get_logger('vision.template')
 # 属于正常噪声；落在它和阈值之间说明画面像但没够，是排查识别失败的关键线索。
 _NEAR_MISS_RATIO = 0.9
 
+_EXECUTOR = OpenCVExecutor()
+
 
 # ── 模板识别结果模型 ────────────────────────────────────────────────────────
 
@@ -120,117 +122,7 @@ class TemplateMatchResult:
     center: tuple[float, float] | None = None
 
 
-class _TemplateMatcher:
-    """组合模板加载、ROI 裁切、缩放和 OpenCV 匹配。"""
-
-    def __init__(self, executor: OpenCVExecutor | None = None) -> None:
-        self._executor = executor or OpenCVExecutor()
-
-    def load_template(
-        self,
-        relative_path: str | Path,
-        *,
-        name: str | None = None,
-        source_resolution: tuple[int, int] = OPENCV_TEMPLATE_SOURCE_RESOLUTION,
-    ) -> Template:
-        """加载模板图片并构造模板数据。
-
-        Args:
-            relative_path: 模板根目录下的相对路径。
-            name: 可选的模板业务名称，默认使用文件名。
-            source_resolution: 模板截图分辨率，按 (width, height) 提供。
-
-        Returns:
-            已加载的模板数据。
-
-        Raises:
-            ValueError: 路径不是模板根目录下的相对路径。
-            FileNotFoundError: 模板文件不存在。
-        """
-        # 1. 限制模板路径只能指向配置的资源根目录。
-        relative = self._relative_path(relative_path)
-
-        # 2. 读取模板图片并保留匹配所需的来源元数据。
-        return Template(
-            name=name or relative.stem,
-            relative_path=relative.as_posix(),
-            image=self._executor.load_image(relative),
-            source_resolution=source_resolution,
-        )
-
-    def match(
-        self,
-        image: numpy.ndarray,
-        template: Template,
-        *,
-        roi: ROI | None = None,
-        confidence: float = OPENCV_TEMPLATE_CONFIDENCE,
-    ) -> TemplateMatchResult:
-        """执行模板匹配并返回分数、位置和命中状态。
-
-        Args:
-            image: 待搜索的 RGB 或灰度图片数组。
-            template: 已加载的模板数据。
-            roi: 可选的相对坐标搜索区域。
-            confidence: 命中阈值，范围为 [0, 1]。
-
-        Returns:
-            包含命中状态、匹配分数、绝对位置和 ROI 的结果。
-
-        Raises:
-            ValueError: 置信度超出范围。
-        """
-        if not 0.0 <= confidence <= 1.0:
-            raise ValueError('匹配置信度必须位于 [0, 1]')
-
-        # 1. 先确定搜索图片和原始尺寸，保证后续坐标使用同一基准。
-        image_height, image_width = image.shape[:2]
-        search = roi.crop(image) if roi is not None else image
-        template_image = template.image
-        source_width, source_height = template.source_resolution
-
-        # 2. 截图分辨率变化时，按宽高比例缩放模板。
-        template_height, template_width = template_image.shape[:2]
-        if (image_width, image_height) != (source_width, source_height):
-            scale_x = image_width / source_width
-            scale_y = image_height / source_height
-            template_image = self._executor.resize(
-                template_image,
-                max(1, round(template_width * scale_x)),
-                max(1, round(template_height * scale_y)),
-            )
-            template_height, template_width = template_image.shape[:2]
-
-        # 3. 执行 OpenCV 匹配，并把 ROI 内的位置还原到原图坐标。
-        score, location = self._executor.match_template(search, template_image)
-        if roi is not None:
-            roi_x, roi_y, _, _ = roi.to_absolute(image_width, image_height)
-            location = (location[0] + roi_x, location[1] + roi_y)
-
-        # 4. 命中时给出模板中心的归一化坐标，供调用方直接点击。
-        matched = score >= confidence
-        center = None
-        if matched:
-            center = (
-                round((location[0] + template_width / 2) / image_width, 4),
-                round((location[1] + template_height / 2) / image_height, 4),
-            )
-        return TemplateMatchResult(
-            matched=matched,
-            score=score,
-            location=location,
-            template_path=template.relative_path,
-            roi=roi,
-            center=center,
-        )
-
-    @staticmethod
-    def _relative_path(path: str | Path) -> Path:
-        """校验并返回模板根目录下的相对路径。"""
-        relative = Path(path)
-        if relative.is_absolute() or '..' in relative.parts:
-            raise ValueError('模板路径必须是 OPENCV_TEMPLATE_ROOT 下的相对路径')
-        return relative
+# ── 模板加载与匹配 ──────────────────────────────────────────────────────────
 
 
 def load_template(
@@ -239,19 +131,29 @@ def load_template(
     name: str | None = None,
     source_resolution: tuple[int, int] = OPENCV_TEMPLATE_SOURCE_RESOLUTION,
 ) -> Template:
-    """加载模板图片并返回已加载的模板数据。
+    """加载模板图片并构造模板数据。
 
     Args:
         relative_path: 模板根目录下的相对路径。
-        name: 可选的模板业务名称。
+        name: 可选的模板业务名称，默认使用文件名。
         source_resolution: 模板截图分辨率，按 (width, height) 提供。
 
     Returns:
         已加载的模板数据。
+
+    Raises:
+        ValueError: 路径不是模板根目录下的相对路径。
     """
-    return _MATCHER.load_template(
-        relative_path,
-        name=name,
+    # 1. 限制模板路径只能指向配置的资源根目录。
+    relative = Path(relative_path)
+    if relative.is_absolute() or '..' in relative.parts:
+        raise ValueError('模板路径必须是 OPENCV_TEMPLATE_ROOT 下的相对路径')
+
+    # 2. 读取模板图片并保留匹配所需的来源元数据。
+    return Template(
+        name=name or relative.stem,
+        relative_path=relative.as_posix(),
+        image=_EXECUTOR.load_image(relative),
         source_resolution=source_resolution,
     )
 
@@ -272,21 +174,66 @@ def match_template(
         confidence: 命中阈值，范围为 [0, 1]。
 
     Returns:
-        模板匹配结果。
+        包含命中状态、匹配分数、绝对位置和 ROI 的结果。
+
+    Raises:
+        ValueError: 置信度超出范围。
     """
-    match_result = _MATCHER.match(image, template, roi=roi, confidence=confidence)
+    if not 0.0 <= confidence <= 1.0:
+        raise ValueError('匹配置信度必须位于 [0, 1]')
+
+    # 1. 先确定搜索图片和原始尺寸，保证后续坐标使用同一基准。
+    image_height, image_width = image.shape[:2]
+    search = roi.crop(image) if roi is not None else image
+    template_image = template.image
+    source_width, source_height = template.source_resolution
+
+    # 2. 截图分辨率变化时，按宽高比例缩放模板。
+    template_height, template_width = template_image.shape[:2]
+    if (image_width, image_height) != (source_width, source_height):
+        scale_x = image_width / source_width
+        scale_y = image_height / source_height
+        template_image = _EXECUTOR.resize(
+            template_image,
+            max(1, round(template_width * scale_x)),
+            max(1, round(template_height * scale_y)),
+        )
+        template_height, template_width = template_image.shape[:2]
+
+    # 3. 执行 OpenCV 匹配，并把 ROI 内的位置还原到原图坐标。
+    score, location = _EXECUTOR.match_template(search, template_image)
+    if roi is not None:
+        roi_x, roi_y, _, _ = roi.to_absolute(image_width, image_height)
+        location = (location[0] + roi_x, location[1] + roi_y)
+
+    # 4. 命中时给出模板中心的归一化坐标，供调用方直接点击。
+    matched = score >= confidence
+    center = None
+    if matched:
+        center = (
+            round((location[0] + template_width / 2) / image_width, 4),
+            round((location[1] + template_height / 2) / image_height, 4),
+        )
+
     # 未命中是常态（一次扫描要问遍所有页面），只记「有事发生」的两种：命中，
     # 以及差一点就中——排查识别失败时，要能看出是画面真的变了，还是分数卡在
     # 阈值下面。
-    if match_result.matched or match_result.score >= confidence * _NEAR_MISS_RATIO:
+    if matched or score >= confidence * _NEAR_MISS_RATIO:
         _log.debug(
             '[VISION] 模板匹配 → {}：template_path={!r}, score={:.3f}, confidence={:.3f}',
-            '命中' if match_result.matched else '差一点',
-            match_result.template_path,
-            match_result.score,
+            '命中' if matched else '差一点',
+            template.relative_path,
+            score,
             confidence,
         )
-    return match_result
+    return TemplateMatchResult(
+        matched=matched,
+        score=score,
+        location=location,
+        template_path=template.relative_path,
+        roi=roi,
+        center=center,
+    )
 
 
 def match_templates(
@@ -311,6 +258,9 @@ def match_templates(
         match_template(image, template, roi=item_roi, confidence=confidence)
         for template, item_roi in _template_roi_pairs(templates, roi)
     ]
+
+
+# ── 私有辅助 ────────────────────────────────────────────────────────────────
 
 
 def _template_roi_pairs(
@@ -342,9 +292,6 @@ def _template_roi_pairs(
     else:
         raise TypeError('roi 必须是 ROI、ROI 序列或 None')
     return tuple(zip(items, rois, strict=True))
-
-
-_MATCHER = _TemplateMatcher()
 
 
 __all__ = [

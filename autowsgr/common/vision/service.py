@@ -242,29 +242,42 @@ def expect_ocr(
 def expect_pixels(
     ctx: ContextHandle,
     *,
-    signature: PixelSignature | CompositePixelSignature,
-    roi: ROI | None = None,
+    signature: (
+        PixelSignature
+        | CompositePixelSignature
+        | Sequence[PixelSignature | CompositePixelSignature]
+    ),
+    roi: ROI | Sequence[ROI | None] | None = None,
     with_details: bool = False,
+    min_matches: int = 1,
     attempts: int = config.DEFAULT_RECOGNITION_ATTEMPTS,
     interval_seconds: float = config.DEFAULT_RECOGNITION_INTERVAL_SECONDS,
     absent: bool = False,
-) -> RecognitionResult[PixelMatchResult]:
-    """重试像素匹配，直到签名判定满足调用方预期。
+) -> RecognitionResult[list[PixelMatchResult]]:
+    """重试像素匹配，直到命中数量满足调用方预期。
 
-    absent 决定断言方向：默认期望签名命中，为真时期望签名不再命中。
+    一次调用只截一帧，同一帧内可以并行判定多组签名：一组签名对应一个探针位
+    （或多个探针位的组合），每个探针位用 CompositePixelSignature 表达「命中
+    任一候选即成立」，命中的候选名由结果的 matched_signature 带出。这样「N 选
+    一归类」和「多点组合断言」都由一次调用完成。
+
+    absent 决定断言方向：默认期望命中数量达标，为真时期望命中数量不达标。
 
     Args:
         ctx: 提供设备服务和截图事实写入的统一 ContextHandle。
-        signature: 调用方定义的像素规则或规则组合。
-        roi: 采样区域。
+        signature: 单个像素签名、签名组合，或需要逐个判定的一组签名。
+        roi: 共享采样区域，或与签名一一对应的区域序列。
         with_details: 是否要求结果包含逐规则详情。
+        min_matches: 期望命中的签名数量。
         attempts: 最大识别次数。
         interval_seconds: 两次识别之间的等待秒数。
-        absent: 期望签名不再命中时为真。
+        absent: 期望命中数量低于 min_matches 时为真。
 
     Returns:
-        satisfied 表示断言是否满足；observation 是最后一次像素匹配结果。
+        satisfied 表示断言是否满足；observation 是按签名顺序排列的最后一次匹配结果。
     """
+    if isinstance(min_matches, bool) or not isinstance(min_matches, int) or min_matches < 1:
+        raise ValueError('min_matches 必须是大于零的整数')
     return _retry(
         ctx,
         task='像素识别',
@@ -274,7 +287,9 @@ def expect_pixels(
             roi=roi,
             with_details=with_details,
         ),
-        accept=lambda result: result.matched != absent,
+        accept=lambda matches: (
+            (sum(1 for match in matches if match.matched) >= min_matches) != absent
+        ),
         attempts=attempts,
         interval_seconds=interval_seconds,
     )
@@ -323,8 +338,12 @@ def expect_ocr_center(
 def expect_pixel_center(
     ctx: ContextHandle,
     *,
-    signature: PixelSignature | CompositePixelSignature,
-    roi: ROI | None = None,
+    signature: (
+        PixelSignature
+        | CompositePixelSignature
+        | Sequence[PixelSignature | CompositePixelSignature]
+    ),
+    roi: ROI | Sequence[ROI | None] | None = None,
     attempts: int = config.DEFAULT_RECOGNITION_ATTEMPTS,
     interval_seconds: float = config.DEFAULT_RECOGNITION_INTERVAL_SECONDS,
 ) -> tuple[float, float] | None:
@@ -337,11 +356,12 @@ def expect_pixel_center(
         attempts=attempts,
         interval_seconds=interval_seconds,
     )
-    if not result.satisfied or result.observation is None:
+    if not result.satisfied:
         return None
-    for detail in result.observation.details:
-        if detail.matched:
-            return (detail.rule.x, detail.rule.y)
+    for match in result.observation:
+        for detail in match.details:
+            if detail.matched:
+                return (detail.rule.x, detail.rule.y)
     return None
 
 

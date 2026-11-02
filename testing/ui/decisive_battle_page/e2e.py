@@ -47,7 +47,7 @@ def _build_context(ctrl: AndroidController) -> GameContext:
 
 
 def run_test(runner: UIControllerTestRunner) -> None:
-    from autowsgr.application.ui.controller.home.main_page import HomePage
+    from autowsgr.application.controller.home import HomePage
     from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.page import (
         DecisiveBattlePage,
     )
@@ -88,13 +88,13 @@ def _navigate_to(ctrl: AndroidController, pause: float) -> None:
     """从任意已知页面导航到决战总览。"""
     import time
 
-    from autowsgr.application.ui.controller.home.main_page import HomePage
-    from autowsgr.application.ui.controller.operations.sortie_page.decisive_page import (
-        DecisiveEntryPage,
-    )
-    from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
+    from autowsgr.application.controller.home import HomePage
+    from autowsgr.application.controller.sortie import (
         SortiePage,
         SortieTab,
+    )
+    from autowsgr.application.ui.controller.operations.sortie_page.decisive_page import (
+        DecisiveEntryPage,
     )
 
     ctx = _build_context(ctrl)

@@ -13,11 +13,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.controller.sidebar.build_page import BuildPage, BuildTab
+from autowsgr.application.controller.sidebar.build import (
+    BuildPage,
+    BuildTab,
+)
 from autowsgr.application.ui.navigation import goto_page
+from autowsgr.common.device.interaction import click_and_wait_for_page
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.types import DestroyShipWorkMode, PageName, ShipType
-from autowsgr.common.device.interaction import click_and_wait_for_page
 
 
 if TYPE_CHECKING:

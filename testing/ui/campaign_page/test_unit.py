@@ -18,6 +18,7 @@ from unittest.mock import MagicMock, call
 
 import pytest
 
+from autowsgr.application.controller.sortie import SortieTab
 from autowsgr.application.ui.controller.operations.sortie_page.campaign_page import (
     CampaignPage,
     constants,
@@ -26,7 +27,6 @@ from autowsgr.application.ui.controller.operations.sortie_page.campaign_page imp
 from autowsgr.application.ui.controller.operations.sortie_page.campaign_page import (
     page as page_module,
 )
-from autowsgr.application.ui.controller.operations.sortie_page.main_page import SortieTab
 from autowsgr.common.types import PageName
 
 

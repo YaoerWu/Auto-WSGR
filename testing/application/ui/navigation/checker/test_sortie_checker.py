@@ -13,8 +13,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from autowsgr.application.ui.navigation.checker.sortie import checker as sortie_checker
-from autowsgr.application.ui.navigation.checker.sortie import read_sortie_layer
+from autowsgr.application.controller.sortie import checker as sortie_checker
+from autowsgr.application.controller.sortie import read_sortie_layer
 from autowsgr.application.ui.navigation.types import PageName
 
 

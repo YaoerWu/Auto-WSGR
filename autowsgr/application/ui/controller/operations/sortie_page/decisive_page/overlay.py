@@ -22,9 +22,9 @@ from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.con
     SIG_FLEET_ACQUISITION,
     SIG_MAP_PAGE,
 )
+from autowsgr.application.vision.resources import Templates
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import ROI, ImageChecker, ImageTemplate, PixelChecker, PixelSignature
-from autowsgr.application.vision.resources import Templates
 
 
 if TYPE_CHECKING:

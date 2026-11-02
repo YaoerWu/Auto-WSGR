@@ -12,19 +12,11 @@
 
 from __future__ import annotations
 
-from autowsgr.application.ui.controller.operations.sortie_page.main_page.page import (
-    SORTIE_TAB_LIST,
-    SortiePage,
-    SortieTab,
-)
 from autowsgr.application.ui.controller.operations.sortie_page.main_page.recognition import (
     check_expedition_notification,
 )
 
 
 __all__ = [
-    'SORTIE_TAB_LIST',
-    'SortiePage',
-    'SortieTab',
     'check_expedition_notification',
 ]
