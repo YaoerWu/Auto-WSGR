@@ -21,7 +21,7 @@ from autowsgr.application.controller.sidebar import (
 from autowsgr.application.controller.sidebar.friend import FriendPage
 from autowsgr.application.ui.controller.sidebar.friend_page import constants as friend_constants
 from autowsgr.application.ui.controller.sidebar.main_page import constants as sidebar_constants
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.types import PageName
 
 
 class _Ctrl:

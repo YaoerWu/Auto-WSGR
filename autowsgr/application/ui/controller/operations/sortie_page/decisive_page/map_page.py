@@ -2,7 +2,7 @@
 
 上层调用：
 - business.combat.decisive：驱动决战状态机并读取地图阶段。
-- application.ui.navigation：从决战准备页回到决战地图并继续导航。
+- application.navigation：从决战准备页回到决战地图并继续导航。
 - testing.ui、testing.ops：验证决战地图页面动作和恢复链路。
 
 下层依赖：
@@ -79,7 +79,7 @@ from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.rec
     recognize_fleet_options,
     recognize_map_node,
 )
-from autowsgr.application.ui.navigation.interaction import (
+from autowsgr.application.navigation.interaction import (
     NavConfig,
     click_and_wait_for_page,
     confirm_operation,

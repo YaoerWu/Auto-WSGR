@@ -45,8 +45,8 @@ def _parse_ids(text: str) -> set[int]:
 def run(rt: Any) -> bool:
     """按（章节 x 节点）逐个进入出征准备页。"""
     from autowsgr.application.controller.sortie.battle.checker import MAP_DATABASE
-    from autowsgr.application.ui.navigation.service import NavigationService
-    from autowsgr.application.ui.navigation.types import NavigationError, PageName
+    from autowsgr.application.navigation.service import NavigationService
+    from autowsgr.application.navigation.types import NavigationError, PageName
     from autowsgr.dispatch.session import get_session
 
     ctx = rt.ctx

@@ -2,7 +2,7 @@
 
 上层调用：
 - application.ui.controller.home.main_page：从首页进入 operations 区域内的页面。
-- application.ui.navigation：注册并执行区域内页面的导航边。
+- application.navigation：注册并执行区域内页面的导航边。
 
 下层依赖：
 - application.ui.controller.operations.mission_page：提供任务页面控制器。

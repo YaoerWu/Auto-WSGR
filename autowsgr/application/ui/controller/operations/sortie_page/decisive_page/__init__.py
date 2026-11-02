@@ -1,7 +1,7 @@
 """模块功能：导出决战总览、地图和出征准备页面控制器。
 
 上层调用：
-- application.ui.navigation：注册决战总览页并执行决战回退导航。
+- application.navigation：注册决战总览页并执行决战回退导航。
 - business.combat.decisive：驱动决战地图、战备舰队和出征准备流程。
 - testing.ui：验证决战页面控制器。
 

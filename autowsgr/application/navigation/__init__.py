@@ -1,4 +1,4 @@
-"""模块功能：UI 导航器包。
+"""模块功能：应用层导航器包。
 
 上层调用：
 - application 与 business：从 navigation.service 导入 NavigationService。

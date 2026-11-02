@@ -1,11 +1,11 @@
 """模块功能：在后院主页执行二级页跳转与各个方向的返回。
 
 上层调用：
-- application.ui.navigation：执行后院与子页面之间的页面边动作。
+- application.navigation：执行后院与子页面之间的页面边动作。
 
 下层依赖：
 - application.ui.controller.backyard.main_page.constants：提供后院点击落点。
-- application.ui.navigation.types：提供页面名称。
+- application.navigation.types：提供页面名称。
 
 边界：只点击入口与返回按钮，不识别画面、不确认终态、不涉及二级页业务。
 """
@@ -15,8 +15,8 @@ from __future__ import annotations
 import enum
 from typing import TYPE_CHECKING
 
+from autowsgr.application.navigation.types import PageName
 from autowsgr.application.ui.controller.backyard.main_page import constants
-from autowsgr.application.ui.navigation.types import PageName
 from autowsgr.common.system.logger import get_logger
 
 

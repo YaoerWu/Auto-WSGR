@@ -94,9 +94,9 @@ def add_arguments(parser: Any) -> None:
 
 def run(rt: Any) -> bool:
     """建栈后按链路逐步导航，并统计边覆盖率。"""
-    from autowsgr.application.ui.navigation import registry
-    from autowsgr.application.ui.navigation.service import NavigationService
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation import registry
+    from autowsgr.application.navigation.service import NavigationService
+    from autowsgr.application.navigation.types import PageName
     from autowsgr.dispatch.session import DailyPopup, get_session
 
     ctx = rt.ctx

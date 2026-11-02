@@ -1,7 +1,7 @@
 """模块功能：提供活动 checker 的公开出口。
 
 上层调用：
-- application.ui.navigation：按活动类型调用对应 checker。
+- application.navigation：按活动类型调用对应 checker。
 
 下层依赖：
 - 各活动的 checker 子包：当前为普通推图 normal，后续玩法各自增加。

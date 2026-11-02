@@ -21,7 +21,7 @@ from autowsgr.application.controller.sortie.battle_preparation import (
 
 
 if TYPE_CHECKING:
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation.types import PageName
 
 
 def _install_recognition(

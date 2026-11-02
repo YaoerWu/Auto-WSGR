@@ -16,14 +16,14 @@ import pytest
 
 from autowsgr.application.controller import home
 from autowsgr.application.controller.login import checker as login_checker
+from autowsgr.application.navigation import registry
+from autowsgr.application.navigation.service import NavigationService
+from autowsgr.application.navigation.types import NavigationError, NavTab, PageName
 from autowsgr.application.ui.controller.home.main_page import constants as home_constants
 from autowsgr.application.ui.controller.login import constants as login_constants
 from autowsgr.application.ui.controller.operations.sortie_page.main_page import (
     constants as sortie_constants,
 )
-from autowsgr.application.ui.navigation import registry
-from autowsgr.application.ui.navigation.service import NavigationService
-from autowsgr.application.ui.navigation.types import NavigationError, NavTab, PageName
 from autowsgr.dispatch.session import SessionState
 
 
@@ -191,7 +191,7 @@ def test_cold_start_dismisses_overlay_and_keeps_underlying_page(
 ) -> None:
     """冷启动停在演习浮窗上：先清掉浮窗，栈只落到底下那层演习页。"""
     from autowsgr.application.controller.sortie import exercise
-    from autowsgr.application.ui.navigation import executor as executor_module
+    from autowsgr.application.navigation import executor as executor_module
 
     monkeypatch.setattr(executor_module.time, 'sleep', lambda _seconds: None)
     monkeypatch.setattr(registry, 'probe_domains', lambda _ctx, **_options: (PageName.EXERCISE,))
@@ -216,7 +216,7 @@ def test_cold_start_dismisses_news_overlay_to_home(
     ctx: Any, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """冷启动停在公告上：公告把主页整个挡住，清完浮窗链后落到主页。"""
-    from autowsgr.application.ui.navigation import executor as executor_module
+    from autowsgr.application.navigation import executor as executor_module
 
     monkeypatch.setattr(executor_module.time, 'sleep', lambda _seconds: None)
     monkeypatch.setattr(registry, 'probe_domains', lambda _ctx, **_options: (PageName.HOME,))

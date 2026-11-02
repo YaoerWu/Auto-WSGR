@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 from autowsgr.application.controller import home
 from autowsgr.application.controller.home import checker as home_checker
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.types import PageName
 from autowsgr.dispatch.session import DailyPopup, SessionState
 
 

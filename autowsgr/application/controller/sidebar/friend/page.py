@@ -1,7 +1,7 @@
 """模块功能：在好友页面执行返回。
 
 上层调用：
-- application.ui.navigation：执行好友页面返回主页的页面边动作。
+- application.navigation：执行好友页面返回主页的页面边动作。
 
 下层依赖：
 - application.ui.controller.sidebar.friend_page.constants：提供返回落点。

@@ -2,7 +2,7 @@
 
 上层调用：
 - application.controller.event：导出本活动 checker。
-- application.ui.navigation：按活动玩法调用本 checker 的页面识别入口。
+- application.navigation：按活动玩法调用本 checker 的页面识别入口。
 
 下层依赖：
 - event.stage_push.checker：提供页面识别入口与页面事实模型。

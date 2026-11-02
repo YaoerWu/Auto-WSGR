@@ -11,7 +11,7 @@ from autowsgr.application.ui.controller.fleet import (
     RepairStrategy,
 )
 from autowsgr.application.ui.controller.operations.sortie_page.campaign_page import CampaignPage
-from autowsgr.application.ui.navigation import goto_bath_from_campaign_sortie
+from autowsgr.application.navigation import goto_bath_from_campaign_sortie
 from autowsgr.business.combat.fleet import exact_fleet_rules
 from autowsgr.business.logistics.repair.bath_repair import repair_manual_targets_in_bath
 from autowsgr.common.device.interaction import NavigationError

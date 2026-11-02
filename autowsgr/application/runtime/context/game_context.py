@@ -7,7 +7,7 @@ import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from autowsgr.application.ui.navigation.stack import UIStack
+from autowsgr.application.navigation.stack import UIStack
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.types import ShipDamageState
 
@@ -93,7 +93,7 @@ class GameContext:
     """UI 导航栈 — 页面来路追踪。
 
     识别候选剪枝与 go_back 期望父页的来源, 由导航循环
-    (:func:`autowsgr.application.ui.navigation._goto_page`) 维护。
+    (:func:`autowsgr.application.navigation._goto_page`) 维护。
     """
     current_page: PageName | None = None
     """当前游戏页面。
@@ -273,7 +273,7 @@ class GameContext:
         from autowsgr.application.ui.controller.operations.sortie_page.battle_page import (
             recognition,
         )
-        from autowsgr.application.ui.navigation import goto_page
+        from autowsgr.application.navigation import goto_page
         from autowsgr.common.types import PageName
 
         goto_page(self, PageName.MAP)

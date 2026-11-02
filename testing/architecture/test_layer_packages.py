@@ -80,7 +80,7 @@ def test_navigation_graph_is_split_by_domain() -> None:
     assert (graph / 'combat.py').is_file()
     assert (graph / 'logistics.py').is_file()
 
-    from autowsgr.application.ui.navigation.graph import (
+    from autowsgr.application.navigation.graph import (
         COMBAT_EDGES,
         COMMON_EDGES,
         LOGISTICS_EDGES,
@@ -93,8 +93,8 @@ def test_navigation_graph_is_split_by_domain() -> None:
 
 def test_navigation_support_has_one_owner_per_responsibility() -> None:
     """注册表不承载识别，页面栈不承载设备识别。"""
-    from autowsgr.application.ui.navigation import recognition, registry
-    from autowsgr.application.ui.navigation.stack import UIStack
+    from autowsgr.application.navigation import recognition, registry
+    from autowsgr.application.navigation.stack import UIStack
 
     assert hasattr(recognition, 'get_current_page')
     assert not hasattr(registry, 'get_current_page')

@@ -7,7 +7,7 @@
 - navigation.registry：查询可达目标、到达确认与路径。
 - navigation.types：页面契约与导航错误。
 - dispatch.session：进程级会话状态。
-- checker 与 controller.home.main_page：登录流程识别、主页识别与每日弹窗点击。
+- application.controller：登录流程识别、主页识别与每日弹窗点击。
 
 边界：编排启动流程、识别与算路；路径的执行与前后识别交给 navigation.executor；
 不做页面坐标、业务流程与恢复决策，失败直接抛给调用方。
@@ -19,9 +19,9 @@ import time
 from typing import TYPE_CHECKING
 
 from autowsgr.application.controller import login
-from autowsgr.application.ui.navigation import registry
-from autowsgr.application.ui.navigation.executor import NavigationExecutor
-from autowsgr.application.ui.navigation.types import (
+from autowsgr.application.navigation import registry
+from autowsgr.application.navigation.executor import NavigationExecutor
+from autowsgr.application.navigation.types import (
     ManualUpdateRequiredError,
     NavigationError,
     PageName,

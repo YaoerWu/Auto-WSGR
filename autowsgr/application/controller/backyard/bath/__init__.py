@@ -1,7 +1,7 @@
 """模块功能：提供浴室二级页检查器的模块入口。
 
 上层调用：
-- application.ui.navigation：调用浴室二级页的确认入口。
+- application.navigation：调用浴室二级页的确认入口。
 
 下层依赖：
 - bath.checker：提供识别入口。

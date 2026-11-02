@@ -25,8 +25,8 @@ _DIFFICULTY_SETTLE_SECONDS = 2.0
 
 def run(rt: Any) -> bool:
     """执行活动链路并逐章节校验浮窗指向。"""
-    from autowsgr.application.ui.navigation.service import NavigationService
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation.service import NavigationService
+    from autowsgr.application.navigation.types import PageName
 
     ctx = rt.ctx
     navigator = NavigationService(ctx)
@@ -91,7 +91,7 @@ def _switch_difficulty(rt: Any, ctx: Any, mode: str) -> bool:
 def _click_stage(rt: Any, ctx: Any, navigator: Any, stage: str) -> bool:
     """点一个章节入口、校验浮窗指向, 再关掉浮窗回地图。"""
     from autowsgr.application.controller.event import stage_push
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation.types import PageName
 
     if (
         rt.action(

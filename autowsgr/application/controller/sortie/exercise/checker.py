@@ -1,7 +1,7 @@
 """模块功能：识别演习对手浮窗，并读取浮窗按钮的点击中心。
 
 上层调用：
-- application.ui.navigation：读取关闭、刷新、挑战三个按钮的落点。
+- application.navigation：读取关闭、刷新、挑战三个按钮的落点。
 
 下层依赖：
 - application.ui.template：加载本模块模板。

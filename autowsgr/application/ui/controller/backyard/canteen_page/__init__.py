@@ -1,7 +1,7 @@
 """模块功能：提供餐厅二级页控制器的模块入口。
 
 上层调用：
-- application.ui.navigation：调用该页控制器执行回首页与退回。
+- application.navigation：调用该页控制器执行回首页与退回。
 
 下层依赖：
 - canteen_page.page：提供页面控制器。

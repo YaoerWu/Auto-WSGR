@@ -1,7 +1,7 @@
 """模块功能：提供演习页检查器的模块入口。
 
 上层调用：
-- application.ui.navigation：读取演习对手浮窗关闭、刷新、挑战三个按钮的落点。
+- application.navigation：读取演习对手浮窗关闭、刷新、挑战三个按钮的落点。
 
 下层依赖：
 - exercise.checker：提供识别数据与识别入口。

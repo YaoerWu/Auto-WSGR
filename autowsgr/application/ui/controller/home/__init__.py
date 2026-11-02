@@ -1,7 +1,7 @@
 """模块功能：导出 home 区域下的主页和活动页面 Controller。
 
 上层调用：
-- application.ui.navigation：取得主页和活动页面的稳定入口。
+- application.navigation：取得主页和活动页面的稳定入口。
 - application.runtime：识别主页并处理启动浮层。
 - business：执行主页和活动页面业务流程。
 

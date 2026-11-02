@@ -1,7 +1,7 @@
 """模块功能：定义导航器的页面名与导航错误。
 
 上层调用：
-- application.ui.navigation 与各 UI 控制器：用 PageName 表达目标页面。
+- application.navigation 与各 UI 控制器：用 PageName 表达目标页面。
 - dispatch.startup：捕获 ManualUpdateRequiredError 转成人工处理错误。
 
 下层依赖：

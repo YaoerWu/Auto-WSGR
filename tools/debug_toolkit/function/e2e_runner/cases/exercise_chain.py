@@ -40,8 +40,8 @@ def add_arguments(parser: Any) -> None:
 
 def run(rt: Any) -> bool:
     """按顺序跑完每段「选对手 → 进准备页 → 回退」。"""
-    from autowsgr.application.ui.navigation.service import NavigationService
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation.service import NavigationService
+    from autowsgr.application.navigation.types import PageName
     from autowsgr.dispatch.session import get_session
 
     ctx = rt.ctx

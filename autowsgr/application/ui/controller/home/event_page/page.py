@@ -1,7 +1,7 @@
 """模块功能：控制活动页面的单次点击。
 
 上层调用：
-- application.ui.navigation：活动页面的前进、后退与难度切换。
+- application.navigation：活动页面的前进、后退与难度切换。
 
 下层依赖：
 - event_page.constants 与 event_page.stage_push：提供点击落点。

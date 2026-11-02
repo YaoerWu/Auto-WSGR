@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any
 from autowsgr.application.controller.mission import MissionPage
 from autowsgr.application.runtime.executor import BaseExecutor
 from autowsgr.application.ui.controller.home.main_page import check_task_ready
-from autowsgr.application.ui.navigation import goto_page
+from autowsgr.application.navigation import goto_page
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.types import PageName
 

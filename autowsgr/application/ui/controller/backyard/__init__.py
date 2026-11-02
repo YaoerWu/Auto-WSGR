@@ -1,7 +1,7 @@
 """模块功能：组织后院主页面、浴室和食堂页面控制器。
 
 上层调用：
-- application.ui.navigation：通过后院页面域执行页面导航。
+- application.navigation：通过后院页面域执行页面导航。
 - business.logistics：调用浴室和食堂页面的业务操作入口。
 
 下层依赖：

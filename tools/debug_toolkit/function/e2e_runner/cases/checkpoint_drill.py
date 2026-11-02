@@ -109,7 +109,7 @@ def _make_executor(rt: Any, *, target: Any = None, params: dict[str, Any] | None
 
     target 为 None 表示回退一步, 用来打出只在 navigate_back 路径上出现的断点。
     """
-    from autowsgr.application.ui.navigation.service import NavigationService
+    from autowsgr.application.navigation.service import NavigationService
     from autowsgr.dispatch.executor import BaseExecutor
 
     class _DrillExecutor(BaseExecutor):
@@ -175,8 +175,8 @@ def add_arguments(parser: Any) -> None:
 
 def run(rt: Any) -> bool:
     """按维度逐断点注入让路信号, 记录断点覆盖与恢复结果。"""
-    from autowsgr.application.ui.navigation.service import NavigationService
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation.service import NavigationService
+    from autowsgr.application.navigation.types import PageName
     from autowsgr.dispatch.session import get_session
 
     dimensions = rt.args.dimension or list(_DIMENSIONS)

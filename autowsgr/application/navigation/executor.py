@@ -1,7 +1,7 @@
 """模块功能：按路径逐边执行导航，并在每跳两端做前后识别。
 
 上层调用：
-- application.ui.navigation.service：把算好的路径交给执行器走出去。
+- application.navigation.service：把算好的路径交给执行器走出去。
 
 下层依赖：
 - navigation.registry：查询页面的到达确认入口。
@@ -19,8 +19,8 @@ from typing import TYPE_CHECKING
 
 from loguru import logger
 
-from autowsgr.application.ui.navigation import registry
-from autowsgr.application.ui.navigation.types import NavigationError, PageName
+from autowsgr.application.navigation import registry
+from autowsgr.application.navigation.types import NavigationError, PageName
 from autowsgr.common.system.logger import get_logger
 
 
@@ -58,7 +58,7 @@ _TAB_RETRY_INTERVAL_SECONDS = 2.0
 
 
 if TYPE_CHECKING:
-    from autowsgr.application.ui.navigation.types import NavTarget
+    from autowsgr.application.navigation.types import NavTarget
     from autowsgr.dispatch.context import ContextHandle
     from autowsgr.dispatch.session import SessionState
 

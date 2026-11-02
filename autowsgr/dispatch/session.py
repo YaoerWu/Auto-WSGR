@@ -1,7 +1,7 @@
 """模块功能：维护程序运行期内的会话状态。
 
 上层调用：
-- application.ui.navigation.service：记录导航栈与区服选择标记。
+- application.navigation.service：记录导航栈与区服选择标记。
 - application.controller 与 registry：读写每日浮窗的处理标记。
 
 下层依赖：

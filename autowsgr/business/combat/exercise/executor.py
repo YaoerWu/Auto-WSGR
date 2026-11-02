@@ -37,7 +37,7 @@ import time
 from typing import TYPE_CHECKING, Any
 
 from autowsgr.application.runtime.executor import BaseExecutor
-from autowsgr.application.ui.navigation import goto_page
+from autowsgr.application.navigation import goto_page
 from autowsgr.business.combat import CombatResult, run_combat
 from autowsgr.business.combat.exercise.spec import ExerciseSpec
 from autowsgr.business.combat.fleet import exact_fleet_rules

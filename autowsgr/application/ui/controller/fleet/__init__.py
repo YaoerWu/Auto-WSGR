@@ -1,7 +1,7 @@
 """模块功能：提供 Fleet UI Controller 的稳定页面入口。
 
 上层调用：
-- business.combat、application.ui.navigation：创建出征准备页控制器。
+- business.combat、application.navigation：创建出征准备页控制器。
 
 下层依赖：
 - main_page：提供出征准备页面 UI 和主流程。
@@ -16,7 +16,7 @@ from autowsgr.application.ui.controller.fleet.formation.fleet_recognition import
 )
 from autowsgr.application.ui.controller.fleet.main_page import BattlePreparationPage, Panel
 from autowsgr.application.ui.controller.fleet.support.repair import RepairStrategy
-from autowsgr.application.ui.navigation.types import PageMatch
+from autowsgr.application.navigation.types import PageMatch
 
 
 def check_ship_selection_page(screen: numpy.ndarray) -> PageMatch:

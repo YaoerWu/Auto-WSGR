@@ -1,9 +1,9 @@
 """模块功能：读取出征页当前能同时看到的页面层。
 
 上层调用：
-- application.ui.navigation.registry：作为出征页域的探针，一帧判出当前停在哪个标签页、
+- application.navigation.registry：作为出征页域的探针，一帧判出当前停在哪个标签页、
   以及上面有没有演习对手浮窗。
-- application.ui.navigation.executor：切换标签后确认落点。
+- application.navigation.executor：切换标签后确认落点。
 
 下层依赖：
 - application.ui.template：加载本模块的激活态模板与浮窗标题模板。
@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.types import PageName
 from autowsgr.application.ui.template import load_ui_template
 from autowsgr.common.vision import ROI, Template, expect_template
 

@@ -1,12 +1,11 @@
 """模块功能：维护页面之间的可达列表、到达确认与边动作。
 
 上层调用：
-- application.ui.navigation.service：查询可达目标、到达确认与完整路径。
+- application.navigation.service：查询可达目标、到达确认与完整路径。
 
 下层依赖：
 - navigation.types：提供页面契约与错误。
-- navigation.checker：提供到达确认入口。
-- application.ui.controller：提供一次点击的动作。
+- application.controller：提供到达确认入口与一次点击的动作。
 
 边界：维护"能去哪、到了吗"，以及一行数据写不下的那几步——边动作。
 边动作只读 checker 的事实、调 controller 点一下、确认后记账，不拼坐标、不写流程。
@@ -63,13 +62,13 @@ from autowsgr.application.controller.sortie.battle_preparation import (
     read_battle_preparation_layer,
 )
 from autowsgr.application.controller.sortie.exercise import ExercisePage
-from autowsgr.application.ui.controller.home.event_page import EventPage
-from autowsgr.application.ui.navigation.types import (
+from autowsgr.application.navigation.types import (
     NavigationError,
     NavTab,
     NavTarget,
     PageName,
 )
+from autowsgr.application.ui.controller.home.event_page import EventPage
 from autowsgr.dispatch.session import DailyPopup, get_session
 
 

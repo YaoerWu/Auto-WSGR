@@ -16,7 +16,7 @@ import pytest
 
 from autowsgr.application.errors import ManualRepairRequiredError
 from autowsgr.application.runtime.types import LoginServer
-from autowsgr.application.ui.navigation.types import (
+from autowsgr.application.navigation.types import (
     ManualUpdateRequiredError,
     NavigationError,
     PageName,

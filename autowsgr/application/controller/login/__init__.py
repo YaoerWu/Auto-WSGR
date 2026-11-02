@@ -1,8 +1,8 @@
 """模块功能：提供登录流程 checker 的模块入口。
 
 上层调用：
-- application.ui.navigation：把登录相关画面注册为到达确认；
-- application.ui.navigation.service：启动流程按顺序判断当前画面。
+- application.navigation：把登录相关画面注册为到达确认；
+- application.navigation.service：启动流程按顺序判断当前画面。
 
 下层依赖：
 - login.checker：提供画面判断与区服定位。

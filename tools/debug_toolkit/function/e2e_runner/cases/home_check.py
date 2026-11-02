@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from autowsgr.application.controller import home
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.types import PageName
 
 
 DESC = '主页检查器静态验证: 主页 / 公告浮窗 / 奖励浮窗 / 确认浮窗'

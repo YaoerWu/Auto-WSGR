@@ -1,7 +1,7 @@
 """模块功能：提供主页控制器的模块入口。
 
 上层调用：
-- application.ui.navigation：调用主页导航与每日浮窗按钮点击。
+- application.navigation：调用主页导航与每日浮窗按钮点击。
 - business.logistics：读取主页通知状态。
 
 下层依赖：

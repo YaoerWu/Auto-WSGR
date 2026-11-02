@@ -13,10 +13,10 @@ from typing import Any
 
 import pytest
 
+from autowsgr.application.navigation import registry
+from autowsgr.application.navigation.executor import NavigationExecutor
+from autowsgr.application.navigation.types import NavigationError, NavTab, NavTarget, PageName
 from autowsgr.application.signals import TaskPaused
-from autowsgr.application.ui.navigation import registry
-from autowsgr.application.ui.navigation.executor import NavigationExecutor
-from autowsgr.application.ui.navigation.types import NavigationError, NavTab, NavTarget, PageName
 from autowsgr.dispatch.session import SessionState
 
 
@@ -47,7 +47,7 @@ def test_executor_skips_arrival_when_edge_does_not_confirm(
 
 def test_executor_enters_tab_with_tab_checker(monkeypatch: pytest.MonkeyPatch) -> None:
     """传了标签时，用标签的 checker 做到达确认。"""
-    from autowsgr.application.ui.navigation import executor as executor_module
+    from autowsgr.application.navigation import executor as executor_module
 
     monkeypatch.setattr(executor_module.time, 'sleep', lambda _seconds: None)
 
@@ -94,7 +94,7 @@ def test_executor_applies_edge_tab_on_every_hop(monkeypatch: pytest.MonkeyPatch)
 
 def test_executor_rejects_unknown_tab(monkeypatch: pytest.MonkeyPatch) -> None:
     """页面没有该标签时到达确认直接失败。"""
-    from autowsgr.application.ui.navigation import executor as executor_module
+    from autowsgr.application.navigation import executor as executor_module
 
     monkeypatch.setattr(executor_module.time, 'sleep', lambda _seconds: None)
     executor = NavigationExecutor(object(), SessionState())
@@ -105,7 +105,7 @@ def test_executor_rejects_unknown_tab(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_executor_reports_tab_switch_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     """标签点完仍未激活时报标签切换失败。"""
-    from autowsgr.application.ui.navigation import executor as executor_module
+    from autowsgr.application.navigation import executor as executor_module
 
     monkeypatch.setattr(executor_module.time, 'sleep', lambda _seconds: None)
     monkeypatch.setitem(
@@ -133,7 +133,7 @@ def test_executor_confirms_domain_arrival_with_probes(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """域页面到达确认只问域探针，不扫全层。"""
-    from autowsgr.application.ui.navigation import executor as executor_module
+    from autowsgr.application.navigation import executor as executor_module
 
     slept: list[float] = []
     arrivals: list[PageName] = []
@@ -162,7 +162,7 @@ def test_executor_confirms_domain_arrival_with_probes(
 
 def test_executor_reports_domain_arrival_failure(monkeypatch: pytest.MonkeyPatch) -> None:
     """域探针认出的最深层不是目标页时报到达确认失败。"""
-    from autowsgr.application.ui.navigation import executor as executor_module
+    from autowsgr.application.navigation import executor as executor_module
 
     monkeypatch.setattr(executor_module.time, 'sleep', lambda _seconds: None)
     monkeypatch.setattr(registry, 'is_domain_page', lambda _page: True)

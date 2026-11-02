@@ -1,7 +1,7 @@
 """模块功能：提供学院二级页控制器的模块入口。
 
 上层调用：
-- application.ui.navigation：调用学院控制器执行退回。
+- application.navigation：调用学院控制器执行退回。
 
 下层依赖：
 - academy_page.page：提供学院页面控制器。

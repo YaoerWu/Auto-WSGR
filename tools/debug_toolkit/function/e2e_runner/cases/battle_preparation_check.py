@@ -17,7 +17,7 @@ from autowsgr.application.controller.sortie.battle_preparation import (
 
 
 if TYPE_CHECKING:
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation.types import PageName
 
 
 DESC = '出征准备页域探针静态验证: 普通 / 决战 / 演习 / 战役四页共用 ROI'
@@ -28,7 +28,7 @@ _SHOT_DIR = Path('C:/ShiinaKuroko/01.Project/debug/nav/静态模板/出征页')
 
 def _samples() -> tuple[tuple[str, PageName], ...]:
     """按样本顺序返回 (文件名, 期望页面) 组合。"""
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation.types import PageName
 
     return (
         ('普通出征-出征准备.png', PageName.BATTLE_PREPARATION),

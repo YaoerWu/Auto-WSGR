@@ -3,7 +3,7 @@
 上层调用：
 - business.combat.bettle：定位普通出征地图并进入出征准备。
 - application.runtime.context：读取普通出征地图统计。
-- application.ui.navigation：使用页面检查器识别 sortie_page 壳。
+- application.navigation：使用页面检查器识别 sortie_page 壳。
 - testing.ui、tools：验证普通出征页面行为。
 
 下层依赖：

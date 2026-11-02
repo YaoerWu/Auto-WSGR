@@ -24,12 +24,12 @@ from autowsgr.application.ui.controller.operations.sortie_page.expedition_page i
     operations,
     recognition,
 )
-from autowsgr.application.ui.navigation.interaction import (
+from autowsgr.application.navigation.interaction import (
     NavigationError,
     confirm_operation,
     wait_for_page,
 )
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.types import PageName
 from autowsgr.application.vision.resources import Templates
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import ImageChecker

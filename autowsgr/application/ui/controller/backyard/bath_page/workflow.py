@@ -16,7 +16,7 @@ from __future__ import annotations
 import time
 
 from autowsgr.application.ui.controller.backyard.bath_page import constants, operations, recognition
-from autowsgr.application.ui.navigation.types import NavigationError
+from autowsgr.application.navigation.types import NavigationError
 from autowsgr.common.device.interaction import wait_for_page
 from autowsgr.common.system.logger import get_logger
 

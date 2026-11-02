@@ -1,8 +1,8 @@
 """模块功能：提供登录流程各画面的识别入口。
 
 上层调用：
-- application.ui.navigation：把登录相关画面注册为导航器的到达确认；
-- application.ui.navigation.service：启动流程按顺序判断当前画面。
+- application.navigation：把登录相关画面注册为导航器的到达确认；
+- application.navigation.service：启动流程按顺序判断当前画面。
 
 下层依赖：
 - common.vision：读取模板与 OCR 事实。

@@ -2,7 +2,7 @@
 
 上层调用：
 - application.ui.controller.operations.sortie_page.main_page：选择决战顶部标签。
-- application.ui.navigation：确认决战总览页并执行跨页面回退。
+- application.navigation：确认决战总览页并执行跨页面回退。
 - business.combat.decisive：读取章节状态并推进决战入口流程。
 - testing.ui：验证决战总览页识别和操作。
 
@@ -42,11 +42,11 @@ from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.con
 from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.recognition import (
     read_chapter_number,
 )
-from autowsgr.application.ui.navigation.interaction import (
+from autowsgr.application.navigation.interaction import (
     click_and_wait_for_page,
     confirm_operation,
 )
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.types import PageName
 from autowsgr.application.vision.resources import Templates
 from autowsgr.business.combat.decisive.types import DecisiveEntryStatus
 from autowsgr.common.system.logger import get_logger
@@ -297,7 +297,7 @@ class DecisiveBattlePage:
         Returns:
             船坞未满且确认操作完成时返回 ``True``；检测到船坞已满时返回 ``False``。
         """
-        from autowsgr.application.ui.navigation.interaction import NavigationError
+        from autowsgr.application.navigation.interaction import NavigationError
 
         _log.info('[决战] 重置当前章节')
         deadline = time.monotonic() + 5.0
@@ -381,7 +381,7 @@ class DecisiveBattlePage:
             RuntimeError: 未注入 OCR 引擎。
             NavigationError: 多次尝试后仍无法到达目标章节。
         """
-        from autowsgr.application.ui.navigation.interaction import NavigationError
+        from autowsgr.application.navigation.interaction import NavigationError
 
         if not MIN_CHAPTER <= target <= MAX_CHAPTER:
             raise ValueError(f'决战章节编号必须为 {MIN_CHAPTER}-{MAX_CHAPTER}，收到 {target}')

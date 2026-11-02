@@ -15,7 +15,7 @@ import pytest
 
 from autowsgr.application.controller.sortie import checker as sortie_checker
 from autowsgr.application.controller.sortie import read_sortie_layer
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.types import PageName
 
 
 _LAYERS = sortie_checker._LAYERS

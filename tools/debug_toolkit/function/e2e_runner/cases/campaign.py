@@ -58,7 +58,7 @@ def _aliases(ctx: Any, values: list[str]) -> dict[str, str] | None:
 
 def run(rt: Any) -> bool:
     """执行一次战役任务并验证断点交接。"""
-    from autowsgr.application.ui.navigation import identify_current_page
+    from autowsgr.application.navigation import identify_current_page
     from autowsgr.common.types import PageName
     from autowsgr.dispatch import Processor, Request
 

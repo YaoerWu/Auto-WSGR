@@ -1,7 +1,7 @@
 """模块功能：确认后院主页并读取四个入口的点击中心。
 
 上层调用：
-- application.ui.navigation：确认后院主页是否到达或离开，读取四个入口的点击中心。
+- application.navigation：确认后院主页是否到达或离开，读取四个入口的点击中心。
 
 下层依赖：
 - common.vision：读取模板事实与模板中心。

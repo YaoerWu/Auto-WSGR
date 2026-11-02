@@ -43,7 +43,7 @@ def run(rt: Any) -> bool:
     """Run three rounds of shuffled map-only navigation."""
     from autowsgr.application.controller.sortie import SortieTab
     from autowsgr.application.controller.sortie.battle import BattlePage
-    from autowsgr.application.ui.navigation import goto_page
+    from autowsgr.application.navigation import goto_page
     from autowsgr.common.types import PageName
 
     if rt.args.rounds <= 0:

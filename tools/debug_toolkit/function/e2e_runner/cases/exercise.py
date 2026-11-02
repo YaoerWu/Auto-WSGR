@@ -196,7 +196,7 @@ def _run_multiple_rounds(  # noqa: PLR0915 - one E2E case owns the full scenario
     checks: tuple[str, ...],
 ) -> bool:
     """提交多个单场请求，验证队伍切换和连续/非连续任务衔接。"""
-    from autowsgr.application.ui.navigation import identify_current_page
+    from autowsgr.application.navigation import identify_current_page
     from autowsgr.common.types import PageName
     from autowsgr.dispatch.processor import Processor, Request
 
@@ -345,7 +345,7 @@ def _run_multiple_rounds(  # noqa: PLR0915 - one E2E case owns the full scenario
 
 def run(rt: Any) -> bool:  # noqa: C901, PLR0912, PLR0915 - one E2E case owns its assertions
     """执行演习断点打断验证 (单断点 / 接力 / 可带初始化前置)。"""
-    from autowsgr.application.ui.navigation import identify_current_page
+    from autowsgr.application.navigation import identify_current_page
     from autowsgr.common.types import PageName
     from autowsgr.dispatch.processor import Processor, Request
 

@@ -1,7 +1,7 @@
 """模块功能：提供好友页面检查器的模块入口。
 
 上层调用：
-- application.ui.navigation：调用好友页面的确认入口。
+- application.navigation：调用好友页面的确认入口。
 
 下层依赖：
 - friend.checker：提供识别入口。

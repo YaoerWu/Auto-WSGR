@@ -94,6 +94,7 @@ def _reset_after_restart(rt: Any, config: Any, force: bool = False) -> None:
 
 
 def _new_controller(rt: Any, config: Any) -> Any:
+    from autowsgr.application.navigation import get_current_page, register_default_pages
     from autowsgr.application.ui.controller.fleet import BattlePreparationPage
     from autowsgr.application.ui.controller.operations.sortie_page.decisive_page import (
         DecisiveBattlePage,
@@ -102,7 +103,6 @@ def _new_controller(rt: Any, config: Any) -> Any:
         check_decisive_map_page,
         detect_decisive_overlay,
     )
-    from autowsgr.application.ui.navigation import get_current_page, register_default_pages
     from autowsgr.business.combat.decisive import DecisiveController
     from autowsgr.common.types import DecisivePhase, PageName
 

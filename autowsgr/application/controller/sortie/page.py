@@ -1,7 +1,7 @@
 """模块功能：控制出征页页面壳的单次点击。
 
 上层调用：
-- application.ui.navigation：进入某个顶部标签，或离开出征页。
+- application.navigation：进入某个顶部标签，或离开出征页。
 
 下层依赖：
 - main_page.constants：提供标签落点与返回落点。

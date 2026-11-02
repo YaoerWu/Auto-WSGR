@@ -1,7 +1,7 @@
 """模块功能：控制演习页的选择对手与对手详情浮窗按钮。
 
 上层调用：
-- application.ui.navigation：执行演习页与对手详情浮窗之间的页面边动作。
+- application.navigation：执行演习页与对手详情浮窗之间的页面边动作。
 
 下层依赖：
 - common.device.service：通过 `ctx.runtime.ctrl` 执行滑动与点击。

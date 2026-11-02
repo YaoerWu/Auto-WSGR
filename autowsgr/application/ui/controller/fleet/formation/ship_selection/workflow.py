@@ -19,7 +19,7 @@ from autowsgr.application.ui.controller.fleet.formation.ship_selection import co
 from autowsgr.application.ui.controller.fleet.formation.ship_selection.page import (
     ShipSelectionPage,
 )
-from autowsgr.application.ui.navigation.interaction import wait_for_page, wait_leave_page
+from autowsgr.application.navigation.interaction import wait_for_page, wait_leave_page
 from autowsgr.common.system.logger import get_logger
 
 

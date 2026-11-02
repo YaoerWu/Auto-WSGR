@@ -32,8 +32,8 @@ def _flags(session: Any) -> str:
 
 def run(rt: Any) -> bool:
     """按场景逐段导航，每步打印上下文状态。"""
-    from autowsgr.application.ui.navigation.service import NavigationService
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation.service import NavigationService
+    from autowsgr.application.navigation.types import PageName
     from autowsgr.dispatch.session import DailyPopup, get_session
 
     session = get_session()

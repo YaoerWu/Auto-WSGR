@@ -1,7 +1,7 @@
 """模块功能：在改造页执行标签切换与返回。
 
 上层调用：
-- application.ui.navigation：执行改造页的标签切换与返回主页的页面边动作。
+- application.navigation：执行改造页的标签切换与返回主页的页面边动作。
 
 下层依赖：
 - application.ui.controller.sidebar.intensify_page.constants：提供标签与返回落点。

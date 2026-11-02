@@ -29,7 +29,7 @@ class DecisiveChapterOps(DecisiveBase):
 
     def _prepare_entry_state(self) -> None:
         """进入决战总览并推断入口状态。"""
-        from autowsgr.application.ui.navigation import goto_page
+        from autowsgr.application.navigation import goto_page
 
         goto_page(self._ctx, PageName.DECISIVE_BATTLE)
         self._battle_page.navigate_to_chapter(self._config.chapter)

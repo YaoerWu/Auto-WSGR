@@ -1,7 +1,7 @@
 """模块功能：提供出征相关页面控制器的模块入口。
 
 上层调用：
-- application.ui.navigation：获取出征准备页与演习页的页面控制器。
+- application.navigation：获取出征准备页与演习页的页面控制器。
 
 下层依赖：
 - sortie.battle_preparation：提供出征准备页控制器。

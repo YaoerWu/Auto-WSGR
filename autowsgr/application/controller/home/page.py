@@ -1,7 +1,7 @@
 """模块功能：控制主页面的单次点击。
 
 上层调用：
-- application.ui.navigation：主页面的目标页导航与每日浮窗按钮点击。
+- application.navigation：主页面的目标页导航与每日浮窗按钮点击。
 
 下层依赖：
 - main_page.constants：提供导航落点与浮窗点击落点。
@@ -17,8 +17,8 @@ from __future__ import annotations
 import enum
 from typing import TYPE_CHECKING
 
+from autowsgr.application.navigation.types import PageName
 from autowsgr.application.ui.controller.home.main_page import constants
-from autowsgr.application.ui.navigation.types import PageName
 from autowsgr.common.system.logger import get_logger
 
 

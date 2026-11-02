@@ -1,7 +1,7 @@
 """模块功能：确认改造页各标签的激活状态。
 
 上层调用：
-- application.ui.navigation：确认改造页是否到达，以及切换标签后是否落在目标标签。
+- application.navigation：确认改造页是否到达，以及切换标签后是否落在目标标签。
 
 下层依赖：
 - common.vision：读取模板事实。

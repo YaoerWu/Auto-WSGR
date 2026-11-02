@@ -15,7 +15,7 @@ from autowsgr.application.controller.sortie import read_sortie_layer
 
 
 if TYPE_CHECKING:
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation.types import PageName
 
 
 DESC = '出征页域探针静态验证: 一次读六模板判当前标签页'
@@ -26,7 +26,7 @@ _SHOT_DIR = Path('C:/ShiinaKuroko/01.Project/debug/nav/静态模板/出征')
 
 def _samples() -> tuple[tuple[str, PageName], ...]:
     """按样本顺序返回 (文件名, 期望页面) 组合。"""
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation.types import PageName
 
     return (
         ('出征页面.png', PageName.SORTIE_MAP),

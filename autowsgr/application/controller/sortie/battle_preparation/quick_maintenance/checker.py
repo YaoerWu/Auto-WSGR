@@ -1,7 +1,7 @@
 """模块功能：识别出征准备页的快速整备状态。
 
 上层调用：
-- application.ui.navigation：判断自动补给是否开启、快速修理页签是否激活，并取点击落点。
+- application.navigation：判断自动补给是否开启、快速修理页签是否激活，并取点击落点。
 
 下层依赖：
 - application.ui.template：加载本模块模板。

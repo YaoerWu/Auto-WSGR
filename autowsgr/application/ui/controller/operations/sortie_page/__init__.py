@@ -1,7 +1,7 @@
 """模块功能：组织 sortie_page 的六个垂直页面模块。
 
 上层调用：
-- application.ui.navigation、business 和 testing.ui：直接调用各具体页面包的稳定入口。
+- application.navigation、business 和 testing.ui：直接调用各具体页面包的稳定入口。
 
 下层依赖：
 - application.ui.controller.operations.sortie_page.main_page：提供 sortie_page 页面壳和顶部标签。

@@ -16,7 +16,7 @@ from autowsgr.application.errors import ActionFailedError, ManualRepairRequiredE
 from autowsgr.application.ui.controller.fleet import BattlePreparationPage, RepairStrategy
 from autowsgr.application.ui.controller.home.event_page import BaseEventPage
 from autowsgr.application.ui.controller.operations.sortie_page.battle_page import recognition
-from autowsgr.application.ui.navigation import (
+from autowsgr.application.navigation import (
     goto_bath_from_event_sortie,
     goto_bath_from_normal_sortie,
     goto_page,

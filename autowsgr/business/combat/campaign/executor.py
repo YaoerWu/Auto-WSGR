@@ -6,7 +6,7 @@ import time
 from typing import TYPE_CHECKING, Any
 
 from autowsgr.application.runtime.executor import BaseExecutor
-from autowsgr.application.ui.navigation import goto_page
+from autowsgr.application.navigation import goto_page
 from autowsgr.business.combat import CombatResult, run_combat
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.types import ConditionFlag, PageName

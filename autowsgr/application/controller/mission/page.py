@@ -1,7 +1,7 @@
 """模块功能：在任务页执行领奖与返回。
 
 上层调用：
-- application.ui.navigation：执行任务页的领奖与返回主页的页面边动作。
+- application.navigation：执行任务页的领奖与返回主页的页面边动作。
 
 下层依赖：
 - application.ui.controller.operations.mission_page.constants：提供点击落点。

@@ -1,13 +1,13 @@
 """模块功能：确认普通推图活动的页面状态并读取识别事实。
 
 上层调用：
-- application.ui.navigation：确认首页活动入口、活动地图状态与出征准备前置页，
+- application.navigation：确认首页活动入口、活动地图状态与出征准备前置页，
   并读取任务绑定的活动玩法与章节。
 
 下层依赖：
 - common.vision：读取模板与 OCR 事实。
 - application.ui.template：加载本活动模板。
-- application.ui.navigation.types：提供导航错误。
+- application.navigation.types：提供导航错误。
 
 边界：只识别、解析并返回活动事实，不执行点击、不计算路由、不上报识别错误。
 """
@@ -20,7 +20,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.navigation.types import NavigationError
+from autowsgr.application.navigation.types import NavigationError
 from autowsgr.application.ui.template import load_ui_template
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import (

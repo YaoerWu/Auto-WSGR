@@ -1,7 +1,7 @@
 """模块功能：提供餐厅二级页的页面控制器。
 
 上层调用：
-- application.ui.navigation：执行该页的页面边动作。
+- application.navigation：执行该页的页面边动作。
 
 下层依赖：
 - application.ui.controller.backyard.main_page.constants：提供三级页入口落点。

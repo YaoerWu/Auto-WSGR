@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from autowsgr.application.runtime.executor import BaseExecutor
-from autowsgr.application.ui.navigation import goto_page
+from autowsgr.application.navigation import goto_page
 from autowsgr.business.combat import CombatPlan, CombatResult
 from autowsgr.business.combat.bettle.normal_fight import NormalFightRunner
 from autowsgr.common.system.logger import get_logger

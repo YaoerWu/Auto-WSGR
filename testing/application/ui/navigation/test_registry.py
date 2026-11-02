@@ -12,8 +12,8 @@ from __future__ import annotations
 import pytest
 
 from autowsgr.application.controller import login
-from autowsgr.application.ui.navigation import registry
-from autowsgr.application.ui.navigation.types import NavigationError, PageName
+from autowsgr.application.navigation import registry
+from autowsgr.application.navigation.types import NavigationError, PageName
 
 
 def test_find_path_multi_hop() -> None:

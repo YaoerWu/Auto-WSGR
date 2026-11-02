@@ -1,7 +1,7 @@
 """模块功能：提供快速整备检查器的模块入口。
 
 上层调用：
-- application.ui.navigation：读血条状态、快速修理与自动补给的事实。
+- application.navigation：读血条状态、快速修理与自动补给的事实。
 
 下层依赖：
 - quick_maintenance.checker：提供识别入口与船损状态模型。

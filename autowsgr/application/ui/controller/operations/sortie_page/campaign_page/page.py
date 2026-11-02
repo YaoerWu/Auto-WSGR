@@ -25,8 +25,8 @@ from autowsgr.application.ui.controller.operations.sortie_page.campaign_page imp
     constants,
     recognition,
 )
-from autowsgr.application.ui.navigation.interaction import NavigationError, wait_for_page
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.interaction import NavigationError, wait_for_page
+from autowsgr.application.navigation.types import PageName
 from autowsgr.common.system.logger import get_logger
 
 

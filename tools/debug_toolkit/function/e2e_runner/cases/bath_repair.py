@@ -25,7 +25,7 @@ DESC = '浴场修理链路: 首页 → 浴场 → 派修 → 回首页'
 def run(rt: Any) -> bool:
     """执行浴场修理链路并验证终态契约。"""
     from autowsgr.application.controller.home import HomePage
-    from autowsgr.application.ui.navigation import identify_current_page
+    from autowsgr.application.navigation import identify_current_page
     from autowsgr.business.logistics.repair.bath_repair import repair_one_available
 
     ctx = rt.ctx

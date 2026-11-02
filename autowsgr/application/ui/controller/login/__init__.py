@@ -1,7 +1,7 @@
 """模块功能：提供登录页与区服选择页控制器的模块入口。
 
 上层调用：
-- application.ui.navigation：调用登录页进入游戏、打开区服列表与选择区服。
+- application.navigation：调用登录页进入游戏、打开区服列表与选择区服。
 
 下层依赖：
 - login.page：提供页面控制器。

@@ -17,7 +17,7 @@ from autowsgr.application.controller.sidebar.build import (
     BuildPage,
     BuildTab,
 )
-from autowsgr.application.ui.navigation import goto_page
+from autowsgr.application.navigation import goto_page
 from autowsgr.common.device.interaction import click_and_wait_for_page
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.types import DestroyShipWorkMode, PageName, ShipType

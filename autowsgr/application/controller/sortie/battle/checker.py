@@ -1,7 +1,7 @@
 """模块功能：读出出征页的章节事实，并在页内导航到指定章节与地图节点。
 
 上层调用：
-- application.ui.navigation.registry：作为出征页的页内导航边动作，按入参选到目标章节。
+- application.navigation.registry：作为出征页的页内导航边动作，按入参选到目标章节。
 
 下层依赖：
 - controller.operations.sortie_page.battle_page：执行章节槽位与地图翻页的单次点击。
@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from autowsgr.application.controller.sortie.battle.page import BattlePage
-from autowsgr.application.ui.navigation.types import NavigationError
+from autowsgr.application.navigation.types import NavigationError
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import ROI, TextDetection, expect_ocr
 

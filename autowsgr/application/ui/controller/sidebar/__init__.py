@@ -1,7 +1,7 @@
 """模块功能：组织侧边栏主页面及其可导航页面控制器。
 
 上层调用：
-- application.ui.navigation：通过侧边栏页面域执行页面导航。
+- application.navigation：通过侧边栏页面域执行页面导航。
 
 下层依赖：
 - main_page：提供侧边栏入口和导航控制器。

@@ -1,13 +1,13 @@
 """模块功能：确认主页与每日浮窗的当前层。
 
 上层调用：
-- application.ui.navigation：识别当前是否在主页，以及主页上存在的每日浮窗。
-- application.ui.navigation.registry：读取浮窗事实与点击落点。
+- application.navigation：识别当前是否在主页，以及主页上存在的每日浮窗。
+- application.navigation.registry：读取浮窗事实与点击落点。
 
 下层依赖：
 - common.vision：读取模板事实与模板中心。
 - application.ui.template：加载本模块模板。
-- application.ui.navigation.types：提供页面契约。
+- application.navigation.types：提供页面契约。
 - dispatch.session：读写每日浮窗的处理标记。
 
 边界：只读取一帧、按梯次判层并返回事实，不执行点击、不计算路由、不上报识别错误。
@@ -18,7 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.types import PageName
 from autowsgr.application.ui.template import load_ui_template
 from autowsgr.common.vision import ROI, Template, expect_template, expect_template_center
 from autowsgr.dispatch.session import DailyPopup, get_session

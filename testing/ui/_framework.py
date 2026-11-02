@@ -330,7 +330,7 @@ class UIControllerTestRunner:
             rec.screenshot_path = str(path) if path else None
             rec.duration_ms = int((time.monotonic() - t0) * 1000)
 
-            from autowsgr.application.ui.navigation.recognition import get_current_page
+            from autowsgr.application.navigation.recognition import get_current_page
 
             rec.page_check = checker(screen)
             rec.actual_page = get_current_page(screen)

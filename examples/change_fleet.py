@@ -4,7 +4,7 @@
 """
 
 from autowsgr.application.ui.controller.fleet import BattlePreparationPage
-from autowsgr.application.ui.navigation import goto_page
+from autowsgr.application.navigation import goto_page
 from autowsgr.business.combat.fleet import exact_fleet_rules
 from autowsgr.common.types import PageName
 from autowsgr.dispatch.legacy_scheduler import launch

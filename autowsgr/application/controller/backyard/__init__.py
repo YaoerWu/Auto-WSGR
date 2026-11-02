@@ -1,7 +1,7 @@
 """模块功能：提供后院检查器的模块入口。
 
 上层调用：
-- application.ui.navigation：调用后院主页与四个二级页的确认入口。
+- application.navigation：调用后院主页与四个二级页的确认入口。
 
 下层依赖：
 - backyard.checker：提供后院主页的确认入口与四个入口中心；

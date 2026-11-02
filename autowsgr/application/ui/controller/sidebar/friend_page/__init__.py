@@ -1,7 +1,7 @@
 """模块功能：提供好友页面的模块入口。
 
 上层调用：
-- application.ui.navigation：调用好友页面控制器执行返回。
+- application.navigation：调用好友页面控制器执行返回。
 
 下层依赖：
 - sidebar.friend_page.page：提供好友页面控制器。

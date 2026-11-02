@@ -2,7 +2,7 @@
 
 上层调用：
 - application.controller.sortie.battle：编排章节与地图选择时执行单次点击。
-- application.ui.navigation：执行出征页标签切换与返回的页面边动作。
+- application.navigation：执行出征页标签切换与返回的页面边动作。
 
 下层依赖：
 - battle_page.constants：提供章节槽位、地图翻页和出征入口的点击坐标。

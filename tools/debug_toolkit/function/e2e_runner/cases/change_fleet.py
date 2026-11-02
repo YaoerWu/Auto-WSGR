@@ -38,8 +38,8 @@ def run(rt: Any) -> bool:
         return False
 
     from autowsgr.application.controller.home import HomePage
+    from autowsgr.application.navigation import goto_page
     from autowsgr.application.ui.controller.fleet import BattlePreparationPage
-    from autowsgr.application.ui.navigation import goto_page
     from autowsgr.common.types import PageName
 
     ctx = rt.ctx

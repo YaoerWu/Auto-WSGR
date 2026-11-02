@@ -1,7 +1,7 @@
 """模块功能：提供出征页页面壳控制器的模块入口。
 
 上层调用：
-- application.ui.navigation：调用出征页的标签切换与返回。
+- application.navigation：调用出征页的标签切换与返回。
 - application.ui.controller.operations.sortie_page.*_page：复用标签枚举。
 
 下层依赖：

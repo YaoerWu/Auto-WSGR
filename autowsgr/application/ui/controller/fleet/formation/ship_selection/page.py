@@ -2,7 +2,7 @@
 
 上层调用：
 - ship_selection.workflow：编排单舰搜索、选择、移除和页面退出。
-- application.ui.navigation.registry：注册船池页面检查器。
+- application.navigation.registry：注册船池页面检查器。
 
 下层依赖：
 - ship_selection.constants：提供船池页面和滚动坐标。
@@ -16,12 +16,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from autowsgr.application.ui.controller.fleet.formation.ship_selection import constants
-from autowsgr.application.ui.navigation.interaction import (
+from autowsgr.application.navigation.interaction import (
     click_and_wait_for_page,
     wait_for_page,
     wait_leave_page,
 )
-from autowsgr.application.ui.navigation.types import PageMatch, PageName
+from autowsgr.application.navigation.types import PageMatch, PageName
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import PixelChecker
 

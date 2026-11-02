@@ -8,7 +8,7 @@ from __future__ import annotations
 from typing import Any
 
 from autowsgr.application.controller import home
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.types import PageName
 
 
 # 一句话描述 (--list 时显示)

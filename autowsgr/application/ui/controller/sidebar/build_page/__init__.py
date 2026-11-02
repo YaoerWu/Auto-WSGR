@@ -3,7 +3,7 @@
 上层调用：
 - business.logistics.build：调用建造流程入口。
 - business.logistics.destroy：调用解体流程入口。
-- application.ui.navigation.registry：注册建造页面检查器。
+- application.navigation.registry：注册建造页面检查器。
 
 下层依赖：
 - application.ui.controller.sidebar.build_page.page：提供页面操作实现。

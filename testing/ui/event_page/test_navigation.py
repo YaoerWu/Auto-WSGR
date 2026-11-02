@@ -4,8 +4,8 @@
 - pytest：验证导航图中的 HOME -> EVENT_MAP 边。
 
 下层依赖：
-- application.ui.navigation.graph.common：提供公共导航边。
-- application.ui.navigation.event：提供活动入口导航动作。
+- application.navigation.graph.common：提供公共导航边。
+- application.navigation.event：提供活动入口导航动作。
 """
 
 from __future__ import annotations
@@ -13,8 +13,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import MagicMock
 
-from autowsgr.application.ui.navigation import event as event_navigation
-from autowsgr.application.ui.navigation.graph.common import COMMON_EDGES
+from autowsgr.application.navigation import event as event_navigation
+from autowsgr.application.navigation.graph.common import COMMON_EDGES
 from autowsgr.common.types import PageName
 
 

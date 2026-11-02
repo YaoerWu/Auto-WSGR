@@ -1,7 +1,7 @@
 """模块功能：确认军阶室二级页的到达状态。
 
 上层调用：
-- application.ui.navigation：确认军阶室二级页是否到达或离开。
+- application.navigation：确认军阶室二级页是否到达或离开。
 
 下层依赖：
 - common.vision：读取模板事实。

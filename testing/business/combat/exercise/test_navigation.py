@@ -1,7 +1,7 @@
 """演习准备页导航节点的无设备回归。"""
 
-from autowsgr.application.ui.navigation.graph import find_path
-from autowsgr.application.ui.navigation.registry import get_registered_pages, register_default_pages
+from autowsgr.application.navigation.graph import find_path
+from autowsgr.application.navigation.registry import get_registered_pages, register_default_pages
 from autowsgr.common.types import PageName
 
 

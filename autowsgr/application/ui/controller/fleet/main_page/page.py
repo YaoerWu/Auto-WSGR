@@ -2,7 +2,7 @@
 
 上层调用：
 - business.combat：创建页面控制器并执行准备页主流程。
-- application.ui.navigation：注册准备页检查器和执行准备页返回。
+- application.navigation：注册准备页检查器和执行准备页返回。
 
 下层依赖：
 - formation：完成当前编队识别、规则调整和单舰选船。
@@ -18,12 +18,12 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from autowsgr.application.ui.controller.fleet.main_page import constants
-from autowsgr.application.ui.navigation.interaction import (
+from autowsgr.application.navigation.interaction import (
     NavigationError,
     click_and_wait_for_page,
     wait_leave_page,
 )
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.types import PageName
 from autowsgr.application.vision.resources import Templates
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import ImageChecker, PageMatch, PixelChecker

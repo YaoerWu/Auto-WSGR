@@ -4,7 +4,7 @@
 - dispatch.processor：派发任务前确保游戏处于「主页 + 浮层已清」。
 
 下层依赖：
-- application.ui.navigation：启动段、换区与页面导航都在 UI 层。
+- application.navigation：启动段、换区与页面导航都在 UI 层。
 
 边界：只决定何时拉起 App、何时 SL、按配置决定是否换区；不识别画面也不点击，
 因此这里不出现任何 checker 调用，识别与点击全部由 UI 层编排。
@@ -17,8 +17,8 @@ from typing import TYPE_CHECKING
 
 from autowsgr.application.errors import ManualRepairRequiredError
 from autowsgr.application.runtime.types import LoginServer
-from autowsgr.application.ui.navigation.service import NavigationService
-from autowsgr.application.ui.navigation.types import (
+from autowsgr.application.navigation.service import NavigationService
+from autowsgr.application.navigation.types import (
     ManualUpdateRequiredError,
     NavigationError,
     PageName,

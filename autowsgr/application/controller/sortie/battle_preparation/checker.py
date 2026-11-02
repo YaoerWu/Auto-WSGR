@@ -1,10 +1,10 @@
 """模块功能：识别出征准备页属于哪一种玩法。
 
 上层调用：
-- application.ui.navigation：判断当前是不是出征准备页，以及属于哪一种玩法。
+- application.navigation：判断当前是不是出征准备页，以及属于哪一种玩法。
 
 下层依赖：
-- application.ui.navigation.types：提供页面名。
+- application.navigation.types：提供页面名。
 - application.ui.template：加载本模块模板。
 - common.vision：读取模板命中事实。
 
@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.navigation.types import PageName
+from autowsgr.application.navigation.types import PageName
 from autowsgr.application.ui.template import load_ui_template
 from autowsgr.common.vision import ROI, Template, expect_template
 

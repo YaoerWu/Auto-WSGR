@@ -102,8 +102,8 @@ class BaseExecutor:
         栈要先清空, 否则 navigate_to 看到「已经在主页」会直接返回、不确认到达。
         回不去说明游戏已经不在任何已知页面上, 交给处理器重新初始化 (等价重启游戏)。
         """
-        from autowsgr.application.ui.navigation.service import NavigationService
-        from autowsgr.application.ui.navigation.types import PageName
+        from autowsgr.application.navigation.service import NavigationService
+        from autowsgr.application.navigation.types import PageName
         from autowsgr.dispatch.context import context
         from autowsgr.dispatch.session import get_session
 

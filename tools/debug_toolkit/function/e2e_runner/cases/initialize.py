@@ -33,7 +33,7 @@ def add_arguments(parser: Any) -> None:
 def run(rt: Any) -> bool:
     """执行初始化链路并验证终态契约。"""
     from autowsgr.application.controller import home
-    from autowsgr.application.ui.navigation.types import PageName
+    from autowsgr.application.navigation.types import PageName
     from autowsgr.dispatch.startup import ensure_ready
 
     ctx = rt.ctx
@@ -44,7 +44,7 @@ def run(rt: Any) -> bool:
 
     # ② --pre: 先用生产导航前往指定页面，测带栈与不带栈两种初始化入口
     if rt.args.pre is not None:
-        from autowsgr.application.ui.navigation.service import NavigationService
+        from autowsgr.application.navigation.service import NavigationService
 
         target = PageName[rt.args.pre]
         navigator = NavigationService(ctx)

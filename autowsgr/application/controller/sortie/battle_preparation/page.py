@@ -1,7 +1,7 @@
 """模块功能：控制出征准备页的单次点击。
 
 上层调用：
-- application.ui.navigation：进入或离开出征准备页时调用。
+- application.navigation：进入或离开出征准备页时调用。
 
 下层依赖：
 - common.device.service：通过 `ctx.runtime.ctrl` 执行点击。

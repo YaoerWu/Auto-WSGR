@@ -23,7 +23,7 @@ from autowsgr.application.ui.controller.fleet import (
     BattlePreparationPage,
     RepairStrategy,
 )
-from autowsgr.application.ui.navigation import goto_bath_from_decisive_sortie
+from autowsgr.application.navigation import goto_bath_from_decisive_sortie
 from autowsgr.business.combat import CombatMode, CombatPlan, NodeDecision, run_combat
 from autowsgr.business.combat.decisive.base import DecisiveBase
 from autowsgr.business.combat.decisive.config import MapData
