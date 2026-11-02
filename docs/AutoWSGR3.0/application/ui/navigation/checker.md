@@ -173,8 +173,8 @@ def check_xxx_page(
 模板统一走 [application.ui.template](<../template.md>) 的 `load_ui_template`，它按
 `(namespace, filename, name)` 缓存，同一组参数只读盘解码一次。
 
-各子包在 `checker.py` 顶部声明自己的模板命名空间（相对 UI 模板根，例如
-`navigation/checker/home`）与模板文件名，`_load_template` 负责拼接调用。
+各子包在 `checker.py` 顶部声明自己的模板命名空间（相对应用模板根 `application/`，例如
+`controller/home`）与模板文件名，`_load_template` 负责拼接调用。
 
 **调用方式必须是模块限定名** `template.load_ui_template(...)`，不要写成
 `from ... import load_ui_template`：测试通过 monkeypatch 模块属性替换模板加载，导入对象会破坏这个打桩点。

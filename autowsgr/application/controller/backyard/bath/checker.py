@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 # ── 识别数据 ────────────────────────────────────────────────────────────────
 
 # UI 模板根下的命名空间：二级页模板放在以页面命名的子目录里。
-TEMPLATE_NAMESPACE = 'navigation/checker/backyard/bath'
+TEMPLATE_NAMESPACE = 'controller/backyard/bath'
 
 # 模板文件名；目录与命名空间已表达域，文件名不再重复域前缀。
 PAGE_TEMPLATE = 'BATH_PAGE_720P.png'

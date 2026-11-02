@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 # ── 识别数据 ────────────────────────────────────────────────────────────────
 
 # 本模块在 UI 模板根下的命名空间：建造页从侧边栏进入，因此嵌在 sidebar 命名空间下。
-TEMPLATE_NAMESPACE = 'navigation/checker/sidebar/build'
+TEMPLATE_NAMESPACE = 'controller/sidebar/build'
 
 # 本模块的模板文件名；目录小写、文件名全大写。
 # 建造页默认落在「建造」标签，因此用它作为页面身份。

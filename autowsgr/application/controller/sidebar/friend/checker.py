@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 # ── 识别数据 ────────────────────────────────────────────────────────────────
 
 # 本模块在 UI 模板根下的命名空间：好友从侧边栏进入，因此嵌在 sidebar 命名空间下。
-TEMPLATE_NAMESPACE = 'navigation/checker/sidebar/friend'
+TEMPLATE_NAMESPACE = 'controller/sidebar/friend'
 
 # 本模块的模板文件名；目录小写、文件名全大写。
 # 好友页面有两个页签，账号设置不同进入后停留的页签也不同，两个都要认。

@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 # ── 识别数据 ────────────────────────────────────────────────────────────────
 
 # 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'navigation/checker/home'
+TEMPLATE_NAMESPACE = 'controller/home'
 
 # 本模块的模板文件名；目录小写、文件名全大写。
 HOME_MAIN_TEMPLATE = 'HOME_MAIN_720P.png'

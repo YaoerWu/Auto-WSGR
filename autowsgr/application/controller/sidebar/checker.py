@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 # ── 识别数据 ────────────────────────────────────────────────────────────────
 
 # 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'navigation/checker/sidebar'
+TEMPLATE_NAMESPACE = 'controller/sidebar'
 
 # 本模块的模板文件名；目录小写、文件名全大写。
 SIDEBAR_MAIN_TEMPLATE = 'SIDEBAR_MAIN_720P.png'

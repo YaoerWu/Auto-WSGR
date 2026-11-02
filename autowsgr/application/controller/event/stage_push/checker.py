@@ -48,7 +48,7 @@ ACTIVITY = 'stage_push'
 PERIOD = '20260930'
 
 # 本活动在 UI 模板根下的命名空间：一期一个目录，换期换目录。
-TEMPLATE_NAMESPACE = f'navigation/checker/event/{ACTIVITY}_{PERIOD}'
+TEMPLATE_NAMESPACE = f'controller/event/{ACTIVITY}_{PERIOD}'
 
 # 本活动的模板文件名。
 HOME_ENTRY_TEMPLATE = 'EVENT_HOME_ENTRY_720P.png'

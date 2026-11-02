@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 # ── 识别数据 ────────────────────────────────────────────────────────────────
 
 # 本模块在 UI 模板根下的命名空间；四个入口模板都放在这个根目录下。
-TEMPLATE_NAMESPACE = 'navigation/checker/backyard'
+TEMPLATE_NAMESPACE = 'controller/backyard'
 
 
 # ── 后院主页身份 ────────────────────────────────────────────────────────────

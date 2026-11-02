@@ -7,7 +7,7 @@
 
 ## 1. 模块定位
 
-template 是 **application.ui 层**的公共模板加载模块。它把「UI 层某个命名空间下的模板文件名」
+template 是 **application 层**的公共模板加载模块。它把「应用层某个命名空间下的模板文件名」
 变成「已加载并缓存的模板对象」，供导航器与页面控制器共用。
 
 它明确不负责：识别规则与阈值（属于各调用方）、页面语义、图像算法（属于 `common.vision`）、
@@ -33,7 +33,7 @@ autowsgr/application/ui/
 
 | 分区 | 内容 |
 | --- | --- |
-| 常量 | `UI_TEMPLATE_ROOT`：UI 层模板根，命名空间从它起算 |
+| 常量 | `UI_TEMPLATE_ROOT`：应用层模板根，命名空间从它起算 |
 | 能力 | `load_ui_template`：拼接路径、加载、按参数缓存 |
 
 ### 2.3 依赖方向
@@ -45,7 +45,7 @@ application.ui.template
         ↓
 common.vision.adapters.template_matching（load_template）
         ↓
-common.vision.opencv_engine.executor（读盘解码）
+common.vision.opencv.executor（读盘解码）
 ~~~
 
 禁止方向：
@@ -68,7 +68,7 @@ common.vision.opencv_engine.executor（读盘解码）
 
 ### 4.1 能力说明
 
-按 `application/ui/<命名空间>/<文件名>` 定位模板，交给 `common.vision` 加载，并按加载参数缓存。
+按 `application/<命名空间>/<文件名>` 定位模板，交给 `common.vision` 加载，并按加载参数缓存。
 模板文件在进程运行期间不变，因此同一组参数只读盘解码一次；识别重试不会反复读盘。
 
 ### 4.2 稳定入口
@@ -79,7 +79,7 @@ template.load_ui_template(namespace: str, filename: str, *, name: str) -> Templa
 
 | 参数 | 必填 | 语义 |
 | --- | --- | --- |
-| `namespace` | 是 | 相对 UI 模板根的目录，例如 `navigation/checker/home` |
+| `namespace` | 是 | 相对应用模板根的目录，例如 `controller/home` |
 | `filename` | 是 | 命名空间内的模板文件名 |
 | `name` | 是（仅关键字） | 模板业务名称，用于识别日志与匹配结果 |
 
@@ -91,7 +91,7 @@ template.load_ui_template(namespace: str, filename: str, *, name: str) -> Templa
 from autowsgr.application.ui import template
 
 home_main = template.load_ui_template(
-    'navigation/checker/home',
+    'controller/home',
     'HOME_MAIN_720P.png',
     name='home_main',
 )
@@ -117,7 +117,7 @@ home_main = template.load_ui_template(
 
 | 常量 | 值 | 作用 |
 | --- | --- | --- |
-| `UI_TEMPLATE_ROOT` | `'application/ui'` | UI 层模板根目录，位于 `common.vision` 的模板根下；命名空间从它起算 |
+| `UI_TEMPLATE_ROOT` | `'application'` | 应用层模板根目录，位于 `common.vision` 的模板根下；命名空间从它起算 |
 
 模板根与来源分辨率属于 `common.vision`，本模块不重复定义。
 

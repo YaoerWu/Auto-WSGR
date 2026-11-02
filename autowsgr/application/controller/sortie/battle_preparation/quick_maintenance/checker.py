@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 # ── 识别数据 ────────────────────────────────────────────────────────────────
 
 # 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'navigation/checker/sortie/battle_preparation/quick_maintenance'
+TEMPLATE_NAMESPACE = 'controller/sortie/battle_preparation/quick_maintenance'
 
 # 左下角自动补给勾选框的开启态；只认开启，勾选框没勾上即视为未开启。
 AUTO_SUPPLY_TEMPLATE = 'AUTO_SUPPLY_ON_720P.png'

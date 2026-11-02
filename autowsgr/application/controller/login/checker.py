@@ -34,8 +34,8 @@ _log = get_logger('ui.login')
 
 # ── 识别模板 ────────────────────────────────────────────────────────────────
 
-# 模板目录名，对应 resources/image/application/ui/navigation/checker/login/。
-TEMPLATE_NAMESPACE = 'navigation/checker/login'
+# 模板目录名，对应 resources/image/application/controller/login/。
+TEMPLATE_NAMESPACE = 'controller/login'
 
 # 健康游戏提示的黑屏画面，全屏模板。
 BLACK_SCREEN_TEMPLATE = 'LOGIN_BLACK_SCREEN_720P.png'

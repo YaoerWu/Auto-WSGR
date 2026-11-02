@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 # ── 识别数据 ────────────────────────────────────────────────────────────────
 
 # 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'navigation/checker/sortie/battle_preparation'
+TEMPLATE_NAMESPACE = 'controller/sortie/battle_preparation'
 
 # 四个准备页的模板；目录小写、文件名全大写。
 BATTLE_PREPARATION_TEMPLATE = 'BATTLE_PREP_720P.png'

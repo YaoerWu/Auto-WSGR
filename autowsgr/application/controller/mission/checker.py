@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 # ── 识别数据 ────────────────────────────────────────────────────────────────
 
 # 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'navigation/checker/mission'
+TEMPLATE_NAMESPACE = 'controller/mission'
 
 # 本模块的模板文件名；目录小写、文件名全大写。
 # 任务页默认落在「全部」页签，因此用它作为页面身份。

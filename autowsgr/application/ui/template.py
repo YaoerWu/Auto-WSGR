@@ -1,4 +1,4 @@
-"""模块功能：加载 UI 层各模块共用的识别模板。
+"""模块功能：加载应用层各模块共用的识别模板。
 
 上层调用：
 - application.controller 下各识别模块：加载本模块模板。
@@ -22,19 +22,19 @@ if TYPE_CHECKING:
     from autowsgr.common.vision import Template
 
 
-# UI 层模板根目录，位于 common.vision 的模板根下；namespace 从它起算。
-UI_TEMPLATE_ROOT = 'application/ui'
+# 应用层模板根目录，位于 common.vision 的模板根下；namespace 从它起算。
+UI_TEMPLATE_ROOT = 'application'
 
 
 @cache
 def load_ui_template(namespace: str, filename: str, *, name: str | None = None) -> Template:
-    """加载 UI 层某个命名空间下的模板，并按加载参数缓存。
+    """加载应用层某个命名空间下的模板，并按加载参数缓存。
 
     模板文件在进程运行期间不变，因此同一组参数只读盘解码一次；重复调用返回同一个
     模板对象，识别重试不会反复读盘。
 
     Args:
-        namespace: 相对 UI 模板根的目录，例如 navigation/checker/home。
+        namespace: 相对应用模板根的目录，例如 controller/home。
         filename: 命名空间内的模板文件名。
         name: 模板业务名称，用于识别日志和匹配结果；缺省取文件名主干。
 

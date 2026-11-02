@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 # ── 识别数据 ────────────────────────────────────────────────────────────────
 
 # 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'navigation/checker/sortie'
+TEMPLATE_NAMESPACE = 'controller/sortie'
 
 # 五个标签的激活态模板；目录小写、文件名全大写。
 # 只保留激活态：标签互斥，一次只有一个激活模板能匹配上。

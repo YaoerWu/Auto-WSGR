@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 # ── 识别数据 ────────────────────────────────────────────────────────────────
 
 # 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'navigation/checker/sortie/exercise'
+TEMPLATE_NAMESPACE = 'controller/sortie/exercise'
 
 # 三个按钮只用来定位点击中心，不作浮窗判据：关闭按钮在登录更新弹窗上也能命中
 # 0.95，挑战按钮在无浮窗演习页上能命中 0.78。浮窗判据是标题模板，由
