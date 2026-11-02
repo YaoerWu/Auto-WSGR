@@ -7,7 +7,7 @@
 下层依赖：
 - application.controller.types：提供舰种枚举。
 
-边界：只声明识别事实，不持有识别坐标、不读取图像、不判断业务规则。
+边界：只声明识别事实，不持有识别坐标、不读取图像、不比对舰名清单、不判断业务规则。
 """
 
 from __future__ import annotations
@@ -40,4 +40,21 @@ class ShipInfo:
     level: int | None = None
 
 
-__all__ = ['ShipInfo']
+@dataclass(frozen=True, slots=True)
+class FleetRecognition:
+    """出征准备页六个槽位的识别事实，舰名未与任何舰名清单比对。
+
+    Attributes:
+        name_texts: 六槽舰名的 OCR 原文，按槽位顺序；识别不到时为空。
+        occupied: 六槽是否停有舰船，按槽位顺序。
+        ship_types: 六槽舰种，按槽位顺序；识别失败时为空。
+        ship_levels: 六槽等级，按槽位顺序；识别失败时为空。
+    """
+
+    name_texts: tuple[str | None, ...]
+    occupied: tuple[bool, ...]
+    ship_types: tuple[ShipType | None, ...]
+    ship_levels: tuple[int | None, ...]
+
+
+__all__ = ['FleetRecognition', 'ShipInfo']

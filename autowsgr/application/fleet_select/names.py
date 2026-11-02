@@ -176,6 +176,81 @@ def expand_ship_name_candidates(candidates: list[str]) -> list[str]:
     return expanded
 
 
+# ── OCR 纠错与模糊匹配 ──────────────────────────────────────────────────────
+
+# 系统纠错规则由项目维护，目标必须是 shipnames.yaml 里的标准舰名。
+SHIP_NAME_CORRECTIONS: dict[str, str] = {
+    '鲍鱼': '鲃鱼',
+    '鳟盹': '鳞鲀',
+    '296': 'M-296',
+    '维内托': '维托里奥·维内托',
+    'IA': 'IIIA',
+}
+
+# 间隔号常被 OCR 读成冒号，只修正两个汉字之间的那一个。
+_CJK_COLON_SEPARATOR_RE = re.compile(r'(?<=[\u3400-\u9fff]):(?=[\u3400-\u9fff])')
+
+
+def apply_ship_name_corrections(text: str) -> str:
+    """按已知错字和字符习惯纠正 OCR 读到的舰名原文。
+
+    Args:
+        text: OCR 读到的舰名原始文本。
+
+    Returns:
+        纠正后的文本；命中已知错字时直接返回对应的标准舰名。
+    """
+    for wrong, standard in SHIP_NAME_CORRECTIONS.items():
+        if wrong in text:
+            return standard
+
+    # 潜艇名的 U 常被读成 0，例如 U-1206 -> 01206。
+    if text.startswith('0') and sum(char.isdigit() for char in text) >= 3:
+        text = 'U' + text[1:]
+    return _CJK_COLON_SEPARATOR_RE.sub('·', text)
+
+
+def fuzzy_match_ship_name(
+    text: str,
+    candidates: list[str],
+    *,
+    threshold: int = 3,
+) -> str | None:
+    """在候选舰名里按编辑距离找出唯一最接近的一个。
+
+    单字和极短舰名的容错必须收紧，否则任何短词都能凑上一个舰名。
+
+    Args:
+        text: 已纠正过的舰名文本。
+        candidates: 候选舰名清单，同组别名会一起参与比较。
+        threshold: 长舰名允许的最大编辑距离。
+
+    Returns:
+        距离最近且不超过阈值的候选；没有候选、距离过远或最近的候选不唯一时为 None。
+    """
+    unique_candidates = expand_ship_name_candidates(candidates)
+    if not text or not unique_candidates:
+        return None
+
+    if len(text) == 1:
+        effective_threshold = 0
+    elif len(text) <= 3:
+        effective_threshold = min(threshold, 1)
+    else:
+        effective_threshold = threshold
+
+    nearest: str | None = None
+    nearest_distance = effective_threshold + 1
+    tied = False
+    for candidate in unique_candidates:
+        distance = _edit_distance(text, candidate)
+        if distance < nearest_distance:
+            nearest, nearest_distance, tied = candidate, distance, False
+        elif distance == nearest_distance:
+            tied = True
+    return None if tied else nearest
+
+
 def set_ship_name_aliases(aliases: Mapping[str, str]) -> None:
     """重置用户自定义名，并追加到目标标准舰名所在的舰船组。"""
     SHIPNAME_GROUPS.clear()
@@ -221,3 +296,50 @@ def _rebuild_shipnames() -> None:
     )
     grouped_names = process_dict(SHIPNAME_GROUPS)
     SHIPNAMES[:] = list(dict.fromkeys([*_EXTRA_SHIPNAMES, *grouped_names]))
+
+
+def _edit_distance(left: str, right: str) -> int:
+    """计算两个字符串的 Levenshtein 编辑距离。"""
+    if left == right:
+        return 0
+    if not left:
+        return len(right)
+    if not right:
+        return len(left)
+
+    previous = list(range(len(right) + 1))
+    for row, left_char in enumerate(left, start=1):
+        current = [row]
+        for column, right_char in enumerate(right, start=1):
+            current.append(
+                min(
+                    previous[column] + 1,
+                    current[column - 1] + 1,
+                    previous[column - 1] + (left_char != right_char),
+                ),
+            )
+        previous = current
+    return previous[-1]
+
+
+__all__ = [
+    'DECISIVE_SKILL_NAMES',
+    'SHIPNAMES',
+    'SHIPNAME_GROUPS',
+    'SHIP_NAME_CORRECTIONS',
+    'SHIP_NAME_SUFFIXES',
+    'apply_ship_name_corrections',
+    'canonical_ship_name',
+    'expand_ship_name_candidates',
+    'fuzzy_match_ship_name',
+    'get_active_ship_name_aliases',
+    'get_ship_name_group_id',
+    'get_ship_name_variants',
+    'is_standard_ship_name',
+    'normalize_ship_name',
+    'process_dict',
+    'set_ship_name_aliases',
+    'ship_name_aliases_scope',
+    'ship_name_identity',
+    'update_shipnames',
+]
