@@ -1,11 +1,11 @@
 """模块功能：定义船只识别各域共用的事实模型。
 
 上层调用：
-- application.ui.ships.service：把各域识别结果作为统一出口返回。
-- application.ui.ships.models 下的各识别域：产出并填充槽位事实。
+- application.controller.sortie.battle_preparation.ship_recognition.service：把各域识别结果作为统一出口返回。
+- application.controller.sortie.battle_preparation.ship_recognition.models 下的各识别域：产出并填充槽位事实。
 
 下层依赖：
-- application.ui.ships.types：提供舰种枚举。
+- application.controller.sortie.battle_preparation.ship_recognition.types：提供舰种枚举。
 
 边界：只声明识别事实，不持有识别坐标、不读取图像、不判断业务规则。
 """
@@ -17,7 +17,9 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from autowsgr.application.ui.ships.types import ShipType
+    from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import (
+        ShipType,
+    )
 
 
 # ── 槽位事实 ────────────────────────────────────────────────────────────────

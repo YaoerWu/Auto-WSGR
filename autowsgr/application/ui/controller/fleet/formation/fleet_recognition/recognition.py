@@ -21,7 +21,7 @@ from autowsgr.application.ui.controller.fleet.formation.fleet_recognition.models
     FleetSnapshot,
 )
 from autowsgr.application.ui.controller.fleet.main_page.constants import BLOOD_BAR_PROBE
-from autowsgr.application.ui.ships.types import ShipType
+from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import ShipType
 from autowsgr.application.vision.damage_recognition import classify_blood
 from autowsgr.application.vision.ocr_rules import LEVEL_OCR_ALLOWLIST
 from autowsgr.application.vision.ship_list import (

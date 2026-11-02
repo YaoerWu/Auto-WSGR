@@ -5,9 +5,9 @@
 - dispatch：在任务执行过程中调用识别入口。
 
 下层依赖：
-- application.ui.ships.models：提供各域共用的槽位事实。
-- application.ui.ships.models.exercise：读取演习对手浮窗。
-- application.ui.ships.types：提供识别域枚举。
+- application.controller.sortie.battle_preparation.ship_recognition.models：提供各域共用的槽位事实。
+- application.controller.sortie.battle_preparation.ship_recognition.models.exercise：读取演习对手浮窗。
+- application.controller.sortie.battle_preparation.ship_recognition.types：提供识别域枚举。
 
 边界：只按任务类型分派识别域，不导航、不点击、不判断阵容规则是否合格。
 """
@@ -16,12 +16,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.ships.models.exercise import recognize_rivals
-from autowsgr.application.ui.ships.types import ShipTaskType
+from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.models.exercise import (
+    recognize_rivals,
+)
+from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import (
+    ShipTaskType,
+)
 
 
 if TYPE_CHECKING:
-    from autowsgr.application.ui.ships.models import ShipInfo
+    from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.models import (
+        ShipInfo,
+    )
     from autowsgr.dispatch.context import ContextHandle
 
 

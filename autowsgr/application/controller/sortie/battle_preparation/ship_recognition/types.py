@@ -1,7 +1,7 @@
 """模块功能：定义船只识别的舰种与识别域枚举。
 
 上层调用：
-- application.ui.ships：各识别域与入口用这里定义的枚举表达舰种和路由。
+- application.controller.sortie.battle_preparation.ship_recognition：各识别域与入口用这里定义的枚举表达舰种和路由。
 - business：按舰种筛选船只、校验阵容规则。
 
 下层依赖：

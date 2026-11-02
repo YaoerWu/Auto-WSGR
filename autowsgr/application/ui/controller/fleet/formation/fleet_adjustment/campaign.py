@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     from autowsgr.application.ui.controller.fleet.formation.fleet_recognition import (
         FleetSnapshot,
     )
-    from autowsgr.application.ui.ships.types import ShipType
+    from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import ShipType
     from autowsgr.business.combat.fleet_models import FleetSlotRule, ShipSelector
 
 

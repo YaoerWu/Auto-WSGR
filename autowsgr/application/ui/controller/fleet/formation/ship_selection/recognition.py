@@ -30,7 +30,7 @@ from autowsgr.common.vision import ocr
 if TYPE_CHECKING:
     import numpy
 
-    from autowsgr.application.ui.ships.types import ShipType
+    from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import ShipType
     from autowsgr.common.vision import OCREngine
 
 

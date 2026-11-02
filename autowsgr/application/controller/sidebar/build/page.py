@@ -20,7 +20,9 @@ from autowsgr.common.system.logger import get_logger
 
 
 if TYPE_CHECKING:
-    from autowsgr.application.ui.ships.types import ShipType
+    from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import (
+        ShipType,
+    )
     from autowsgr.dispatch.context import ContextHandle
 
 

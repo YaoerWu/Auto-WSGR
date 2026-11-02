@@ -15,7 +15,7 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from autowsgr.application.ui.ships.types import ShipType
+    from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import ShipType
 
 
 @dataclass(slots=True)

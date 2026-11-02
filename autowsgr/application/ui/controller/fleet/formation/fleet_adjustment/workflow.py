@@ -52,7 +52,7 @@ if TYPE_CHECKING:
 
     from autowsgr.application.ui.controller.context import UIContext
     from autowsgr.application.ui.controller.fleet.main_page import BattlePreparationPage
-    from autowsgr.application.ui.ships.types import ShipType
+    from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import ShipType
 
 
 # 记录编队调整过程中的关键步骤和失败原因。

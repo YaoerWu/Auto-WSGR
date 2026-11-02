@@ -11,8 +11,10 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
 
+from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import (
+    ShipType,
+)
 from autowsgr.application.runtime.types import GameAPP, LoginServer
-from autowsgr.application.ui.ships.types import ShipType
 from autowsgr.business.logistics.types import DestroyShipWorkMode
 from autowsgr.common.device import platform, timing
 from autowsgr.common.device.config import EmulatorConfig

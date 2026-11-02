@@ -25,7 +25,7 @@ from autowsgr.common.vision import ImageChecker
 
 
 if TYPE_CHECKING:
-    from autowsgr.application.ui.ships.types import ShipType
+    from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import ShipType
     from autowsgr.common.device.service import DeviceService
 
 
