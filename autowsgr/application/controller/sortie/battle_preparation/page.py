@@ -24,6 +24,14 @@ if TYPE_CHECKING:
 # 左上角返回圆环的中心；准备页与出征页共用同一套标题栏布局。
 CLICK_BACK = (0.0313, 0.0528)
 
+# 四个舰队标签页的中心，按 1、2、3、4 队顺序；取各自高亮块模板的几何中心。
+CLICK_TEAM_TABS: tuple[tuple[float, float], ...] = (
+    (0.1113, 0.1618),
+    (0.2348, 0.1618),
+    (0.3582, 0.1611),
+    (0.4824, 0.1618),
+)
+
 
 # ── 页面控制器 ──────────────────────────────────────────────────────────────
 
@@ -43,7 +51,22 @@ class BattlePreparationPage:
         """点击返回按钮，退回到出征页。"""
         self._ctx.runtime.ctrl.click(*CLICK_BACK)
 
+    def click_team_tab(self, team: int) -> None:
+        """点击第 N 舰队的标签页。
+
+        Args:
+            team: 舰队编号，1 到 4。
+
+        Raises:
+            ValueError: 舰队编号超出 1 到 4 的范围。
+        """
+        if not 1 <= team <= len(CLICK_TEAM_TABS):
+            raise ValueError(f'舰队编号必须在 1 到 {len(CLICK_TEAM_TABS)} 之间，实际为 {team}')
+        self._ctx.runtime.ctrl.click(*CLICK_TEAM_TABS[team - 1])
+
 
 __all__ = [
+    'CLICK_BACK',
+    'CLICK_TEAM_TABS',
     'BattlePreparationPage',
 ]

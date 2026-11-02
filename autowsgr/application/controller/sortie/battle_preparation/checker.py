@@ -44,12 +44,31 @@ _PAGE_TEMPLATES: tuple[tuple[PageName, str], ...] = (
     (PageName.BATTLE_PREPARATION, BATTLE_PREPARATION_TEMPLATE),
 )
 
+# 四个舰队的选中态模板；只有被选中的那一队是亮蓝高亮块，其余三队为暗色。
+TEAM_TAB_TEMPLATES: tuple[str, ...] = (
+    'TEAM_1_ACTIVE_720P.png',
+    'TEAM_2_ACTIVE_720P.png',
+    'TEAM_3_ACTIVE_720P.png',
+    'TEAM_4_ACTIVE_720P.png',
+)
+
 
 # ── 识别区域 ────────────────────────────────────────────────────────────────
 
 # 校准基准 1280x720；由 出征准备页ROI_720P.yaml 的 roi_px=[767, 99, 928, 140] 换算，
 # 区域比 160x40 的模板各边大 1px。
 BATTLE_PREPARATION_ROI = ROI(0.5993, 0.1375, 0.725, 0.1945)
+
+# 四个舰队标签页的搜索区，与 TEAM_TAB_TEMPLATES 一一对应，由
+# 出征准备页状态ROI_720P.yaml 的 roi_normalized 抄录。
+# 四队底色相同、只差队列数字，共享区域会互相误命中（交叉分 0.87 以上），
+# 因此每队配一块只容 ±1px 滑动的窄区域；实测交叉分降到 0.72 以下。
+TEAM_TAB_ROIS: tuple[ROI, ...] = (
+    ROI(0.08125, 0.12777778, 0.1421875, 0.19722222),
+    ROI(0.20859375, 0.13055556, 0.26171875, 0.19444444),
+    ROI(0.33046875, 0.12916667, 0.38671875, 0.19444444),
+    ROI(0.4546875, 0.12777778, 0.5109375, 0.19722222),
+)
 
 
 # ── 进入准备页的等待窗口 ────────────────────────────────────────────────────
@@ -94,6 +113,44 @@ def read_battle_preparation_layer(
     )
 
 
+# ── 当前舰队的编号 ──────────────────────────────────────────────────────────
+
+
+def read_team_tab(
+    ctx: ContextHandle,
+    *,
+    attempts: int = _ATTEMPTS,
+    interval_seconds: float = _INTERVAL_SECONDS,
+) -> int | None:
+    """读取当前选中的舰队编号。
+
+    四队共用同一排标签页，只有选中的那一队亮起，因此每队模板配一块窄区域后，一次截图
+    就能把四队全部比对完，不必为每队各截一帧。相邻两队底色相近，画质波动时可能同时越过
+    阈值，此时取分数最高的一队，避免按模板顺序取到错的相邻队。
+
+    Args:
+        ctx: 提供设备服务和截图事实的 dispatch 上下文句柄。
+        attempts: 识别次数，默认给足切换舰队后的响应窗口。
+        interval_seconds: 两次识别之间的等待秒数。
+
+    Returns:
+        选中的舰队编号 1 到 4；没有选中任何一队或识别不到时为空。
+    """
+    result = expect_template(
+        ctx,
+        template=tuple(_load_template(filename) for filename in TEAM_TAB_TEMPLATES),
+        roi=TEAM_TAB_ROIS,
+        attempts=attempts,
+        interval_seconds=interval_seconds,
+    )
+    best_team: int | None = None
+    best_score = 0.0
+    for team, match in enumerate(result.observation, start=1):
+        if match.matched and match.score > best_score:
+            best_team, best_score = team, match.score
+    return best_team
+
+
 # ── 私有辅助 ────────────────────────────────────────────────────────────────
 
 
@@ -108,6 +165,9 @@ __all__ = [
     'CAMPAIGN_PREPARATION_TEMPLATE',
     'DECISIVE_PREPARATION_TEMPLATE',
     'EXERCISE_PREPARATION_TEMPLATE',
+    'TEAM_TAB_ROIS',
+    'TEAM_TAB_TEMPLATES',
     'TEMPLATE_NAMESPACE',
     'read_battle_preparation_layer',
+    'read_team_tab',
 ]

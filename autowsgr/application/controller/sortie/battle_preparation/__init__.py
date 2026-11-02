@@ -11,6 +11,7 @@
 
 from autowsgr.application.controller.sortie.battle_preparation.checker import (
     read_battle_preparation_layer,
+    read_team_tab,
 )
 from autowsgr.application.controller.sortie.battle_preparation.page import BattlePreparationPage
 
@@ -18,4 +19,5 @@ from autowsgr.application.controller.sortie.battle_preparation.page import Battl
 __all__ = [
     'BattlePreparationPage',
     'read_battle_preparation_layer',
+    'read_team_tab',
 ]
