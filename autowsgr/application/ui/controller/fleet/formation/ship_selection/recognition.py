@@ -23,7 +23,7 @@ from autowsgr.application.vision.ship_list import (
     read_ship_level_at_card,
     recognize_card_type_texts,
 )
-from autowsgr.application.vision.shipnames import SHIPNAMES, normalize_ship_name
+from autowsgr.application.fleet_select.names import SHIPNAMES, normalize_ship_name
 from autowsgr.common.vision import ocr
 
 

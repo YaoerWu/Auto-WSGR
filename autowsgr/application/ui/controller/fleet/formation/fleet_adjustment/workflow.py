@@ -42,7 +42,7 @@ from autowsgr.application.ui.controller.fleet.formation.fleet_recognition import
 from autowsgr.application.ui.controller.fleet.formation.fleet_recognition.models import (
     FleetSnapshot,
 )
-from autowsgr.application.vision.shipnames import ship_name_identity
+from autowsgr.application.fleet_select.names import ship_name_identity
 from autowsgr.business.combat.fleet_models import FleetSlotRule, ShipSelector
 from autowsgr.common.system.logger import get_logger
 

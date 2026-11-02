@@ -1,11 +1,30 @@
+"""模块功能：维护舰名表、别名与同船身份归一化。
+
+上层调用：
+- application.fleet_select：编队规划与换船流程用它比对 OCR 读到的舰名。
+- application.controller：识别到舰名文本后，用同一套归一化口径清洗再交给上层。
+
+下层依赖：
+- common.system.files：安全加载 resources/data/shipnames.yaml。
+
+边界：只维护舰名数据与纯文本归一化，不读取图像、不认识页面、不判断阵容规则。
+用户别名通过 ContextVar 做请求级覆盖，不修改进程级舰名表。
+"""
+
+from __future__ import annotations
+
 import re
-from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from contextvars import ContextVar
 from pathlib import Path
 from types import MappingProxyType
+from typing import TYPE_CHECKING
 
-from autowsgr.common.system import load_yaml
+from autowsgr.common.system.files import load_yaml
+
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator, Mapping
 
 
 _LOCAL_SHIPNAME_ALIASES: ContextVar[Mapping[str, str]] = ContextVar(
@@ -59,9 +78,12 @@ def process_dict(d: dict) -> list[str]:
     return result
 
 
-_SHIPNAME_PATH = Path(__file__).resolve().parents[3] / 'resources' / 'data' / 'shipnames.yaml'
+# 舰名表是换船业务的静态资产，随本模块一起维护，放在仓库资源目录。
+_DATA_ROOT = Path(__file__).resolve().parents[3] / 'resources' / 'data'
+_SHIPNAME_PATH = _DATA_ROOT / 'shipnames.yaml'
 _BASE_SHIPNAME_GROUPS: dict[str, list[str]] = {
-    group_id: list(names) for group_id, names in load_yaml(_SHIPNAME_PATH).items()
+    group_id: list(names)
+    for group_id, names in load_yaml(_SHIPNAME_PATH, allowed_root=_DATA_ROOT).items()
 }
 SHIPNAME_GROUPS: dict[str, list[str]] = {
     group_id: list(names) for group_id, names in _BASE_SHIPNAME_GROUPS.items()

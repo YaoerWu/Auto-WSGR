@@ -6,7 +6,8 @@
 下层依赖：
 - application.controller.sortie.battle_preparation.ship_recognition.models：槽位事实。
 - application.controller.sortie.battle_preparation.ship_recognition.service：识别入口。
-- application.controller.sortie.battle_preparation.ship_recognition.types：舰种与识别域枚举。
+- application.controller.types：舰种枚举。
+- application.controller.sortie.battle_preparation.ship_recognition.service：识别域与识别入口。
 
 边界：只导出稳定公开入口，不实现识别逻辑。
 """
@@ -16,11 +17,9 @@ from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.
 )
 from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.service import (
     ShipsService,
-)
-from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import (
     ShipTaskType,
-    ShipType,
 )
+from autowsgr.application.controller.types import ShipType
 
 
 __all__ = ['ShipInfo', 'ShipTaskType', 'ShipType', 'ShipsService']

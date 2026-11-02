@@ -31,7 +31,7 @@ from autowsgr.application.vision.ship_list import (
     prepare_level_crop,
     upscale_text_crop,
 )
-from autowsgr.application.vision.shipnames import SHIPNAMES, normalize_ship_name, ship_name_identity
+from autowsgr.application.fleet_select.names import SHIPNAMES, normalize_ship_name, ship_name_identity
 from autowsgr.business.logistics.types import ShipDamageState
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import PixelChecker, ocr

@@ -32,17 +32,17 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from autowsgr.application.vision.shipnames import (
+from autowsgr.application.fleet_select.names import (
     SHIPNAMES,
     get_active_ship_name_aliases,
     get_ship_name_group_id,
     normalize_ship_name,
     set_ship_name_aliases,
 )
-from autowsgr.application.vision.shipnames import (
+from autowsgr.application.fleet_select.names import (
     expand_ship_name_candidates as expand_group_candidates,
 )
-from autowsgr.application.vision.shipnames import (
+from autowsgr.application.fleet_select.names import (
     ship_name_aliases_scope as _ship_name_aliases_scope,
 )
 from autowsgr.common.system.logger import get_logger

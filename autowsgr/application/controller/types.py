@@ -1,13 +1,14 @@
-"""模块功能：定义船只识别的舰种与识别域枚举。
+"""模块功能：定义控制器层共用的业务枚举。
 
 上层调用：
-- application.controller.sortie.battle_preparation.ship_recognition：各识别域与入口用这里定义的枚举表达舰种和路由。
-- business：按舰种筛选船只、校验阵容规则。
+- application.controller 各页面包：用 ShipType 表达舰种，作为识别结果的分类标签。
+- application.fleet_select：按舰种筛选船只、校验阵容规则。
 
 下层依赖：
 - common.system.enums：提供统一的中文非法值错误。
 
-边界：只声明枚举，不持有识别坐标、不读取图像、不判断业务规则。
+边界：只声明跨页面复用的业务枚举，不持有页面坐标、不读取图像、不判断业务规则。
+单个页面独占的枚举留在各自模块里，不上提到这里。
 """
 
 from __future__ import annotations
@@ -47,13 +48,4 @@ class ShipType(StrEnum):
     Other = '其他'
 
 
-# ── 识别域 ──────────────────────────────────────────────────────────────────
-
-
-class ShipTaskType(StrEnum):
-    """船只识别按任务类型划分的识别域。"""
-
-    EXERCISE = 'exercise'
-
-
-__all__ = ['ShipTaskType', 'ShipType']
+__all__ = ['ShipType']

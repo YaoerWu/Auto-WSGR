@@ -5,7 +5,7 @@
 - application.controller.sortie.battle_preparation.ship_recognition.models 下的各识别域：产出并填充槽位事实。
 
 下层依赖：
-- application.controller.sortie.battle_preparation.ship_recognition.types：提供舰种枚举。
+- application.controller.types：提供舰种枚举。
 
 边界：只声明识别事实，不持有识别坐标、不读取图像、不判断业务规则。
 """
@@ -17,9 +17,7 @@ from typing import TYPE_CHECKING
 
 
 if TYPE_CHECKING:
-    from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import (
-        ShipType,
-    )
+    from autowsgr.application.controller.types import ShipType
 
 
 # ── 槽位事实 ────────────────────────────────────────────────────────────────

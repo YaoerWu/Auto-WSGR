@@ -21,7 +21,7 @@ from functools import cache
 from typing import TYPE_CHECKING
 
 from autowsgr.application.ui.controller.fleet.formation.fleet_adjustment.rules import FleetRules
-from autowsgr.application.vision.shipnames import normalize_ship_name, ship_name_identity
+from autowsgr.application.fleet_select.names import normalize_ship_name, ship_name_identity
 from autowsgr.common.system.logger import get_logger
 
 

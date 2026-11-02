@@ -38,7 +38,7 @@ from autowsgr.application.vision.ocr_rules import (
 from autowsgr.application.vision.ocr_rules import (
     LEVEL_SHORT_PATTERN as _LEVEL_SHORT_PATTERN,
 )
-from autowsgr.application.vision.shipnames import (
+from autowsgr.application.fleet_select.names import (
     SHIPNAMES,
     expand_ship_name_candidates,
     normalize_ship_name,

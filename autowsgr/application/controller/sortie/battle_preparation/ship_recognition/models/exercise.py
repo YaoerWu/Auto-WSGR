@@ -6,7 +6,7 @@
 下层依赖：
 - common.vision：同一帧内按多个区域读取 OCR 文本。
 - application.controller.sortie.battle_preparation.ship_recognition.models：返回槽位事实。
-- application.controller.sortie.battle_preparation.ship_recognition.types：识别舰种枚举。
+- application.controller.types：识别舰种枚举。
 
 边界：只读取浮窗文字并解析成事实，不点击、不刷新对手、不判断阵容是否合格。
 """
@@ -19,9 +19,7 @@ from typing import TYPE_CHECKING
 from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.models import (
     ShipInfo,
 )
-from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import (
-    ShipType,
-)
+from autowsgr.application.controller.types import ShipType
 from autowsgr.common.vision import ROI, RecognitionProfile, expect_ocr
 
 

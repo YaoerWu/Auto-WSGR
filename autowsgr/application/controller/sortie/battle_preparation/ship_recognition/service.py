@@ -7,7 +7,7 @@
 下层依赖：
 - application.controller.sortie.battle_preparation.ship_recognition.models：提供各域共用的槽位事实。
 - application.controller.sortie.battle_preparation.ship_recognition.models.exercise：读取演习对手浮窗。
-- application.controller.sortie.battle_preparation.ship_recognition.types：提供识别域枚举。
+- common.system.enums：提供统一的中文非法值错误。
 
 边界：只按任务类型分派识别域，不导航、不点击、不判断阵容规则是否合格。
 """
@@ -19,9 +19,7 @@ from typing import TYPE_CHECKING
 from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.models.exercise import (
     recognize_rivals,
 )
-from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import (
-    ShipTaskType,
-)
+from autowsgr.common.system.enums import StrEnum
 
 
 if TYPE_CHECKING:
@@ -29,6 +27,15 @@ if TYPE_CHECKING:
         ShipInfo,
     )
     from autowsgr.dispatch.context import ContextHandle
+
+
+# ── 识别域 ──────────────────────────────────────────────────────────────────
+
+
+class ShipTaskType(StrEnum):
+    """船只识别按任务类型划分的识别域。"""
+
+    EXERCISE = 'exercise'
 
 
 class ShipsService:

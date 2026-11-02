@@ -26,7 +26,7 @@ from autowsgr.application.ui.controller.fleet.formation.fleet_adjustment import 
 )
 from autowsgr.application.ui.controller.fleet.formation.ship_selection import workflow
 from autowsgr.application.ui.controller.fleet.main_page.constants import CLICK_SHIP_SLOT
-from autowsgr.application.vision.shipnames import ship_name_identity
+from autowsgr.application.fleet_select.names import ship_name_identity
 from autowsgr.business.combat.fleet_models import ShipSelector
 from autowsgr.common.system.logger import get_logger
 
