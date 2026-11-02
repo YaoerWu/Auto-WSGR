@@ -6,7 +6,7 @@
 
 下层依赖：
 - common.vision：读取模板与 OCR 事实。
-- application.ui.template：加载本活动模板。
+- application.controller.template：加载本活动模板。
 - application.navigation.types：提供导航错误。
 
 边界：只识别、解析并返回活动事实，不执行点击、不计算路由、不上报识别错误。
@@ -20,8 +20,8 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.template import load_ui_template
 from autowsgr.application.navigation.types import NavigationError
-from autowsgr.application.ui.template import load_ui_template
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import (
     ROI,

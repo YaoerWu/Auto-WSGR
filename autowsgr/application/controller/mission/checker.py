@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.template import load_ui_template
+from autowsgr.application.controller.template import load_ui_template
 from autowsgr.common.vision import ROI, Template, expect_template
 
 

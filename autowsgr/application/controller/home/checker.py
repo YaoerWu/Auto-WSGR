@@ -6,7 +6,7 @@
 
 下层依赖：
 - common.vision：读取模板事实与模板中心。
-- application.ui.template：加载本模块模板。
+- application.controller.template：加载本模块模板。
 - application.navigation.types：提供页面契约。
 - dispatch.session：读写每日浮窗的处理标记。
 
@@ -18,8 +18,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.template import load_ui_template
 from autowsgr.application.navigation.types import PageName
-from autowsgr.application.ui.template import load_ui_template
 from autowsgr.common.vision import ROI, Template, expect_template, expect_template_center
 from autowsgr.dispatch.session import DailyPopup, get_session
 

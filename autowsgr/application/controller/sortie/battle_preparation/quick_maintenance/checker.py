@@ -4,7 +4,7 @@
 - application.navigation：判断自动补给是否开启、快速修理页签是否激活，并取点击落点。
 
 下层依赖：
-- application.ui.template：加载本模块模板。
+- application.controller.template：加载本模块模板。
 - common.vision：读取模板匹配事实与命中中心。
 
 边界：只做识别并返回结论，不执行点击、不判断业务是否需要整备、不上报识别错误。
@@ -15,7 +15,7 @@ from __future__ import annotations
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.template import load_ui_template
+from autowsgr.application.controller.template import load_ui_template
 from autowsgr.common.vision import (
     ROI,
     Color,

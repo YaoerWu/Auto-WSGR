@@ -5,7 +5,7 @@
 
 下层依赖：
 - application.navigation.types：提供页面名。
-- application.ui.template：加载本模块模板。
+- application.controller.template：加载本模块模板。
 - common.vision：读取模板命中事实。
 
 边界：只做识别并返回结论，不执行点击、不计算路由、不上报识别错误。
@@ -15,8 +15,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.template import load_ui_template
 from autowsgr.application.navigation.types import PageName
-from autowsgr.application.ui.template import load_ui_template
 from autowsgr.common.vision import ROI, Template, expect_template
 
 

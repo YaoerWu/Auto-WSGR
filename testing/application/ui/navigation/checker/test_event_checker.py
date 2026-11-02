@@ -14,10 +14,10 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
+from autowsgr.application.controller import template
 from autowsgr.application.controller.event import stage_push
 from autowsgr.application.controller.event.stage_push import checker as event_checker
 from autowsgr.application.navigation.types import NavigationError
-from autowsgr.application.ui import template
 from autowsgr.common.vision import RecognitionResult
 
 
