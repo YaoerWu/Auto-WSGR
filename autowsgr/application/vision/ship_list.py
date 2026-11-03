@@ -11,6 +11,11 @@ from typing import TYPE_CHECKING
 
 import cv2
 
+from autowsgr.application.fleet_select.rules.shipnames import (
+    SHIPNAMES,
+    build_ship_name_candidates,
+    normalize_ship_name,
+)
 from autowsgr.application.vision.calibration.choose_ship import (
     CARD_REFERENCE_HEIGHT,
     CARD_REFERENCE_WIDTH,
@@ -37,11 +42,6 @@ from autowsgr.application.vision.ocr_rules import (
 )
 from autowsgr.application.vision.ocr_rules import (
     LEVEL_SHORT_PATTERN as _LEVEL_SHORT_PATTERN,
-)
-from autowsgr.application.fleet_select.names import (
-    SHIPNAMES,
-    expand_ship_name_candidates,
-    normalize_ship_name,
 )
 from autowsgr.common import vision
 from autowsgr.common.system.logger import get_logger
@@ -411,7 +411,7 @@ def _fuzzy_match(
     threshold: int = 3,
 ) -> str | None:
     """按唯一编辑距离匹配舰名，无法确认时拒绝猜测。"""
-    unique_candidates = list(dict.fromkeys(expand_ship_name_candidates(list(candidates))))
+    unique_candidates = list(dict.fromkeys(build_ship_name_candidates(list(candidates))))
     if not text or not unique_candidates:
         return None
 

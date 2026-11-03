@@ -1,9 +1,10 @@
 """模块功能：控制船池页面的单次操作。
 
 上层调用：
-- application.fleet_select.ship_pool：换船流程里点击搜索框、输入舰名、点卡、滑动列表。
+- application.fleet_select.operation.ship_select：换船流程里点击搜索框、输入舰名、点卡、滑动列表。
 
 下层依赖：
+- application.controller.sortie.battle_preparation.page：共用标题栏的返回落点。
 - common.device.service：通过 `ctx.runtime.ctrl` 执行点击、滑动与文字输入。
 
 边界：只做**单次操作**，不识别画面、不等待页面、不判断结果、不重试、不编排流程。
@@ -14,6 +15,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.sortie.battle_preparation.page import CLICK_BACK
+
 
 if TYPE_CHECKING:
     from autowsgr.dispatch.context import ContextHandle
@@ -21,14 +24,14 @@ if TYPE_CHECKING:
 
 # ── 校准 ────────────────────────────────────────────────────────────────────
 
-# 左上角返回圆环的中心；船池与出征准备页共用同一套标题栏布局。
-CLICK_BACK = (0.0313, 0.0528)
-
 # 搜索输入框的中心。
 CLICK_SEARCH_BOX = (0.7292, 0.0556)
 
 # 软键盘右上角的收起按钮。
 CLICK_DISMISS_KEYBOARD = (0.5208, 0.0926)
+
+# 提交搜索框内容用的回车键（KEYCODE_ENTER）。
+KEYCODE_ENTER = 66
 
 # 卡片详情页的「移除舰船」按钮。
 CLICK_REMOVE_SHIP = (0.0865, 0.3093)
@@ -65,6 +68,10 @@ class ShipPoolPage:
         """
         self._ctx.runtime.ctrl.text(name)
 
+    def confirm_search(self) -> None:
+        """按回车提交搜索框里的舰名，让列表按名字过滤。"""
+        self._ctx.runtime.ctrl.key_event(KEYCODE_ENTER)
+
     def dismiss_keyboard(self) -> None:
         """点击收起按钮，关闭软键盘。"""
         self._ctx.runtime.ctrl.click(*CLICK_DISMISS_KEYBOARD)
@@ -91,10 +98,10 @@ class ShipPoolPage:
 
 
 __all__ = [
-    'CLICK_BACK',
     'CLICK_DISMISS_KEYBOARD',
     'CLICK_REMOVE_SHIP',
     'CLICK_SEARCH_BOX',
+    'KEYCODE_ENTER',
     'SCROLL_DURATION_SECONDS',
     'SCROLL_END',
     'SCROLL_START',

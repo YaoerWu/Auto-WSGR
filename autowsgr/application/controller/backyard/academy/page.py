@@ -15,7 +15,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.controller.backyard.main_page import constants
 from autowsgr.common.system.logger import get_logger
 
 

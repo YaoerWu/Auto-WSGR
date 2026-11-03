@@ -61,6 +61,9 @@ from autowsgr.application.controller.sortie.battle_preparation import (
     BattlePreparationPage,
     read_battle_preparation_layer,
 )
+from autowsgr.application.controller.sortie.battle_preparation.ship_pool import (
+    check_ship_pool_page,
+)
 from autowsgr.application.controller.sortie.exercise import ExercisePage
 from autowsgr.application.navigation.types import (
     NavigationError,
@@ -526,6 +529,7 @@ _PAGE_CHECKERS: dict[PageName, Callable[..., bool]] = {
     PageName.SERVER_SELECT: login.check_server_select,
     PageName.EVENT_MAP: stage_push.check_event_map_page,
     PageName.EVENT_STAGE_OVERLAY: stage_push.check_event_sortie_prepare,
+    PageName.SHIP_SELECTION: check_ship_pool_page,
     PageName.SIDEBAR: sidebar.check_sidebar_page,
     PageName.BUILD_SUBMENU: sidebar.check_build_submenu,
     PageName.INTENSIFY_SUBMENU: sidebar.check_intensify_submenu,
@@ -940,10 +944,29 @@ _NAV_TARGETS: dict[PageName, tuple[NavTarget, ...]] = {
     ),
     # 只维护退回一条边：选章选节是进入方向的职责，返回不需要入参。
     PageName.BATTLE_PREPARATION: (
+        # TODO: 活动出征与普通出征共用这一页的视觉特征，退回固定走出征主页的单条边；
+        # 活动入口接上后，从活动进来的退回应改为落到活动地图。影响范围：只这一条边。
+        # 删除条件：活动的出征入口登记进 _NAV_TARGETS 时一并改成按参数分叉。
         NavTarget(
             PageName.SORTIE_MAP,
             lambda ctx, **_: BattlePreparationPage(ctx).go_back(),
             '出征准备页 → 出征页',
+        ),
+    ),
+    # 决战与战役准备页还没登记进入方向的边：这两页的入口点击没接，现在只有返回
+    # 一条出边，等入口接上即自动生效。
+    PageName.DECISIVE_BATTLE_PREPARATION: (
+        NavTarget(
+            PageName.DECISIVE_BATTLE,
+            lambda ctx, **_: BattlePreparationPage(ctx).go_back(),
+            '决战准备页 → 决战页',
+        ),
+    ),
+    PageName.CAMPAIGN_PREPARATION: (
+        NavTarget(
+            PageName.CAMPAIGN,
+            lambda ctx, **_: BattlePreparationPage(ctx).go_back(),
+            '战役准备页 → 战役页',
         ),
     ),
     # 每日浮窗链：进链只负责走到这一步，中间步的到达确认关掉（下一个浮窗在不在静态判不了），

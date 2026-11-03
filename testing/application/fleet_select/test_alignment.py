@@ -11,13 +11,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.page import (
-    CLICK_SHIP_SLOTS,
-    DRAG_DURATION_SECONDS,
-)
-from autowsgr.application.fleet_select import alignment as alignment_module
-from autowsgr.application.fleet_select.alignment import FleetAligner, find_deferred_primary_slots
-from autowsgr.application.fleet_select.models import FleetSlotRule, FleetSnapshot, ShipSelector
+from autowsgr.application.controller.sortie.battle_preparation.ship_recognition import constants
+from autowsgr.application.fleet_select.operation import member_align as alignment_module
+from autowsgr.application.fleet_select.operation.member_align import FleetAligner
+from autowsgr.application.fleet_select.rules.planner import build_deferred_primary_slots
+from autowsgr.application.fleet_select.types import FleetSlotRule, FleetSnapshot, ShipSelector
 
 
 if TYPE_CHECKING:
@@ -52,6 +50,23 @@ def _aligner(
     )
 
 
+def _patch_page_order(
+    monkeypatch: pytest.MonkeyPatch,
+    *orders: tuple[str | None, ...],
+) -> None:
+    """按调用次序给出页面上的六槽舰名，最后一条一直复用。"""
+    queue = list(orders)
+
+    def _read(_ctx: Any, **_kwargs: Any) -> FleetSnapshot:
+        names = queue.pop(0) if len(queue) > 1 else queue[0]
+        return FleetSnapshot(
+            names=names,
+            occupied=tuple(name is not None for name in names),
+        )
+
+    monkeypatch.setattr(alignment_module, 'read_fleet_snapshot', _read)
+
+
 def test_find_deferred_primary_slots_marks_unknown_primary() -> None:
     """已占用但舰名未知、规划上仍是主选的槽位需要先进兜底流程。"""
     selectors: tuple[FleetSlotRule | None, ...] = (_rule('企业'), None, None, None, None, None)
@@ -60,7 +75,7 @@ def test_find_deferred_primary_slots_marks_unknown_primary() -> None:
         occupied=(True, False, False, False, False, False),
     )
 
-    slots = find_deferred_primary_slots(snapshot, selectors, (selectors[0].primary, *([None] * 5)))
+    slots = build_deferred_primary_slots(snapshot, selectors, (selectors[0].primary, *([None] * 5)))
 
     assert slots == {0}
 
@@ -73,7 +88,7 @@ def test_find_deferred_primary_slots_ignores_known_names() -> None:
         occupied=(True, False, False, False, False, False),
     )
 
-    slots = find_deferred_primary_slots(snapshot, selectors, (selectors[0].primary, *([None] * 5)))
+    slots = build_deferred_primary_slots(snapshot, selectors, (selectors[0].primary, *([None] * 5)))
 
     assert slots == set()
 
@@ -96,7 +111,7 @@ def test_align_fleet_does_nothing_when_members_already_match(
         assigned=(ShipSelector(name='企业'), None, None, None, None, None),
     )
 
-    aligner.align_fleet()
+    aligner.execute_member_plan()
 
     assert selected == []
 
@@ -120,7 +135,7 @@ def test_align_fleet_removes_extra_member_from_tail(
         assigned=(ShipSelector(name='企业'), None, None, None, None, None),
     )
 
-    aligner.align_fleet()
+    aligner.execute_member_plan()
 
     assert removed == [2]
     assert aligner.current == ['企业', None, None, None, None, None]
@@ -139,14 +154,21 @@ def test_align_fleet_reports_selected_ship(ctx: Any, monkeypatch: pytest.MonkeyP
         notify=lambda event, data: events.append((event, data)),
     )
 
-    aligner.align_fleet()
+    aligner.execute_member_plan()
 
     assert aligner.current[0] == '企业'
     assert events == [('ship_selected', {'slot': 1, 'selected': '企业'})]
 
 
-def test_reorder_fleet_drags_ship_to_target_position(ctx: Any) -> None:
+def test_reorder_fleet_drags_ship_to_target_position(
+    ctx: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """目标顺序与当前顺序不同时，把船从源槽位拖到目标槽位。"""
+    _patch_page_order(
+        monkeypatch,
+        ('甲', '乙', '丙', None, None, None),
+        ('丙', '甲', '乙', None, None, None),
+    )
     events: list[tuple[str, dict[str, object]]] = []
     aligner = _aligner(
         ctx,
@@ -163,17 +185,24 @@ def test_reorder_fleet_drags_ship_to_target_position(ctx: Any) -> None:
         notify=lambda event, data: events.append((event, data)),
     )
 
-    aligner.reorder_fleet()
+    aligner.execute_member_reorder()
 
     assert ctx.runtime.ctrl.swipes == [
-        (*CLICK_SHIP_SLOTS[2], *CLICK_SHIP_SLOTS[0], DRAG_DURATION_SECONDS),
+        (
+            *constants.CLICK_SHIP_SLOTS[2],
+            *constants.CLICK_SHIP_SLOTS[0],
+            constants.DRAG_DURATION_SECONDS,
+        ),
     ]
     assert aligner.current[:3] == ['丙', '甲', '乙']
     assert events == [('ship_moved', {'source': 3, 'destination': 1})]
 
 
-def test_reorder_fleet_skips_ship_missing_from_fleet(ctx: Any) -> None:
+def test_reorder_fleet_skips_ship_missing_from_fleet(
+    ctx: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """目标舰船不在队里时只记警告，不产生无效拖拽。"""
+    _patch_page_order(monkeypatch, ('甲', None, None, None, None, None))
     aligner = _aligner(
         ctx,
         current=('甲', None, None, None, None, None),
@@ -181,6 +210,6 @@ def test_reorder_fleet_skips_ship_missing_from_fleet(ctx: Any) -> None:
         assigned=(ShipSelector(name='丁'), None, None, None, None, None),
     )
 
-    aligner.reorder_fleet()
+    aligner.execute_member_reorder()
 
     assert ctx.runtime.ctrl.swipes == []

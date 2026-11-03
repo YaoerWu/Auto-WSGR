@@ -1,5 +1,0 @@
-task_type: campaign
-campaign_name: 简单驱逐
-fleet_id: 2
-fleet:
-  - U-177

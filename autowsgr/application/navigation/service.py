@@ -19,6 +19,9 @@ import time
 from typing import TYPE_CHECKING
 
 from autowsgr.application.controller import login
+from autowsgr.application.controller.sortie.battle_preparation.ship_pool import (
+    ShipPoolPage,
+)
 from autowsgr.application.navigation import registry
 from autowsgr.application.navigation.executor import NavigationExecutor
 from autowsgr.application.navigation.types import (
@@ -43,6 +46,10 @@ _log = get_logger('ui.navigation')
 _STARTUP_STEP_WAIT_SECONDS = 3.0
 # 确认画面消失、读取更新提示与加载状态时的探测次数。
 _PROBE_ATTEMPTS = 3
+
+# 建栈时退出图外页面的最大步数：船池退一步到准备页；若那是普通出征与活动共用的
+# 准备页，还要再退一步才能确定落在出征主页还是活动地图。
+_DETACH_MAX_STEPS = 2
 
 # 等登录页出现的最大识别次数，以及相邻两次识别的间隔秒数。
 _LOGIN_PAGE_ATTEMPTS = 60
@@ -173,6 +180,7 @@ class NavigationService:
         # 扫描期间的识别细节日志整体静默，结束后只留一条汇总。
         started = time.monotonic()
         pages = self._executor.read_layers_clearing_overlay()
+        pages = self._detach_off_graph(pages)
         elapsed_ms = int((time.monotonic() - started) * 1000)
 
         if not pages:
@@ -197,3 +205,32 @@ class NavigationService:
             elapsed_ms,
         )
         return pages[0]
+
+    def _detach_off_graph(self, pages: tuple[PageName, ...]) -> tuple[PageName, ...]:
+        """退出导航图之外的页面，重新识别到能建栈的落点。
+
+        船池页只有决定进它的模块知道怎么用，导航图里没有它的出边；而回退落到哪个
+        准备页由游戏决定，所以退一步再识别，不猜路径。普通出征与活动共用同一个准备
+        页特征，退到那里还不确定，得再退一步。
+
+        Args:
+            pages: 上一次扫描命中的页面层，按深度降序。
+
+        Returns:
+            退出之后重新扫描到的页面层；本来就在图内时原样返回。
+
+        Raises:
+            NavigationError: 退出之后仍停在图外页面。
+        """
+        for _ in range(_DETACH_MAX_STEPS):
+            if not pages or registry.depth_of(pages[0]) >= 0:
+                return pages
+            _log.info(
+                '[UI] 导航 → 建栈：停在图外页面，退出一步重新识别：page={!r}',
+                pages[0].value,
+            )
+            ShipPoolPage(self._ctx).go_back()
+            pages = self._executor.read_layers_clearing_overlay()
+        if pages and registry.depth_of(pages[0]) < 0:
+            raise NavigationError(f'停在导航图之外的页面且无法退出：{pages[0].value!r}')
+        return pages

@@ -13,15 +13,14 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from autowsgr.common.device.device_engine.foundation.platform import EmulatorType
+from autowsgr.common.system.config import ModuleConfig
 
 
-class DeviceConfig(BaseModel):
+class DeviceConfig(ModuleConfig):
     """保存 device 能力所需的 ADB、Scrcpy 和模拟器配置。"""
-
-    model_config = {'frozen': True, 'extra': 'forbid'}
 
     # ── ADB 配置 ────────────────────────────────────────────────────────────
 

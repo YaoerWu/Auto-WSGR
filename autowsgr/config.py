@@ -1,26 +1,21 @@
 """配置管理 — 基于 Pydantic v2。
 
 配置从 YAML 文件加载，经过 Pydantic 校验后生成不可变的配置对象。
+所有配置模型都继承 ModuleConfig：不可变，且拒绝未声明的字段。
 """
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, ValidationError, field_validator, model_validator
+from pydantic import BaseModel, Field, field_validator
 
-from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import (
-    ShipType,
-)
+from autowsgr.application.fleet_select.config import FleetSelectConfig
 from autowsgr.application.runtime.types import GameAPP, LoginServer
-from autowsgr.business.logistics.types import DestroyShipWorkMode
-from autowsgr.common.device import platform, timing
-from autowsgr.common.device.config import EmulatorConfig
-from autowsgr.common.device.types import OSType
-from autowsgr.common.system.config import LogConfig
-from autowsgr.common.system.filesystem import load_yaml
+from autowsgr.common.device.config import DeviceConfig
+from autowsgr.common.system.config import LogConfig, ModuleConfig
+from autowsgr.common.system.files import load_yaml
 from autowsgr.common.system.logger import get_logger
 
 
@@ -239,118 +234,12 @@ class DecisiveConfig(BaseModel):
 # ── 顶层用户配置 ──
 
 
-class UserConfig(BaseModel):
+class UserConfig(ModuleConfig):
     """用户配置（顶层聚合）。"""
 
-    model_config = {'frozen': True}
-
-    # 子配置块
-    emulator: EmulatorConfig = Field(default_factory=EmulatorConfig)
-    account: AccountConfig = Field(default_factory=AccountConfig)
-    ocr: OCRConfig = Field(default_factory=OCRConfig)
-    log: LogConfig = Field(default_factory=LogConfig)
-    daily_automation: DailyAutomationConfig | None = None
-    decisive_battle: DecisiveConfig | None = None
-
-    # 系统（自动检测）
-    os_type: OSType = Field(default_factory=platform.detect_host_os)
-    """操作系统类型，自动检测"""
-
-    # 脚本行为
-    # classic 的 delay 已移除: 运行期检测到会崩溃提示迁移 (见 config_compat);
-    # 新版用 operation_delay_min/max 字段，由 _apply_operation_delay 写入设备时序配置。
-    # check_page 功能已由 launcher.ensure_ready 覆盖。
-    operation_delay_min: float = Field(default=0.0, ge=0.0, allow_inf_nan=False)
-    """UI 操作后随机延迟下界 (秒)。兼容层把 classic 的 delay 同时迁为本字段与 _max。"""
-    operation_delay_max: float = Field(default=0.0, ge=0.0, allow_inf_nan=False)
-    """UI 操作后随机延迟上界 (秒)。"""
-    dock_full_destroy: bool = False
-    """船坞满时自动清空"""
-    repair_manually: bool = False
-    """是否手动修理"""
-    bathroom_count: int = 2
-    """修理位置总数 (≤12)。预留:智能浴场空位调度用。"""
-
-    # 解装设置
-    destroy_ship_work_mode: DestroyShipWorkMode = DestroyShipWorkMode.disable
-    """解装工作模式"""
-    destroy_ship_types: list[ShipType] = Field(default_factory=list)
-    """指定舰种列表"""
-    remove_equipment_mode: bool = True
-    """默认卸下装备"""
-
-    @field_validator('destroy_ship_work_mode', mode='before')
-    @classmethod
-    def _coerce_destroy_mode(cls, v: object) -> object:
-        """允许用中文别名或英文成员名指定解装模式。"""
-        _alias: dict[str, int] = {
-            '不启用': 0,
-            'disable': 0,
-            '黑名单': 1,
-            'include': 1,
-            '白名单': 2,
-            'exclude': 2,
-        }
-        if isinstance(v, str):
-            key = v.strip()
-            if key in _alias:
-                return _alias[key]
-            # 纯数字字符串也兼容
-            if key.isdigit():
-                return int(key)
-        return v
-
-    # 数据路径
-    plan_root: Path | None = None
-    """自定义计划文件目录"""
-    # ship_name_file 已移除 (新版无需自定义舰船名文件; 兼容层会提示用户删除)
-
-    @model_validator(mode='after')
-    def _resolve_emulator_defaults(self) -> UserConfig:
-        """自动填充模拟器 serial、path、process_name。"""
-        emu = self.emulator
-        os_type = self.os_type
-
-        updates: dict[str, Any] = {}
-
-        if os_type == OSType.linux:
-            # WSL 需要用户显式配置
-            if emu.serial is None:
-                raise ValueError('WSL 需要显式设置 emulator.serial')
-            if emu.path is None:
-                raise ValueError('WSL 需要显式设置 emulator.path')
-            if emu.process_name is None:
-                updates['process_name'] = os.path.basename(emu.path)
-        else:
-            if emu.serial is None:
-                updates['serial'] = platform.default_emulator_serial(emu.type, os_type)
-            if emu.path is None:
-                try:
-                    updates['path'] = platform.find_emulator_path(emu.type, os_type)
-                except (ValueError, FileNotFoundError) as e:
-                    _log.warning('自动检测模拟器路径失败: {}', e)
-            resolved_path = updates.get('path', emu.path)
-            if emu.process_name is None and resolved_path is not None:
-                updates['process_name'] = os.path.basename(str(resolved_path))
-
-        if updates:
-            new_emu = emu.model_copy(update=updates)
-            object.__setattr__(self, 'emulator', new_emu)
-
-        return self
-
-    @model_validator(mode='after')
-    def _apply_operation_delay(self) -> UserConfig:
-        """把 operation_delay_min/max 写入设备时序配置。
-
-        classic 的 ``delay`` 由迁移工具迁为本字段; 这样延迟值随配置持久化,
-        不会再因「迁移回写删字段」而丢失。
-        """
-        timing.set_operation_delay(
-            self.operation_delay_min,
-            self.operation_delay_max,
-        )
-        return self
+    LOG: LogConfig = Field(default_factory=LogConfig)  # 日志配置。
+    DEVICE: DeviceConfig = Field(default_factory=DeviceConfig)  # 设备配置。
+    FLEET_SELECT: FleetSelectConfig = Field(default_factory=FleetSelectConfig)  # 换船配置。
 
     @classmethod
     def from_yaml(cls, path: str | Path) -> UserConfig:
@@ -358,7 +247,17 @@ class UserConfig(BaseModel):
 
         raw dict 先经 :func:`detect_legacy_user_config` 检测 classic 老版本字段;
         命中则抛 :class:`LegacyConfigError` 提示用户运行迁移工具
-        (``tools/migrate_config.py``), **不再自动迁移 / 回写**。干净则交 Pydantic 校验。
+        (tools/migrate_config.py), **不再自动迁移 / 回写**。干净则交 Pydantic 校验。
+
+        Parameters
+        ----------
+        path:
+            用户配置文件路径 (YAML)。
+
+        Returns
+        -------
+        UserConfig
+            校验后的不可变配置对象。
         """
         from autowsgr.config_compat import (
             LegacyConfigError,
@@ -378,7 +277,6 @@ class UserConfig(BaseModel):
         return cls.model_validate(data)
 
 
-# ── ConfigManager ──
 # 默认配置文件名（当前目录下）
 _DEFAULT_CONFIG_FILENAME = 'usersettings.yaml'
 
@@ -410,11 +308,7 @@ class ConfigManager:
             path = Path(path)
             if not path.exists():
                 _log.warning('配置文件 {} 不存在，使用默认配置', path)
-                try:
-                    return UserConfig()
-                except ValidationError:
-                    # WSL/Linux 下默认配置缺少 serial/path 无法通过验证，提供占位值
-                    return UserConfig(emulator={'serial': '', 'path': ''})
+                return UserConfig()
             config = UserConfig.from_yaml(path)
             _log.info('已加载配置: {}', path)
             return config

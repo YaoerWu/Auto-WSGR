@@ -6,7 +6,7 @@
 下层依赖：
 - common.vision：提供识别区域与像素签名类型。
 
-边界：只保存识别区域与页面签名，不保存点击落点、不保存选船规则。
+边界：只保存识别区域、模板名与页面签名，不保存点击落点、不保存选船规则。
 """
 
 from __future__ import annotations
@@ -16,24 +16,41 @@ from autowsgr.common.vision import ROI, Color, PixelRule, PixelSignature
 
 # ── 识别区域 ────────────────────────────────────────────────────────────────
 
+# 本模块在 UI 模板根下的命名空间。
+TEMPLATE_NAMESPACE = 'controller/sortie/battle_preparation/ship_pool'
+
 # 船卡列表的正文区，校准基准 1280x720。左边界从 0 起、右边界停在 1048px：
 # 再往右是滚动条与右侧信息栏。顶部切掉筛选页签，底部切掉功能按钮栏。
 SHIP_LIST_ROI = ROI(0.0, 0.12, 0.81875, 0.95)
 
 
-# ── 页面签名 ────────────────────────────────────────────────────────────────
+# ── 船池分类模板 ────────────────────────────────────────────────────────────
 
-# 船池页面的页面签名：右侧信息栏的四段底色与底部一角，五条规则全部命中才成立。
-SHIP_POOL_SIGNATURE = PixelSignature(
-    'ship_pool_page',
-    (
-        PixelRule(0.88, 0.24, Color(0, 122, 238)),
-        PixelRule(0.86, 0.40, Color(58, 58, 58)),
-        PixelRule(0.86, 0.50, Color(59, 59, 59)),
-        PixelRule(0.86, 0.70, Color(53, 53, 53)),
-        PixelRule(0.98, 0.90, Color(24, 41, 58)),
-    ),
-)
+# 船池页是按入口分家的：学院、强化、拆解各有一个专属按钮，出征与活动出征共用
+# 一组按钮，决战与它们共用同一排按钮但少了标记星标。四个特征两两组合即可定类，
+# 且六页的「排列顺序 / 类型」位置完全相同，不能拿它当判据。
+#
+# 每个模板只允许在自己那 1px 扩边的死区域里滑动：全图搜索时「快速编队」在出征、
+# 演习、决战三页互为 1.0000，「快速选择」对出征页也有 0.9387，阈值分不开。
+
+# 右侧「快速编队」按钮：出征、活动出征、演习、决战四类船池都有。
+QUICK_FORMATION_TEMPLATE = 'SHIP_POOL_QUICK_FORMATION_720P.png'
+QUICK_FORMATION_ROI = ROI(0.846875, 0.27083333, 0.9765625, 0.35)
+
+# 右侧「快速选择」按钮：只有拆解船池有。
+QUICK_SELECT_TEMPLATE = 'SHIP_POOL_QUICK_SELECT_720P.png'
+QUICK_SELECT_ROI = ROI(0.846875, 0.26527778, 0.9765625, 0.34444444)
+
+# 右侧「强化满 隐藏」筛选：只有强化船池有。
+QUICK_STRENGTHEN_TEMPLATE = 'SHIP_POOL_QUICK_STRENGTHEN_720P.png'
+QUICK_STRENGTHEN_ROI = ROI(0.84765625, 0.27083333, 0.97734375, 0.35)
+
+# 「全部舰船」按钮右侧的标记星标：决战船池没有星标，顶部写着决战选船不能用标记筛选。
+STAR_TEMPLATE = 'SHIP_POOL_STAR_720P.png'
+STAR_ROI = ROI(0.93828125, 0.17361111, 0.9796875, 0.24722222)
+
+
+# ── 页面签名 ────────────────────────────────────────────────────────────────
 
 # 搜索输入态的页面签名：软键盘上排三个键位，三条规则全部命中才成立。
 SEARCH_INPUT_SIGNATURE = PixelSignature(
@@ -47,7 +64,15 @@ SEARCH_INPUT_SIGNATURE = PixelSignature(
 
 
 __all__ = [
+    'QUICK_FORMATION_ROI',
+    'QUICK_FORMATION_TEMPLATE',
+    'QUICK_SELECT_ROI',
+    'QUICK_SELECT_TEMPLATE',
+    'QUICK_STRENGTHEN_ROI',
+    'QUICK_STRENGTHEN_TEMPLATE',
     'SEARCH_INPUT_SIGNATURE',
     'SHIP_LIST_ROI',
-    'SHIP_POOL_SIGNATURE',
+    'STAR_ROI',
+    'STAR_TEMPLATE',
+    'TEMPLATE_NAMESPACE',
 ]

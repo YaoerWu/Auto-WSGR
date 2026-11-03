@@ -496,9 +496,11 @@ class Processor:
             if self._stop.is_set():
                 return 'stopped', None
             try:
-                from autowsgr.common.vision.ocr_rules import ship_name_aliases_scope
+                from autowsgr.application.fleet_select.rules.shipnames import (
+                    apply_ship_name_aliases,
+                )
 
-                with image_context(), ship_name_aliases_scope(request.ship_name_aliases):
+                with image_context(), apply_ship_name_aliases(request.ship_name_aliases):
                     executor = build_executor(
                         request.task_type,
                         self._ctx,

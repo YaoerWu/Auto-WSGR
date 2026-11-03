@@ -1,7 +1,8 @@
 """模块功能：控制出征准备页的单次点击。
 
 上层调用：
-- application.navigation：进入或离开出征准备页时调用。
+- application.navigation：离开出征准备页时点左上角返回。
+- application.fleet_select.operation.team_select：切换舰队时点目标队标签。
 
 下层依赖：
 - common.device.service：通过 `ctx.runtime.ctrl` 执行点击。
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 
 # ── 校准 ────────────────────────────────────────────────────────────────────
 
-# 左上角返回圆环的中心；准备页与出征页共用同一套标题栏布局。
+# 左上角返回圆环的中心；准备页与船池页共用同一套标题栏布局。
 CLICK_BACK = (0.0313, 0.0528)
 
 # 四个舰队标签页的中心，按 1、2、3、4 队顺序；取各自高亮块模板的几何中心。

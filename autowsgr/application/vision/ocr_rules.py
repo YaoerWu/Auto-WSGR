@@ -32,18 +32,18 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from autowsgr.application.fleet_select.names import (
+from autowsgr.application.fleet_select.rules.shipnames import (
     SHIPNAMES,
     get_active_ship_name_aliases,
     get_ship_name_group_id,
+    load_ship_name_aliases,
     normalize_ship_name,
-    set_ship_name_aliases,
 )
-from autowsgr.application.fleet_select.names import (
-    expand_ship_name_candidates as expand_group_candidates,
+from autowsgr.application.fleet_select.rules.shipnames import (
+    apply_ship_name_aliases as _apply_ship_name_aliases,
 )
-from autowsgr.application.fleet_select.names import (
-    ship_name_aliases_scope as _ship_name_aliases_scope,
+from autowsgr.application.fleet_select.rules.shipnames import (
+    build_ship_name_candidates as expand_group_candidates,
 )
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.types import ShipType
@@ -159,7 +159,7 @@ def set_user_ship_name_corrections(corrections: Mapping[str, str]) -> int:
 
 def set_user_ship_name_aliases(aliases: Mapping[str, str]) -> int:
     """加载用户舰名别名，跳过标准名错误或重复登记的条目。"""
-    set_ship_name_aliases({})
+    load_ship_name_aliases({})
     valid_names = set(SHIPNAMES)
     loaded: dict[str, str] = {}
     for alias, ship_name in aliases.items():
@@ -175,20 +175,20 @@ def set_user_ship_name_aliases(aliases: Mapping[str, str]) -> int:
             continue
         loaded[alias] = ship_name
 
-    set_ship_name_aliases(loaded)
+    load_ship_name_aliases(loaded)
     _USER_SHIP_NAME_ALIASES.clear()
     _USER_SHIP_NAME_ALIASES.update(loaded)
     return len(loaded)
 
 
 @contextmanager
-def ship_name_aliases_scope(aliases: Mapping[str, str]) -> Iterator[None]:
+def apply_ship_name_aliases(aliases: Mapping[str, str]) -> Iterator[None]:
     """在一次任务执行期间叠加别名，不修改进程级 OCR 配置。"""
     if not aliases:
         yield
         return
 
-    with _ship_name_aliases_scope(aliases):
+    with _apply_ship_name_aliases(aliases):
         yield
 
 

@@ -1,4 +1,11 @@
-"""验证 common/device 的当前重写契约。"""
+"""验证 common/device 的重写契约：包出口、配置边界与对外流程。
+
+直接调用方：设备接入流程的回归检查。
+
+直接依赖：device 包、ADB 执行器、截图流程与平台层。
+
+边界：不连接真实设备，不访问网络。
+"""
 
 from __future__ import annotations
 
@@ -18,23 +25,54 @@ from autowsgr.common.device.errors import DeviceConnectionError
 from autowsgr.common.device.scrcpy_engine.executor import ScrcpyEngine
 
 
-def test_device_exports_only_service_namespace() -> None:
-    """根包只暴露统一 service 模块。"""
+def _install_adb(
+    monkeypatch: pytest.MonkeyPatch,
+    responses: list[subprocess.CompletedProcess],
+) -> list[list[str]]:
+    """把 ADB 命令替换成按顺序返回预设结果的替身，并记录每次参数。"""
+    calls: list[list[str]] = []
+    pending = iter(responses)
+
+    def run(_executable: object, command: object, **_kwargs: object) -> subprocess.CompletedProcess:
+        calls.append([str(item) for item in command])
+        return next(pending)
+
+    monkeypatch.setattr(executor, 'find_adb_executable', lambda _path=None: Path('adb.exe'))
+    monkeypatch.setattr(executor, '_execute_adb_command', run)
+    return calls
+
+
+def test_public_entry_points_stay_on_their_own_namespaces() -> None:
+    """根包只导出 service 命名空间，服务与串流引擎都从各自模块取用。"""
     assert device.__all__ == ['service']
     assert device.service.DeviceService
     assert not hasattr(device, 'DeviceService')
 
-
-def test_service_starts_with_a_disconnected_session() -> None:
-    """统一服务创建后拥有默认分辨率且尚未连接。"""
     service = device.service.DeviceService()
 
     assert service.resolution == (0, 0)
     assert not service.is_connected()
 
+    engine = ScrcpyEngine()
 
-def test_device_config_accepts_owned_fields_and_rejects_unknown_fields() -> None:
-    """配置模型只接受当前 device 所有的字段。"""
+    assert engine.resolution == (0, 0)
+    assert not engine.is_scrcpy_connected()
+    for entry in (
+        'connect_scrcpy',
+        'capture_screenshot',
+        'disconnect_scrcpy',
+        'click_screen',
+        'swipe_screen',
+        'long_press_screen',
+        'send_key_event',
+        'input_text',
+        'reconnect_to_display',
+    ):
+        assert callable(getattr(engine, entry))
+
+
+def test_device_config_owns_its_fields() -> None:
+    """配置模型接受 device 自有字段并拒绝历史遗留字段。"""
     config = DeviceConfig(
         ADB_CONNECTION='127.0.0.1:16384',
         DEVICE_OPERATION_DELAY_MIN=0.1,
@@ -47,8 +85,8 @@ def test_device_config_accepts_owned_fields_and_rejects_unknown_fields() -> None
         DeviceConfig(DEVICE_OLD_OPTION=True)
 
 
-def test_adb_resources_and_explicit_path_resolution() -> None:
-    """ADB 执行器包含随包资源并支持显式路径。"""
+def test_adb_engine_ships_bundled_resources() -> None:
+    """ADB 可执行文件与依赖 DLL 随包发布，显式路径会被解析成绝对路径。"""
     bundled_adb = Path(executor.__file__).with_name('adb.exe')
 
     assert bundled_adb.is_file()
@@ -57,59 +95,53 @@ def test_adb_resources_and_explicit_path_resolution() -> None:
     assert executor.find_adb_executable(bundled_adb) == bundled_adb.resolve()
 
 
-def test_read_adb_devices_parses_status_lines(monkeypatch: pytest.MonkeyPatch) -> None:
-    """设备列表读取会跳过标题并保留 serial 和状态。"""
-    result = subprocess.CompletedProcess(
-        args=[],
-        returncode=0,
-        stdout='List of devices attached\nserial-a\tdevice\nserial-b\tunauthorized\n',
-        stderr='',
+def test_adb_device_listing_and_connect_confirm_device_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """设备列表跳过标题行，连接必须以 get-state 返回 device 收尾。"""
+    calls = _install_adb(
+        monkeypatch,
+        [
+            subprocess.CompletedProcess(
+                [],
+                0,
+                stdout='List of devices attached\nserial-a\tdevice\nserial-b\tunauthorized\n',
+                stderr='',
+            ),
+            subprocess.CompletedProcess([], 0, stdout='connected', stderr=''),
+            subprocess.CompletedProcess([], 0, stdout='device\n', stderr=''),
+        ],
     )
-    monkeypatch.setattr(executor, 'find_adb_executable', lambda _path=None: Path('adb.exe'))
-    monkeypatch.setattr(executor, '_execute_adb_command', lambda *_args, **_kwargs: result)
 
     assert executor.read_adb_devices() == [
         ('serial-a', 'device'),
         ('serial-b', 'unauthorized'),
     ]
 
-
-def test_connect_adb_device_confirms_device_state(monkeypatch: pytest.MonkeyPatch) -> None:
-    """ADB 连接必须在 get-state 返回 device 后才算成功。"""
-    responses = iter(
-        [
-            subprocess.CompletedProcess([], 0, stdout='connected', stderr=''),
-            subprocess.CompletedProcess([], 0, stdout='device\n', stderr=''),
-        ]
-    )
-    monkeypatch.setattr(executor, 'find_adb_executable', lambda _path=None: Path('adb.exe'))
-    monkeypatch.setattr(
-        executor,
-        '_execute_adb_command',
-        lambda *_args, **_kwargs: next(responses),
-    )
-
     executor.connect_adb_device('serial-a')
 
+    assert calls == [
+        ['devices'],
+        ['connect', 'serial-a'],
+        ['-s', 'serial-a', 'get-state'],
+    ]
 
-def test_capture_device_screenshot_returns_bgr_image(monkeypatch: pytest.MonkeyPatch) -> None:
-    """ADB 截图会把 PNG 字节解码为 BGR 数组。"""
+
+def test_screenshot_flows_from_png_bytes_to_saved_frame(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """ADB 截图把 PNG 字节解码成 BGR 数组，保存流程再把帧与允许目录交给 system.files。"""
     source = numpy.zeros((2, 3, 3), dtype=numpy.uint8)
     source[:, :] = (0, 0, 255)
     success, encoded = cv2.imencode('.png', source)
     assert success
-    responses = iter(
+    _install_adb(
+        monkeypatch,
         [
             subprocess.CompletedProcess([], 0, stdout='connected', stderr=''),
             subprocess.CompletedProcess([], 0, stdout='device\n', stderr=''),
             subprocess.CompletedProcess([], 0, stdout=encoded.tobytes(), stderr=b''),
-        ]
-    )
-    monkeypatch.setattr(executor, 'find_adb_executable', lambda _path=None: Path('adb.exe'))
-    monkeypatch.setattr(
-        executor,
-        '_execute_adb_command',
-        lambda *_args, **_kwargs: next(responses),
+        ],
     )
 
     screen = executor.capture_device_screenshot('serial-a')
@@ -117,56 +149,62 @@ def test_capture_device_screenshot_returns_bgr_image(monkeypatch: pytest.MonkeyP
     assert screen.shape == (2, 3, 3)
     assert tuple(screen[0, 0]) == (0, 0, 255)
 
-
-def test_screenshot_workflow_delegates_to_system_files(monkeypatch: pytest.MonkeyPatch) -> None:
-    """截图保存流程将 RGB 帧和允许目录交给 system.files。"""
-    frame = numpy.zeros((2, 2, 3), dtype=numpy.uint8)
     saved: dict[str, object] = {}
 
-    class FakeScrcpy:
-        def capture_screenshot(self) -> numpy.ndarray:
-            return frame
-
     class FakeSession:
-        scrcpy = FakeScrcpy()
+        scrcpy = type('FakeScrcpy', (), {'capture_screenshot': staticmethod(lambda: screen)})()
 
-    def record_save(
-        image: numpy.ndarray,
-        path: str,
-        *,
-        allowed_root: str,
-    ) -> None:
+    def record_save(image: numpy.ndarray, path: str, *, allowed_root: str) -> None:
         saved['image'] = image
         saved['path'] = path
         saved['allowed_root'] = allowed_root
 
     monkeypatch.setattr(screenshot.files, 'save_image', record_save)
 
-    screenshot._save_device_screenshot(
-        FakeSession(),
-        'capture.png',
-        allowed_root='captures',
-    )
+    screenshot._save_device_screenshot(FakeSession(), 'capture.png', allowed_root='captures')
 
-    assert saved['image'] is frame
+    assert saved['image'] is screen
     assert saved['path'] == 'capture.png'
     assert saved['allowed_root'] == 'captures'
 
 
-def test_discovery_resolves_explicit_connection_and_recognizes_emulator() -> None:
-    """设备发现优先使用显式连接地址，并识别已知 serial。"""
-    config = DeviceConfig(
-        ADB_CONNECTION='127.0.0.1:16384',
-        DEVICE_EMULATOR_TYPE='MuMu',
-    )
+def test_discovery_and_timing_follow_platform_contract() -> None:
+    """设备发现、平台 serial 计算与操作延迟都走当前平台契约。"""
+    config = DeviceConfig(ADB_CONNECTION='127.0.0.1:16384', DEVICE_EMULATOR_TYPE='MuMu')
 
     assert discovery.recognize_emulator_type('127.0.0.1:16384') is platform.EmulatorType.mumu
     assert discovery.recognize_emulator_type('unknown') is None
     assert discovery.resolve_device_serial(config) == '127.0.0.1:16384'
+    assert (
+        platform.calculate_default_emulator_serial(
+            platform.EmulatorType.mumu,
+            platform.OSType.windows,
+        )
+        == '127.0.0.1:16384'
+    )
+
+    manager = lifecycle.create_emulator_process_manager(
+        DeviceConfig(DEVICE_EMULATOR_TYPE='云手机'),
+        platform.OSType.windows,
+    )
+    assert manager.check_emulator_running()
+    manager.start_emulator()
+    manager.stop_emulator()
+
+    delay.configure_operation_delay_bounds(0.2, 0.2)
+    try:
+        assert delay.calculate_operation_delay() == 0.2
+    finally:
+        delay.configure_operation_delay_bounds(0.0, 0.0)
+
+    with pytest.raises(ValueError, match='0 <= minimum <= maximum'):
+        delay.configure_operation_delay_bounds(0.2, 0.1)
 
 
-def test_discovery_filters_offline_devices(monkeypatch: pytest.MonkeyPatch) -> None:
-    """候选发现只返回 ADB 状态为 device 的设备。"""
+def test_discovery_filters_offline_devices_and_rejects_empty_selection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """候选发现只保留在线设备，没有候选时不能进入交互选择。"""
     monkeypatch.setattr(
         executor,
         'read_adb_devices',
@@ -179,60 +217,6 @@ def test_discovery_filters_offline_devices(monkeypatch: pytest.MonkeyPatch) -> N
 
     candidates = discovery.discover_emulator_candidates()
 
-    assert [candidate.serial for candidate in candidates] == [
-        '127.0.0.1:16384',
-        'unknown',
-    ]
-
-
-def test_discovery_rejects_empty_candidate_selection() -> None:
-    """没有候选设备时不能进入交互选择。"""
+    assert [candidate.serial for candidate in candidates] == ['127.0.0.1:16384', 'unknown']
     with pytest.raises(DeviceConnectionError, match='没有可供选择'):
         discovery.select_emulator_candidate([])
-
-
-def test_platform_and_lifecycle_use_explicit_semantics() -> None:
-    """平台计算和生命周期工厂返回当前宿主管理器契约。"""
-    config = DeviceConfig(DEVICE_EMULATOR_TYPE='云手机')
-    manager = lifecycle.create_emulator_process_manager(config, platform.OSType.windows)
-
-    assert (
-        platform.calculate_default_emulator_serial(
-            platform.EmulatorType.mumu,
-            platform.OSType.windows,
-        )
-        == '127.0.0.1:16384'
-    )
-    assert manager.check_emulator_running()
-    manager.start_emulator()
-    manager.stop_emulator()
-
-
-def test_timing_calculates_configured_operation_delay() -> None:
-    """操作延迟计算使用配置的上下界。"""
-    delay.configure_operation_delay_bounds(0.2, 0.2)
-    try:
-        assert delay.calculate_operation_delay() == 0.2
-    finally:
-        delay.configure_operation_delay_bounds(0.0, 0.0)
-
-
-def test_timing_rejects_inverted_bounds() -> None:
-    """操作延迟下界大于上界时直接拒绝。"""
-    with pytest.raises(ValueError, match='0 <= minimum <= maximum'):
-        delay.configure_operation_delay_bounds(0.2, 0.1)
-
-
-def test_scrcpy_engine_exposes_named_channel_and_input_methods() -> None:
-    """Scrcpy 执行器出口使用通道、截图和输入的业务名称。"""
-    engine = ScrcpyEngine()
-
-    assert engine.resolution == (0, 0)
-    assert not engine.is_scrcpy_connected()
-    assert engine.connect_scrcpy
-    assert engine.capture_screenshot
-    assert engine.click_screen
-    assert engine.swipe_screen
-    assert engine.long_press_screen
-    assert engine.send_key_event
-    assert engine.input_text

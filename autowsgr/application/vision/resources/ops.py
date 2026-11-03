@@ -119,8 +119,7 @@ class BackButton:
     @staticmethod
     def all() -> list[Template]:
         return [
-            load_cached_template(f'shared/back_{i}_540p.png', name=f'back_{i}')
-            for i in range(1, 9)
+            load_cached_template(f'shared/back_{i}_540p.png', name=f'back_{i}') for i in range(1, 9)
         ]
 
 

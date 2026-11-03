@@ -1,56 +1,26 @@
-# AutoWSGR — 新架构配置 (初始化链路)
-# ==========================================
-# 迁移规则: 只收录当前新架构已重塑链路用到的配置段,
-# 未迁移段保留在 usersettings.yaml.old, 对应业务链路重塑时再迁。
-#
-# 当前已迁移: 初始化链路 (launch 第一阶段 + initialize)
-#   emulator / account / ocr / log
-#
-# 配置查找顺序:
-#   1. launch("path/to/config.yaml")  — 显式指定
-#   2. 当前工作目录下的 usersettings.yaml  — 自动检测
-#   3. 无配置文件时使用内置默认值
+# AutoWSGR 用户配置
+# 字段名全大写；未出现的字段使用模块内置默认值，只写想改的那几个。
+# 查找顺序：显式路径 → 当前工作目录的 usersettings.yaml → 内置默认值。
 
-# ═══════════════════════════════════════════
-# 模拟器配置
-# ═══════════════════════════════════════════
-emulator:
-  type: MuMu                       # 雷电 / 蓝叠 / MuMu / 夜神 / 逍遥 / WAYDROID
-  path: null                       # 模拟器可执行文件路径; null = 自动检测
-  serial: null                     # ADB serial 地址; null = 自动检测
-  process_name: null               # 模拟器进程名; null = 自动推断
+LOG:
+  LOG_LEVEL: DEBUG            # DEBUG / INFO / WARNING / ERROR
+  LOG_SYSTEM_DIR: logs        # 日志保存根目录
+  LOG_ROTATION: 10 MB         # 单个日志文件达到该大小后切分
+  LOG_RETENTION: 7 days       # 日志文件保留周期
+  LOG_COMBAT_OPEN: false      # 是否放行 combat 及子通道的 DEBUG 日志
 
-# ═══════════════════════════════════════════
-# 游戏账号
-# ═══════════════════════════════════════════
-account:
-  # game_app: 官服                 # 官服 / 小米服 / 应用宝服; 大部分用户是官服, 需要换服时再打开
-  game_server: 默认                # 默认 / 胡德 / 俾斯麦 / 昆西 / 长春; 默认表示不处理换区
+DEVICE:
+  ADB_CONNECTION: null            # ADB 连接地址；null = 自动发现设备
+  DEVICE_EMULATOR_TYPE: MuMu      # 雷电 / 蓝叠 / MuMu / 云手机 / 其他
+  DEVICE_EMULATOR_PATH: null      # 模拟器可执行文件路径；null = 自动检测
+  DEVICE_OPERATION_DELAY_MIN: 0.0 # 每次操作前的随机延迟下界（秒）
+  DEVICE_OPERATION_DELAY_MAX: 0.0 # 每次操作前的随机延迟上界（秒）
 
-# ═══════════════════════════════════════════
-# OCR 引擎
-# ═══════════════════════════════════════════
-ocr:
-  ship_name_match_confidence: 0.65 # 舰名匹配置信度, 越大越严格, 建议勿改
-  ship_name_corrections: {}        # OCR误识别文字 -> SHIPNAMES标准舰名
-  ship_name_aliases:               # 用户自定义名 -> SHIPNAMES标准舰名
-    希尔德布兰德: AIII
-    契卡洛夫: 85工程
-    U-47·狼群: U-47
-    巴尔的摩·英魂: 巴尔的摩
-
-# ═══════════════════════════════════════════
-# 日志
-# ═══════════════════════════════════════════
-log:
-  level: DEBUG                     # DEBUG / INFO / WARNING / ERROR / CRITICAL
-  root: logs                       # 日志保存根目录
-
-  # 细粒度显示开关
-  show_decisive_battle_info: true
-  show_emulator_debug: false        # 是否输出 emulator 通道 DEBUG (click/swipe 等操作)
-  show_ui_debug: false              # 是否输出 ui 通道 DEBUG (页面识别/等待轮询)
-  show_vision_debug: false          # 是否输出 vision 通道 DEBUG (模板匹配规则结果)
-  show_ops_debug: false             # 是否输出 ops 通道 DEBUG (页面导航/操作重试)
-  show_combat_state_debug: false    # 是否输出战斗状态机转移 DEBUG
-  show_combat_recognition_debug: false  # 是否输出战斗识别 DEBUG
+FLEET_SELECT:
+  # 系统标准船名: 游戏内显示船名
+  # 编队规则里写的是图鉴标准名，搜索时换成游戏内实际显示的名字。
+  SHIP_NAME_MAP:
+    AIII: 希尔德布兰德
+    85工程: 契卡洛夫
+    U-47: U-47·狼群
+    巴尔的摩: 巴尔的摩·英魂

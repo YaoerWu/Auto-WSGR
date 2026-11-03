@@ -22,11 +22,15 @@
    - `docs/features/[规范]python-code-style.md`
    - `docs/features/[规范]ui-code-style.md`
    - `docs/features/[规范]dispatch-context临时规范.md`
-2. 架构说明：
+2. 架构说明（按主程序目录一一对应，每篇讲清模块定位、依赖、入口出口与维护要点）：
+   - `docs/AutoWSGR3.0/README.md`：四层总览与分组索引，先读它
    - `docs/AutoWSGR3.0/common/system.md`
    - `docs/AutoWSGR3.0/common/device.md`
    - `docs/AutoWSGR3.0/common/vision.md`
-   - `docs/AutoWSGR3.0/application/ui/navigation/navigation.md`
+   - `docs/AutoWSGR3.0/application/navigation/README.md`
+   - `docs/AutoWSGR3.0/application/controller/README.md`
+   - `docs/AutoWSGR3.0/application/controller/home.md`、`login.md`、`mission.md`、
+     `sidebar.md`、`backyard.md`、`sortie.md`、`event.md`：controller 各业务包
 
 模块级规范先于架构说明。出现无法消解的规范冲突时暂停当前改动并报告，不自行猜测。
 
@@ -112,6 +116,9 @@ worktree 项目偏好；只有在超级用户模式已按全局协议被用户�
   （`absent=False` 识别存在、`absent=True` 识别不存在）和 `expect_template_center`/`expect_ocr_center`/
   `expect_pixel_center`（返回命中中心）；
   调用方只提供识别数据、识别规则和预期，`ContextHandle` 由 dispatch 统一提供，任何层级都可以调用它；
+- 用户配置统一走 `autowsgr.config.UserConfig` 这一棵树；模块配置模型继承
+  `common.system.config.ModuleConfig`（不可变、拒绝未声明字段），字段名用 UPPER_SNAKE_CASE，
+  与 `usersettings.yaml` 的键一一对应；
 - 页面语义、业务状态、路由、任务恢复和模板缓存归各自上层所有者；
 - 现有公开能力无法满足明确业务时，只在真实所有者模块增加最小能力，并同步对应架构文档
   和本文件；不得在业务层绕过边界拼接私有实现。

@@ -24,10 +24,14 @@ from pydantic import BaseModel, model_validator
 LOG_TIMEZONE = datetime.timezone(datetime.timedelta(hours=8), name='Asia/Shanghai')
 
 
-class LogConfig(BaseModel):
-    """保存日志能力的可覆盖配置。"""
+class ModuleConfig(BaseModel):
+    """模块配置基类：不可变，且拒绝未声明的字段。"""
 
     model_config = {'frozen': True, 'extra': 'forbid'}
+
+
+class LogConfig(ModuleConfig):
+    """保存日志能力的可覆盖配置。"""
 
     LOG_LEVEL: Literal['DEBUG', 'INFO', 'WARNING', 'ERROR'] = 'DEBUG'  # 普通日志的最低输出级别。
     LOG_SYSTEM_DIR: Path = Path('logs')  # 未指定用户目录时使用的日志根目录。
@@ -45,4 +49,4 @@ class LogConfig(BaseModel):
         return self
 
 
-__all__ = ['LOG_TIMEZONE', 'LogConfig']
+__all__ = ['LOG_TIMEZONE', 'LogConfig', 'ModuleConfig']
