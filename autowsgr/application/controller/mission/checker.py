@@ -14,37 +14,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.mission import constants
 from autowsgr.application.controller.template import load_ui_template
-from autowsgr.common.vision import ROI, Template, expect_template
+from autowsgr.common.vision import Template, expect_template
 
 
 if TYPE_CHECKING:
     from autowsgr.dispatch.context import ContextHandle
-
-
-# ── 识别数据 ────────────────────────────────────────────────────────────────
-
-# 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'controller/mission'
-
-# 本模块的模板文件名；目录小写、文件名全大写。
-# 任务页默认落在「全部」页签，因此用它作为页面身份。
-ALL_TAB_TEMPLATE = 'MISSION_ALL_TAB_720P.png'
-CLAIM_ALL_BUTTON_TEMPLATE = 'MISSION_CLAIM_ALL_720P.png'
-REWARD_CONFIRM_BUTTON_TEMPLATE = 'MISSION_REWARD_CONFIRM_720P.png'
-
-
-# ── 任务页识别区域 ──────────────────────────────────────────────────────────
-
-# 顶部「全部」页签的归一化区域，校准基准为 1280x720 截图。
-ALL_TAB_ROI = ROI(0.1477, 0.0223, 0.2204, 0.0848)
-
-
-# ── 领奖与确认区域 ──────────────────────────────────────────────────────────
-
-# 右下角「全部领取」按钮与「获得」浮窗里的「确认」按钮，同一校准基准。
-CLAIM_ALL_BUTTON_ROI = ROI(0.8157, 0.9181, 0.9243, 0.9848)
-REWARD_CONFIRM_BUTTON_ROI = ROI(0.4399, 0.6098, 0.554, 0.6889)
 
 
 # 导航确认节奏：进任务页和弹浮窗都要走完转场，识别不到就重试。
@@ -78,8 +54,8 @@ def check_mission_page(
     """
     if not expect_template(
         ctx,
-        template=_load_template(ALL_TAB_TEMPLATE),
-        roi=ALL_TAB_ROI,
+        template=_load_template(constants.ALL_TAB_TEMPLATE),
+        roi=constants.ALL_TAB_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -91,8 +67,8 @@ def check_mission_page(
     # 前识别：领奖浮窗还盖着就不算到达任务页。浮窗判定只探当前一帧。
     return not expect_template(
         ctx,
-        template=_load_template(REWARD_CONFIRM_BUTTON_TEMPLATE),
-        roi=REWARD_CONFIRM_BUTTON_ROI,
+        template=_load_template(constants.REWARD_CONFIRM_BUTTON_TEMPLATE),
+        roi=constants.REWARD_CONFIRM_BUTTON_ROI,
         attempts=1,
         interval_seconds=0.5,
     ).satisfied
@@ -121,8 +97,8 @@ def check_claim_all_button(
     """
     return expect_template(
         ctx,
-        template=_load_template(CLAIM_ALL_BUTTON_TEMPLATE),
-        roi=CLAIM_ALL_BUTTON_ROI,
+        template=_load_template(constants.CLAIM_ALL_BUTTON_TEMPLATE),
+        roi=constants.CLAIM_ALL_BUTTON_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -149,8 +125,8 @@ def check_mission_reward_confirm(
     """
     return expect_template(
         ctx,
-        template=_load_template(REWARD_CONFIRM_BUTTON_TEMPLATE),
-        roi=REWARD_CONFIRM_BUTTON_ROI,
+        template=_load_template(constants.REWARD_CONFIRM_BUTTON_TEMPLATE),
+        roi=constants.REWARD_CONFIRM_BUTTON_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -162,7 +138,7 @@ def check_mission_reward_confirm(
 
 def _load_template(filename: str) -> Template:
     """加载本模块模板。"""
-    return load_ui_template(TEMPLATE_NAMESPACE, filename)
+    return load_ui_template(constants.TEMPLATE_NAMESPACE, filename)
 
 
 __all__ = [

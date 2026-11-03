@@ -30,8 +30,8 @@ def test_select_first_four_rivals_swipe_top(
     for rival_index in range(1, 5):
         page.select_rival(rival_index)
 
-    assert control.swipes == [exercise_module._SWIPE_TO_TOP] * 4
-    assert control.clicks == list(exercise_module._RIVAL_CHALLENGE_POSITIONS)
+    assert control.swipes == [exercise_module.constants.SWIPE_TO_TOP] * 4
+    assert control.clicks == list(exercise_module.constants.RIVAL_CHALLENGE_POSITIONS)
 
 
 def test_select_fifth_rival_swipes_bottom(
@@ -41,8 +41,8 @@ def test_select_fifth_rival_swipes_bottom(
     """对手 5 在列表末尾：滑到底后点首屏第四格。"""
     ExercisePage(ctx).select_rival(5)
 
-    assert control.swipes == [exercise_module._SWIPE_TO_BOTTOM]
-    assert control.clicks == [exercise_module._RIVAL_CHALLENGE_POSITIONS[3]]
+    assert control.swipes == [exercise_module.constants.SWIPE_TO_BOTTOM]
+    assert control.clicks == [exercise_module.constants.RIVAL_CHALLENGE_POSITIONS[3]]
 
 
 @pytest.mark.parametrize('rival_index', [0, 6, -1])
@@ -67,9 +67,9 @@ def test_overlay_buttons_use_fallback_positions(ctx: Any, control: Any) -> None:
     page.click_overlay_challenge()
 
     assert control.clicks == [
-        exercise_module._CLICK_OVERLAY_CLOSE,
-        exercise_module._CLICK_OVERLAY_REFRESH,
-        exercise_module._CLICK_OVERLAY_CHALLENGE,
+        exercise_module.constants.CLICK_OVERLAY_CLOSE,
+        exercise_module.constants.CLICK_OVERLAY_REFRESH,
+        exercise_module.constants.CLICK_OVERLAY_CHALLENGE,
     ]
 
 

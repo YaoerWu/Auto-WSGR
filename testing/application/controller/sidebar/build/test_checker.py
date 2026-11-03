@@ -43,30 +43,30 @@ def _install_recognition(
 
 def test_build_page_visible(monkeypatch: pytest.MonkeyPatch) -> None:
     """建造页默认落在「建造」标签，模板命中即算到达。"""
-    calls = _install_recognition(monkeypatch, build_checker.BUILD_TAB_ROI)
+    calls = _install_recognition(monkeypatch, build_checker.constants.BUILD_TAB_ROI)
 
     assert check_build_page(object()) is True
-    assert calls[0]['roi'] is build_checker.BUILD_TAB_ROI
+    assert calls[0]['roi'] is build_checker.constants.BUILD_TAB_ROI
     assert calls[0]['attempts'] == 5
     assert calls[0]['interval_seconds'] == 1.0
 
 
 def test_build_page_absent(monkeypatch: pytest.MonkeyPatch) -> None:
     """未落在建造标签时不算到达。"""
-    _install_recognition(monkeypatch, build_checker.DISMANTLE_TAB_ROI)
+    _install_recognition(monkeypatch, build_checker.constants.DISMANTLE_TAB_ROI)
 
     assert check_build_page(object()) is False
 
 
 def test_dismantle_tab_visible(monkeypatch: pytest.MonkeyPatch) -> None:
     """解体标签激活时确认切换成功。"""
-    _install_recognition(monkeypatch, build_checker.DISMANTLE_TAB_ROI)
+    _install_recognition(monkeypatch, build_checker.constants.DISMANTLE_TAB_ROI)
 
     assert check_dismantle_tab(object()) is True
 
 
 def test_dismantle_tab_absent(monkeypatch: pytest.MonkeyPatch) -> None:
     """建造标签激活时解体标签不成立。"""
-    _install_recognition(monkeypatch, build_checker.BUILD_TAB_ROI)
+    _install_recognition(monkeypatch, build_checker.constants.BUILD_TAB_ROI)
 
     assert check_dismantle_tab(object()) is False

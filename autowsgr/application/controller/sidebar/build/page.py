@@ -4,7 +4,7 @@
 - application.navigation：执行建造页的标签切换与返回主页的页面边动作。
 
 下层依赖：
-- application.ui.controller.sidebar.build_page.constants：提供标签与返回落点。
+- application.controller.sidebar.build.constants：提供标签与返回落点。
 
 边界：只点击标签与返回按钮，不识别画面、不确认终态、不编排建造业务。
 建造与解装的业务流程尚未迁移到新链路，等第二阶段移植后再补回本模块。
@@ -15,7 +15,7 @@ from __future__ import annotations
 import enum
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.controller.sidebar.build_page import constants
+from autowsgr.application.controller.sidebar.build import constants
 from autowsgr.common.system.logger import get_logger
 
 

@@ -18,8 +18,8 @@ from autowsgr.application.controller.sortie.checker import read_sortie_layer
 from autowsgr.application.navigation.types import PageName
 
 
-_LAYER_PAGES = tuple(page for page, _, _ in sortie_checker._LAYERS)
-_LAYER_ROIS = tuple(roi for _, _, roi in sortie_checker._LAYERS)
+_LAYER_PAGES = tuple(page for page, _, _ in sortie_checker.constants.SORTIE_LAYERS)
+_LAYER_ROIS = tuple(roi for _, _, roi in sortie_checker.constants.SORTIE_LAYERS)
 
 
 def _install_recognition(
@@ -85,7 +85,8 @@ def test_probe_uses_single_call_with_all_layers(monkeypatch: pytest.MonkeyPatch)
 
     assert len(calls) == 1
     assert calls[0]['template'] == tuple(
-        (sortie_checker.TEMPLATE_NAMESPACE, filename) for _, filename, _ in sortie_checker._LAYERS
+        (sortie_checker.constants.TEMPLATE_NAMESPACE, filename)
+        for _, filename, _ in sortie_checker.constants.SORTIE_LAYERS
     )
     assert calls[0]['roi'] == _LAYER_ROIS
     assert calls[0]['attempts'] == 2

@@ -4,7 +4,7 @@
 - application.navigation：主页面的目标页导航与每日浮窗按钮点击。
 
 下层依赖：
-- main_page.constants：提供导航落点与浮窗点击落点。
+- home.constants：提供导航落点与浮窗点击落点。
 - common.device.service：通过 `ctx.runtime.ctrl` 执行点击。
 
 边界：只做**单次点击**，不识别画面、不等待页面、不编排流程、不重试。
@@ -17,8 +17,8 @@ from __future__ import annotations
 import enum
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.home import constants
 from autowsgr.application.navigation.types import PageName
-from autowsgr.application.ui.controller.home.main_page import constants
 from autowsgr.common.system.logger import get_logger
 
 

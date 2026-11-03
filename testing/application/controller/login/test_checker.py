@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from autowsgr.application.controller.login import checker
+from autowsgr.application.controller.login import checker, constants
 from autowsgr.common.vision import Template
 
 
@@ -82,13 +82,13 @@ def test_text_and_template_entries_carry_their_payload(
     """文本入口比对约定 OCR 文本与区域；模板入口交出的已是加载好的 Template。"""
     captured = _capture(monkeypatch, 'expect_ocr')
     checker.check_update_prompt(object())
-    assert captured['options']['expect'] == checker.UPDATE_PROMPT_TEXT
-    assert captured['options']['roi'] is checker.UPDATE_PROMPT_ROI
+    assert captured['options']['expect'] == constants.UPDATE_PROMPT_TEXT
+    assert captured['options']['roi'] is constants.UPDATE_PROMPT_ROI
     assert captured['options']['recognition_profile'] == 'single_line'
 
     checker.check_loading(object())
-    assert captured['options']['expect'] == checker.LOADING_TEXT
-    assert captured['options']['roi'] is checker.PROGRESS_TEXT_ROI
+    assert captured['options']['expect'] == constants.LOADING_TEXT
+    assert captured['options']['roi'] is constants.PROGRESS_TEXT_ROI
 
     for entry, expected_count in _TEMPLATE_ENTRIES:
         captured = _capture(monkeypatch, 'expect_template')
@@ -109,12 +109,12 @@ def test_server_lookup_uses_ocr_then_static_mapping(
     def fake_expect_ocr(_ctx: object, **options: object) -> SimpleNamespace:
         roi = options.get('roi')
         calls.append(roi)
-        return SimpleNamespace(satisfied=roi is checker.SERVER_NAME_ROIS[2])
+        return SimpleNamespace(satisfied=roi is constants.SERVER_NAME_ROIS[2])
 
     monkeypatch.setattr(checker, 'expect_ocr', fake_expect_ocr)
 
     assert checker.read_server_position(object(), '昆西') == 2
-    assert calls == list(checker.SERVER_NAME_ROIS[:3])
+    assert calls == list(constants.SERVER_NAME_ROIS[:3])
 
     monkeypatch.setattr(
         checker,
@@ -143,7 +143,7 @@ def test_center_readers_bind_their_rois(monkeypatch: pytest.MonkeyPatch) -> None
     assert checker.read_enter_button_center(object()) == (0.5, 0.5)
     assert checker.read_switch_entry_center(object()) == (0.5, 0.5)
     assert [options['roi'] for options in calls] == [
-        checker.ENTER_BUTTON_ROI,
-        checker.SWITCH_ENTRY_ROI,
+        constants.ENTER_BUTTON_ROI,
+        constants.SWITCH_ENTRY_ROI,
     ]
     assert all(options['attempts'] == 1 for options in calls)

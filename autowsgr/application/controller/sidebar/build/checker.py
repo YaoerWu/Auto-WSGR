@@ -13,30 +13,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.sidebar.build import constants
 from autowsgr.application.controller.template import load_ui_template
-from autowsgr.common.vision import ROI, Template, expect_template
+from autowsgr.common.vision import Template, expect_template
 
 
 if TYPE_CHECKING:
     from autowsgr.dispatch.context import ContextHandle
-
-
-# ── 识别数据 ────────────────────────────────────────────────────────────────
-
-# 本模块在 UI 模板根下的命名空间：建造页从侧边栏进入，因此嵌在 sidebar 命名空间下。
-TEMPLATE_NAMESPACE = 'controller/sidebar/build'
-
-# 本模块的模板文件名；目录小写、文件名全大写。
-# 建造页默认落在「建造」标签，因此用它作为页面身份。
-BUILD_TAB_TEMPLATE = 'BUILD_TAB_720P.png'
-DISMANTLE_TAB_TEMPLATE = 'BUILD_DISMANTLE_TAB_720P.png'
-
-
-# ── 建造页面识别区域 ────────────────────────────────────────────────────────
-
-# 建造页四个标签中已采样的两个；校准基准为 1280x720 截图。
-BUILD_TAB_ROI = ROI(0.1485, 0.0167, 0.2188, 0.0792)
-DISMANTLE_TAB_ROI = ROI(0.2782, 0.0153, 0.3469, 0.0806)
 
 
 # 导航确认节奏：切换标签要走完切换动画，识别不到就重试。
@@ -66,8 +49,8 @@ def check_build_page(
     """
     return expect_template(
         ctx,
-        template=_load_template(BUILD_TAB_TEMPLATE),
-        roi=BUILD_TAB_ROI,
+        template=_load_template(constants.BUILD_TAB_TEMPLATE),
+        roi=constants.BUILD_TAB_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -94,8 +77,8 @@ def check_dismantle_tab(
     """
     return expect_template(
         ctx,
-        template=_load_template(DISMANTLE_TAB_TEMPLATE),
-        roi=DISMANTLE_TAB_ROI,
+        template=_load_template(constants.DISMANTLE_TAB_TEMPLATE),
+        roi=constants.DISMANTLE_TAB_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -107,7 +90,7 @@ def check_dismantle_tab(
 
 def _load_template(filename: str) -> Template:
     """加载本模块模板。"""
-    return load_ui_template(TEMPLATE_NAMESPACE, filename)
+    return load_ui_template(constants.TEMPLATE_NAMESPACE, filename)
 
 
 __all__ = ['check_build_page', 'check_dismantle_tab']

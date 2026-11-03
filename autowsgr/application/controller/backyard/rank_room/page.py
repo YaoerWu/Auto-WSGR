@@ -4,7 +4,7 @@
 - application.navigation：执行该页的页面边动作。
 
 下层依赖：
-- application.ui.controller.backyard.main_page.constants：提供三级页入口落点。
+- backyard.rank_room.constants：提供三级页入口落点。
 
 边界：只做本页特有的点击；退回上一级与回首页是二级页公共动作，
 统一由 `backyard.main_page.page.BackyardPage` 提供，本模块不重复实现。
@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.controller.backyard.main_page import constants
+from autowsgr.application.controller.backyard.rank_room import constants
 from autowsgr.common.system.logger import get_logger
 
 

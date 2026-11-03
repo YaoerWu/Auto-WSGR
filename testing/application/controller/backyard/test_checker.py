@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 
 from autowsgr.application.controller import backyard
 from autowsgr.application.controller.backyard import checker as backyard_checker
+from autowsgr.application.controller.backyard import constants
 
 
 if TYPE_CHECKING:
@@ -41,10 +42,10 @@ def _install(
 
 def test_backyard_reached_by_entry_template(monkeypatch: pytest.MonkeyPatch) -> None:
     """入口模板命中即算到达后院主页（身份就是其中一个入口）。"""
-    calls = _install(monkeypatch, (backyard_checker.BATH_ENTRY_ROI,))
+    calls = _install(monkeypatch, (constants.BATH_ENTRY_ROI,))
 
     assert backyard.check_backyard_page(object()) is True
-    assert calls[0]['roi'] is backyard_checker.BACKYARD_ROI
+    assert calls[0]['roi'] is constants.BACKYARD_ROI
     assert calls[0]['attempts'] == 5
     assert calls[0]['interval_seconds'] == 1.0
 
@@ -74,7 +75,7 @@ def test_entry_center_reads_matching_template(monkeypatch: pytest.MonkeyPatch) -
     monkeypatch.setattr(backyard_checker, 'expect_template_center', expect_template_center)
 
     assert backyard.read_canteen_entry_center(object()) == (0.5, 0.5)
-    assert calls[0]['roi'] is backyard_checker.CANTEEN_ENTRY_ROI
+    assert calls[0]['roi'] is constants.CANTEEN_ENTRY_ROI
     assert calls[0]['attempts'] == 1
 
 

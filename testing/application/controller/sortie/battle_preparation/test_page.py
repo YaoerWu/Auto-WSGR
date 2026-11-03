@@ -22,7 +22,7 @@ def test_click_team_tab_clicks_matching_slot(ctx: Any, team: int) -> None:
     """第 N 队标签的落点就是坐标表里的第 N 项。"""
     BattlePreparationPage(ctx).click_team_tab(team)
 
-    assert ctx.runtime.ctrl.clicks == [page_module.CLICK_TEAM_TABS[team - 1]]
+    assert ctx.runtime.ctrl.clicks == [page_module.constants.CLICK_TEAM_TABS[team - 1]]
 
 
 @pytest.mark.parametrize('team', [0, 5, -1])
@@ -38,4 +38,4 @@ def test_go_back_clicks_back_button(ctx: Any) -> None:
     """返回只点一次校准好的返回圆环。"""
     BattlePreparationPage(ctx).go_back()
 
-    assert ctx.runtime.ctrl.clicks == [page_module.CLICK_BACK]
+    assert ctx.runtime.ctrl.clicks == [page_module.constants.CLICK_BACK]

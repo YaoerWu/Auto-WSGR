@@ -41,7 +41,7 @@ def test_sidebar_page_and_submenus_follow_their_own_roi(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """三层判层各看自己的区域：主栏、建造子菜单与强化子菜单互不串判。"""
-    calls = _install_recognition(monkeypatch, sidebar_checker.SIDEBAR_MAIN_ROI)
+    calls = _install_recognition(monkeypatch, sidebar_checker.constants.SIDEBAR_MAIN_ROI)
 
     assert sidebar.check_sidebar_page(object()) is True
     assert calls[0]['attempts'] == 5
@@ -49,14 +49,14 @@ def test_sidebar_page_and_submenus_follow_their_own_roi(
     assert sidebar.check_build_submenu(object()) is False
     assert sidebar.check_intensify_submenu(object()) is False
 
-    _install_recognition(monkeypatch, sidebar_checker.BUILD_SUBMENU_ROI)
+    _install_recognition(monkeypatch, sidebar_checker.constants.BUILD_SUBMENU_ROI)
 
     assert sidebar.check_sidebar_page(object()) is False
     assert sidebar.check_sidebar_page(object(), absent=True) is True
     assert sidebar.check_build_submenu(object()) is True
     assert sidebar.check_intensify_submenu(object()) is False
 
-    _install_recognition(monkeypatch, sidebar_checker.INTENSIFY_SUBMENU_ROI)
+    _install_recognition(monkeypatch, sidebar_checker.constants.INTENSIFY_SUBMENU_ROI)
 
     assert sidebar.check_intensify_submenu(object()) is True
     assert sidebar.check_build_submenu(object()) is False

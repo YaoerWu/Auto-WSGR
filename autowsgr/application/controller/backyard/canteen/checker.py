@@ -13,24 +13,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.backyard.canteen import constants
 from autowsgr.application.controller.template import load_ui_template
-from autowsgr.common.vision import ROI, Template, expect_template
+from autowsgr.common.vision import Template, expect_template
 
 
 if TYPE_CHECKING:
     from autowsgr.dispatch.context import ContextHandle
-
-
-# ── 识别数据 ────────────────────────────────────────────────────────────────
-
-# UI 模板根下的命名空间：二级页模板放在以页面命名的子目录里。
-TEMPLATE_NAMESPACE = 'controller/backyard/canteen'
-
-# 模板文件名；目录与命名空间已表达域，文件名不再重复域前缀。
-PAGE_TEMPLATE = 'CANTEEN_PAGE_720P.png'
-
-# 餐厅二级页页面身份的归一化区域，校准基准为 1280x720 截图。
-PAGE_ROI = ROI(0.879, 0.1375, 0.9672, 0.1917)
 
 
 # 导航确认节奏：页面切换要走完转场，识别不到就重试。
@@ -60,8 +49,8 @@ def check_canteen_page(
     """
     return expect_template(
         ctx,
-        template=_load_template(PAGE_TEMPLATE),
-        roi=PAGE_ROI,
+        template=_load_template(constants.PAGE_TEMPLATE),
+        roi=constants.PAGE_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -73,7 +62,7 @@ def check_canteen_page(
 
 def _load_template(filename: str) -> Template:
     """加载本模块模板。"""
-    return load_ui_template(TEMPLATE_NAMESPACE, filename)
+    return load_ui_template(constants.TEMPLATE_NAMESPACE, filename)
 
 
 __all__ = ['check_canteen_page']

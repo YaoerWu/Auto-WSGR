@@ -5,13 +5,21 @@
 - application.fleet_select：读取浮窗上六个对手的舰种与等级。
 
 下层依赖：
-- exercise.checker：提供识别数据与识别入口。
+- exercise.checker：提供识别入口。
+- exercise.constants：提供识别数据。
 - exercise.page：提供演习页点击操作。
 
 本模块只导出稳定入口，不放业务实现。
 """
 
 from autowsgr.application.controller.sortie.exercise.checker import (
+    RivalShip,
+    read_overlay_challenge_center,
+    read_overlay_close_center,
+    read_overlay_refresh_center,
+    read_rival_ships,
+)
+from autowsgr.application.controller.sortie.exercise.constants import (
     EXERCISE_RIVAL_SLOTS,
     OVERLAY_CHALLENGE_ROI,
     OVERLAY_CHALLENGE_TEMPLATE,
@@ -21,11 +29,6 @@ from autowsgr.application.controller.sortie.exercise.checker import (
     OVERLAY_REFRESH_TEMPLATE,
     RIVAL_SHIP_LEVEL_ROIS,
     RIVAL_SHIP_TYPE_ROIS,
-    RivalShip,
-    read_overlay_challenge_center,
-    read_overlay_close_center,
-    read_overlay_refresh_center,
-    read_rival_ships,
 )
 from autowsgr.application.controller.sortie.exercise.page import ExercisePage
 

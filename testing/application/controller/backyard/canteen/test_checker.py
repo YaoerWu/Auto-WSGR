@@ -13,6 +13,7 @@ from types import SimpleNamespace
 from typing import TYPE_CHECKING
 
 from autowsgr.application.controller.backyard.canteen import checker as canteen_checker
+from autowsgr.application.controller.backyard.canteen import constants
 
 
 if TYPE_CHECKING:
@@ -38,10 +39,10 @@ def _install(
 
 def test_page_visible(monkeypatch: pytest.MonkeyPatch) -> None:
     """本页模板命中时确认到达。"""
-    calls = _install(monkeypatch, canteen_checker.PAGE_ROI)
+    calls = _install(monkeypatch, constants.PAGE_ROI)
 
     assert canteen_checker.check_canteen_page(object()) is True
-    assert calls[0]['roi'] is canteen_checker.PAGE_ROI
+    assert calls[0]['roi'] is constants.PAGE_ROI
     assert calls[0]['attempts'] == 5
     assert calls[0]['interval_seconds'] == 1.0
 

@@ -14,6 +14,7 @@ from types import SimpleNamespace
 import pytest
 
 from autowsgr.application.controller.event.stage_push import checker as event_checker
+from autowsgr.application.controller.event.stage_push import constants as event_constants
 from autowsgr.application.controller.event.stage_push.checker import (
     EventMapState,
     EventMode,
@@ -72,17 +73,20 @@ def _install(
                 observation=[_match(button is EventMode.NORMAL), _match(button is EventMode.HARD)],
             )
         absent = bool(options.get('absent'))
-        if template == (event_checker.TEMPLATE_NAMESPACE, event_checker.SORTIE_PREPARE_TEMPLATE):
+        if template == (
+            event_checker.constants.TEMPLATE_NAMESPACE,
+            event_constants.SORTIE_PREPARE_TEMPLATE,
+        ):
             # absent 为真时 satisfied 表示"浮窗确实不在"，与出现时的语义相反。
             return SimpleNamespace(satisfied=(not overlay) if absent else overlay)
         return SimpleNamespace(satisfied=entry)
 
     def expect_ocr(_ctx: object, **options: object) -> SimpleNamespace:
-        if options['roi'] is event_checker.MAP_NAME_ROI:
+        if options['roi'] is event_constants.MAP_NAME_ROI:
             if title is EventMode.HARD:
-                texts = [f'{event_checker._MAP_NAME}（困难）']
+                texts = [f'{event_constants.MAP_NAME}（困难）']
             elif title is EventMode.NORMAL:
-                texts = [event_checker._MAP_NAME]
+                texts = [event_constants.MAP_NAME]
             else:
                 texts = ['无关标题']
             return SimpleNamespace(
@@ -179,17 +183,17 @@ def test_recognition_probes_read_button_title_overlay_and_centers(
 
     assert read_mode_button_center(object()) == (0.25, 0.75)
     assert calls[0]['template'] == (
-        (event_checker.TEMPLATE_NAMESPACE, event_checker.MODE_NORMAL_TEMPLATE),
-        (event_checker.TEMPLATE_NAMESPACE, event_checker.MODE_HARD_TEMPLATE),
+        (event_checker.constants.TEMPLATE_NAMESPACE, event_constants.MODE_NORMAL_TEMPLATE),
+        (event_checker.constants.TEMPLATE_NAMESPACE, event_constants.MODE_HARD_TEMPLATE),
     )
-    assert calls[0]['roi'] is event_checker.MODE_ROI
+    assert calls[0]['roi'] is event_constants.MODE_ROI
 
     assert read_sortie_prepare_center(object()) == (0.25, 0.75)
     assert calls[1]['template'] == (
-        event_checker.TEMPLATE_NAMESPACE,
-        event_checker.SORTIE_PREPARE_TEMPLATE,
+        event_checker.constants.TEMPLATE_NAMESPACE,
+        event_constants.SORTIE_PREPARE_TEMPLATE,
     )
-    assert calls[1]['roi'] is event_checker.SORTIE_PREPARE_ROI
+    assert calls[1]['roi'] is event_constants.SORTIE_PREPARE_ROI
 
 
 def test_check_event_map_page_accepts_button_or_plain_title(
@@ -210,7 +214,7 @@ def test_check_event_map_page_accepts_button_or_plain_title(
         assert check_event_map_page(object(), absent=absent) is expected
 
     _install(monkeypatch, button=EventMode.NORMAL)
-    assert check_event_map_page(object(), event_type=event_checker.ACTIVITY) is True
+    assert check_event_map_page(object(), event_type=event_constants.ACTIVITY) is True
     with pytest.raises(ValueError, match='当前 checker 不支持的活动玩法'):
         check_event_map_page(object(), event_type='other')
 
@@ -259,7 +263,7 @@ def test_wait_event_mode_retries_until_target_or_gives_up(
     assert (
         wait_event_mode(
             object(),
-            event_type=event_checker.ACTIVITY,
+            event_type=event_constants.ACTIVITY,
             mode=EventMode.HARD,
             attempts=3,
             interval_seconds=0.1,
@@ -278,7 +282,7 @@ def test_wait_event_mode_retries_until_target_or_gives_up(
     assert (
         wait_event_mode(
             object(),
-            event_type=event_checker.ACTIVITY,
+            event_type=event_constants.ACTIVITY,
             mode=EventMode.HARD,
             attempts=2,
             interval_seconds=0.1,
@@ -310,9 +314,9 @@ def test_check_event_sortie_prepare_checks_overlay_then_stage_title(
 def test_check_event_entry_and_task_bindings(monkeypatch: pytest.MonkeyPatch) -> None:
     """入口卡片可见性取模板命中，任务绑定事实直接透传，缺绑定时报导航错误。"""
     _install(monkeypatch, entry=True)
-    assert check_event_entry(object(), event_type=event_checker.ACTIVITY) is True
+    assert check_event_entry(object(), event_type=event_constants.ACTIVITY) is True
     _install(monkeypatch, entry=False)
-    assert check_event_entry(object(), event_type=event_checker.ACTIVITY) is False
+    assert check_event_entry(object(), event_type=event_constants.ACTIVITY) is False
     with pytest.raises(ValueError, match='当前 checker 不支持的活动玩法'):
         check_event_entry(object(), event_type='other')
 

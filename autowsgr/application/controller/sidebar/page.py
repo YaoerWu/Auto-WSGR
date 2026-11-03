@@ -4,7 +4,7 @@
 - application.navigation：执行侧边栏与子页面之间的页面边动作。
 
 下层依赖：
-- application.ui.controller.sidebar.main_page.constants：提供侧边栏点击落点。
+- application.controller.sidebar.constants：提供侧边栏点击落点。
 - application.navigation.types：提供页面名称。
 
 边界：只点击一级条目与关闭侧边栏，不识别画面、不确认终态、不涉及子页面业务。
@@ -15,8 +15,8 @@ from __future__ import annotations
 import enum
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.sidebar import constants
 from autowsgr.application.navigation.types import PageName
-from autowsgr.application.ui.controller.sidebar.main_page import constants
 from autowsgr.common.system.logger import get_logger
 
 

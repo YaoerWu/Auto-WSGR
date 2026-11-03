@@ -63,13 +63,50 @@ SEARCH_INPUT_SIGNATURE = PixelSignature(
 )
 
 
+# ── 校准 ────────────────────────────────────────────────────────────────────
+
+# 搜索输入框的中心。
+CLICK_SEARCH_BOX = (0.7292, 0.0556)
+
+# 软键盘右上角的收起按钮。
+CLICK_DISMISS_KEYBOARD = (0.5208, 0.0926)
+
+# 提交搜索框内容用的回车键（KEYCODE_ENTER）。
+KEYCODE_ENTER = 66
+
+# 卡片详情页的「移除舰船」按钮。
+CLICK_REMOVE_SHIP = (0.0865, 0.3093)
+
+# 列表的纵向滑动区间：从下往上拖一屏，用于看后面的卡片。
+SCROLL_START = (0.4, 0.55)
+SCROLL_END = (0.4, 0.30)
+SCROLL_DURATION_SECONDS = 0.4
+
+
+# 判定船池类别的模板与区域，顺序即判定优先级。
+KIND_FEATURES: tuple[tuple[str, ROI], ...] = (
+    (QUICK_STRENGTHEN_TEMPLATE, QUICK_STRENGTHEN_ROI),
+    (QUICK_SELECT_TEMPLATE, QUICK_SELECT_ROI),
+    (QUICK_FORMATION_TEMPLATE, QUICK_FORMATION_ROI),
+    (STAR_TEMPLATE, STAR_ROI),
+)
+
+
 __all__ = [
+    'CLICK_DISMISS_KEYBOARD',
+    'CLICK_REMOVE_SHIP',
+    'CLICK_SEARCH_BOX',
+    'KEYCODE_ENTER',
+    'KIND_FEATURES',
     'QUICK_FORMATION_ROI',
     'QUICK_FORMATION_TEMPLATE',
     'QUICK_SELECT_ROI',
     'QUICK_SELECT_TEMPLATE',
     'QUICK_STRENGTHEN_ROI',
     'QUICK_STRENGTHEN_TEMPLATE',
+    'SCROLL_DURATION_SECONDS',
+    'SCROLL_END',
+    'SCROLL_START',
     'SEARCH_INPUT_SIGNATURE',
     'SHIP_LIST_ROI',
     'STAR_ROI',

@@ -16,6 +16,9 @@ import pytest
 from autowsgr.application.controller.sortie.battle_preparation.ship_pool import (
     checker as ship_pool_checker,
 )
+from autowsgr.application.controller.sortie.battle_preparation.ship_pool import (
+    constants as ship_pool_constants,
+)
 from autowsgr.application.controller.sortie.battle_preparation.ship_pool.checker import (
     ShipPoolKind,
     check_search_input,
@@ -103,7 +106,7 @@ def _feature_templates() -> tuple[tuple[str, str], ...]:
     """按 checker 登记顺序取四个特征模板的哨兵值。"""
     return tuple(
         (ship_pool_checker.constants.TEMPLATE_NAMESPACE, filename)
-        for filename, _roi in ship_pool_checker._KIND_FEATURES
+        for filename, _roi in ship_pool_constants.KIND_FEATURES
     )
 
 
@@ -115,7 +118,7 @@ def test_ship_pool_page_matches_four_features_in_one_frame(
 
     assert check_ship_pool_page(object()) is True
     assert calls[0]['template'] == _feature_templates()
-    assert calls[0]['roi'] == tuple(roi for _filename, roi in ship_pool_checker._KIND_FEATURES)
+    assert calls[0]['roi'] == tuple(roi for _filename, roi in ship_pool_constants.KIND_FEATURES)
     assert calls[0]['attempts'] == 5
     assert calls[0]['interval_seconds'] == 1.0
     assert calls[0]['absent'] is False

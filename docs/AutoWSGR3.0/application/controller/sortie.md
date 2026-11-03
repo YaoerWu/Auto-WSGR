@@ -17,7 +17,8 @@ sortie/
 ├── battle_preparation/           四种准备页识别、舰队标签
 │   ├── quick_maintenance/        自动补给 / 快速修理 / 全部修理面板
 │   ├── ship_recognition/         六个槽位的舰船、等级、舰种、血条识别
-│   └── ship_pool/                船池列表、搜索框、选船与拆卸
+│   ├── ship_pool/                船池列表、搜索框、选船与拆卸
+│   └── tactical_support/         战术支援按钮与浮窗
 └── exercise/                     演习：对手列表与对手浮窗
 ```
 
@@ -162,7 +163,33 @@ class ShipPoolPage:
 - 页内静态坐标：返回 `(0.0313, 0.0528)`、搜索框 `(0.7292, 0.0556)`、收起键盘 `(0.5208, 0.0926)`、拆卸 `(0.0865, 0.3093)`、滚动 `(0.4, 0.55) → (0.4, 0.30)`、时长 0.4 秒。
 - **选船规则不在这里**：上层消费者是 `autowsgr/application/fleet_select/operation/ship_select.py`，本包只提供页面事实与单击。
 
-## 9. exercise —— 演习页与对手浮窗
+## 9. tactical_support —— 战术支援按钮与浮窗
+
+出征准备页右上角三格快捷按钮里的第二格：橙底点亮表示已开启，点开是「战术支援」浮窗，里面是开关按钮与今日剩余次数。决战、战役、演习三个准备页没有这个按钮（演习页快捷按钮整体右移一格，第二格是奖杯）。
+
+```python
+read_tactical_support_button_center(ctx, *, attempts=3, interval_seconds=0.5) -> tuple[float, float] | None
+read_tactical_support(ctx, *, attempts=5, interval_seconds=0.5) -> TacticalSupportState | None
+
+@dataclass(frozen=True, slots=True)
+class TacticalSupportState:
+    enabled: bool
+    remaining: int | None
+    total: int | None
+    toggle_center: tuple[float, float] | None
+
+class TacticalSupportPage:
+    def click_support_button(self, center=None) -> None: ...
+    def click_toggle_button(self, center=None) -> None: ...
+```
+
+- **只保留已开启态模板**（橙底 `TACTICAL_SUPPORT_ON_720P.png`，56×58）：匹配到就是已开启，匹配不到就是没开启，或者这个页面根本没有按钮。未开启态是蓝底圆环，留它会出事——演习页同一格是蓝底「预」字按钮，蓝底模板对演习页给 0.8491，只差 0.0009 就撞上 0.85 阈值。死区域 `TACTICAL_SUPPORT_ROI` 只容 ±1px 滑动，橙底模板最高误命中 0.6022。
+- 浮窗开关按钮**两态底色完全相同**（RGB 33,141,244），模板分数 1.000 / 0.976 也分不开，只能 OCR：一次 `expect_ocr` 传两个区域，开关区读「未启用 / 已启用」，次数区读「本日剩余次数：10/10」后正则取已用与总数。
+- 检测框是**相对识别区域**的坐标，`toggle_center` 已加上区域左上角偏移换算成整帧归一化值。
+- 开关按钮落点 `(0.6617, 0.1653)`、浮窗开关落点 `(0.7906, 0.5028)` 都留了静态兜底，识别不到时按校准坐标点。
+- **开启策略与流程编排不在这里**：业务层用两个读取入口判状态、调 `TacticalSupportPage` 点两下；关浮窗用 `BattlePreparationPage.click_team_tab(team)`——点已经激活的队伍标签不会切队，是安全关闭点。
+
+## 10. exercise —— 演习页与对手浮窗
 
 一屏四行对手，需要滑动翻页；进入某个对手弹详情浮窗（关闭/刷新/挑战/六个对手的舰种与等级）。
 
@@ -190,7 +217,7 @@ class ExercisePage:
 
 浮窗不展示对手舰名，`RivalShip` 因此没有 `name` 字段。舰种 ROI 只框住舰种两字、不含国籍括号，所以不做去括号处理；识别结果只接受 `ShipType` 枚举内的完整名称，`Other` 不参与匹配，错字一律返回 `None` 交给上层判。
 
-## 10. 维护
+## 11. 维护
 
 - **加一个出征标签**：`SortieTab` 加成员 + `PageName` + `read_sortie_layer` 的域表 + `registry._TABS` + 域内页面集合，五处缺一不可。
 - **`read_sortie_layer` 的等待参数别覆盖成 0**：标签切换有动画。

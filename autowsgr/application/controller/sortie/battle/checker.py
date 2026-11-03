@@ -7,6 +7,7 @@
 - controller.operations.sortie_page.battle_page：执行章节槽位与地图翻页的单次点击。
 - navigation.types：在选章失败时抛出导航错误。
 - common.system.logger：记录导航事实与失败原因。
+- sortie.battle.constants：提供地图数据与识别区域。
 - common.vision：按区域识别章节槽位与地图标题。
 
 边界：拥有「选到第 X 章第 Y 节」的页内导航与落点计算；不做截图之外的设备操作、
@@ -20,10 +21,11 @@ import time
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.sortie.battle import constants
 from autowsgr.application.controller.sortie.battle.page import BattlePage
 from autowsgr.application.navigation.types import NavigationError
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.vision import ROI, TextDetection, expect_ocr
+from autowsgr.common.vision import TextDetection, expect_ocr
 
 
 if TYPE_CHECKING:
@@ -33,99 +35,6 @@ if TYPE_CHECKING:
 
 
 _log = get_logger('ui')
-
-
-# ── 数据表 ───────────────────────────────────────────────────────────────────
-
-# 普通出征章节和地图编号到地图名称的映射。
-MAP_DATABASE: dict[tuple[int, int], str] = {
-    (1, 1): '母港附近海域',
-    (1, 2): '东北防线海域',
-    (1, 3): '仁州附近海域',
-    (1, 4): '深海仁州基地',
-    (1, 5): '乌兰巴托附近水域',
-    (2, 1): '扶桑西部海域',
-    (2, 2): '扶桑西南海域',
-    (2, 3): '扶桑南部海域',
-    (2, 4): '深海扶桑基地',
-    (2, 5): '深海前哨核心地区',
-    (2, 6): '深海前哨北方地区',
-    (3, 1): '母港南部海域',
-    (3, 2): '东南群岛（1）',
-    (3, 3): '东南群岛（2）',
-    (3, 4): '星洲海峡',
-    (4, 1): '克拉代夫东部海域',
-    (4, 2): '克拉代夫西部海域',
-    (4, 3): '泪之扉附近海域',
-    (4, 4): '泪之扉防线',
-    (5, 1): '塞浦路斯附近海域',
-    (5, 2): '克里特附近海域',
-    (5, 3): '马耳他附近海域',
-    (5, 4): '直布罗陀东部海域',
-    (5, 5): '直布罗陀要塞',
-    (6, 1): '洛里昂南部海域',
-    (6, 2): '英吉利海峡',
-    (6, 3): '斯卡帕湾',
-    (6, 4): '丹麦海峡',
-    (7, 1): '比斯开湾',
-    (7, 2): '马德拉海域',
-    (7, 3): '亚速尔海域',
-    (7, 4): '百慕大三角附近海域',
-    (7, 5): '百慕大三角防波堤',
-    (8, 1): '百慕大中心海域',
-    (8, 2): '百慕大南群岛',
-    (8, 3): '北加勒比海域',
-    (8, 4): '东部海岸群岛',
-    (8, 5): '地峡海湾',
-    (9, 1): '地峡外海',
-    (9, 2): '大洋南湾',
-    (9, 3): '南入海口海域',
-    (9, 4): '河口外海',
-    (9, 5): '南大洋群岛',
-    (10, 1): '极地海峡',
-}
-
-# 每章地图数量，用于限制普通出征的地图编号范围。
-CHAPTER_MAP_COUNTS: dict[int, int] = {}
-for _chapter, _map_num in MAP_DATABASE:
-    CHAPTER_MAP_COUNTS[_chapter] = max(CHAPTER_MAP_COUNTS.get(_chapter, 0), _map_num)
-del _chapter, _map_num
-
-# 普通出征最大章节号，由地图表推导，避免与地图数据重复维护。
-TOTAL_CHAPTERS = max(CHAPTER_MAP_COUNTS)
-
-
-# 章节号中文数字，用于解析侧栏槽位标签。
-_CHAPTER_NUMERALS: dict[str, int] = {
-    '一': 1,
-    '二': 2,
-    '三': 3,
-    '四': 4,
-    '五': 5,
-    '六': 6,
-    '七': 7,
-    '八': 8,
-    '九': 9,
-    '十': 10,
-}
-
-
-# ── 识别区域 ─────────────────────────────────────────────────────────────────
-
-# 侧栏五个章节槽位，从上到下排列。
-CHAPTER_SLOT_ROIS: tuple[ROI, ...] = (
-    ROI(0.0550, 0.2650, 0.1700, 0.3550),
-    ROI(0.0550, 0.3850, 0.1700, 0.4750),
-    ROI(0.0550, 0.5050, 0.1700, 0.5950),
-    ROI(0.0550, 0.6250, 0.1700, 0.7150),
-    ROI(0.0550, 0.7450, 0.1700, 0.8350),
-)
-
-# 地图标题识别区域，读出「章号-节号 地图名」。
-CHAPTER_TITLE_ROI = ROI(0.7000, 0.1800, 0.9000, 0.2150)
-
-# 侧栏中间槽位，用作当前章节的锚点。
-CHAPTER_SLOT_CENTER_INDEX = 2
 
 
 # ── 导航参数 ─────────────────────────────────────────────────────────────────
@@ -191,7 +100,7 @@ def ensure_chapter(ctx: ContextHandle, *, chapter: int, map_id: int) -> None:
 
     Args:
         ctx: 提供设备服务与截图事实的 dispatch 上下文句柄。
-        chapter: 目标章节编号，范围为 1 到 TOTAL_CHAPTERS。
+        chapter: 目标章节编号，范围为 1 到 constants.TOTAL_CHAPTERS。
         map_id: 目标地图节点编号，范围由当前章的地图数量决定。
 
     Raises:
@@ -199,8 +108,8 @@ def ensure_chapter(ctx: ContextHandle, *, chapter: int, map_id: int) -> None:
         NavigationError: 选章连续无进展或超过尝试上限。
         RuntimeError: 选节超过尝试上限，或读不到当前地图标题。
     """
-    if not 1 <= chapter <= TOTAL_CHAPTERS:
-        raise ValueError(f'章节编号必须为 1-{TOTAL_CHAPTERS}，收到: {chapter}')
+    if not 1 <= chapter <= constants.TOTAL_CHAPTERS:
+        raise ValueError(f'章节编号必须为 1-{constants.TOTAL_CHAPTERS}，收到: {chapter}')
 
     if not _select_target_chapter(ctx, chapter):
         raise NavigationError(f'无法导航到第 {chapter} 章')
@@ -310,7 +219,7 @@ def _calculate_chapter_slot(
 
     step = CHAPTER_DOUBLE_STEP if abs(delta) >= CHAPTER_DOUBLE_STEP else CHAPTER_SINGLE_STEP
     direction = 1 if delta > 0 else -1
-    index = CHAPTER_SLOT_CENTER_INDEX + direction * step
+    index = constants.CHAPTER_SLOT_CENTER_INDEX + direction * step
     if not 0 <= index < len(slots):
         return None
 
@@ -336,7 +245,7 @@ def _select_target_map(ctx: ContextHandle, map_num: int) -> None:
     info_probe = _read_map_identity(ctx)
     if info_probe is None:
         raise RuntimeError('无法识别当前地图标题，不能校验地图编号')
-    current_max = CHAPTER_MAP_COUNTS.get(int(info_probe.chapter))
+    current_max = constants.CHAPTER_MAP_COUNTS.get(int(info_probe.chapter))
     if current_max is None:
         raise ValueError(f'当前章节 {info_probe.chapter} 不在已知地图数据中')
     if not 1 <= target <= current_max:
@@ -518,7 +427,7 @@ def _read_chapter_state(ctx: ContextHandle) -> tuple[tuple[ChapterSlot, ...], in
     """
     result = expect_ocr(
         ctx,
-        roi=(*CHAPTER_SLOT_ROIS, CHAPTER_TITLE_ROI),
+        roi=(*constants.CHAPTER_SLOT_ROIS, constants.CHAPTER_TITLE_ROI),
         recognition_profile='single_line',
         attempts=1,
     )
@@ -531,12 +440,12 @@ def _read_chapter_state(ctx: ContextHandle) -> tuple[tuple[ChapterSlot, ...], in
             confidence=confidence,
         )
         for index, (text, confidence) in enumerate(
-            _read_best_text(group) for group in groups[: len(CHAPTER_SLOT_ROIS)]
+            _read_best_text(group) for group in groups[: len(constants.CHAPTER_SLOT_ROIS)]
         )
     )
-    title = _parse_map_title(_read_longest_text(groups[len(CHAPTER_SLOT_ROIS)]))
+    title = _parse_map_title(_read_longest_text(groups[len(constants.CHAPTER_SLOT_ROIS)]))
 
-    current = slots[CHAPTER_SLOT_CENTER_INDEX].chapter
+    current = slots[constants.CHAPTER_SLOT_CENTER_INDEX].chapter
     if current is None and title is not None:
         current = title.chapter
     if current is not None and title is not None and title.chapter != current:
@@ -557,7 +466,7 @@ def _read_map_identity(ctx: ContextHandle) -> MapIdentity | None:
     Returns:
         当前地图的结构化标识；标题为空或无法解析时为 None。
     """
-    result = expect_ocr(ctx, roi=CHAPTER_TITLE_ROI, attempts=1)
+    result = expect_ocr(ctx, roi=constants.CHAPTER_TITLE_ROI, attempts=1)
     text = _read_longest_text(result.observation)
     if not text:
         _log.debug('[UI] 地图标题 OCR 无结果')
@@ -619,8 +528,8 @@ def _parse_chapter_label(text: str) -> int | None:
         return None
 
     token = match.group(1)
-    chapter = int(token) if token.isdigit() else _CHAPTER_NUMERALS.get(token)
-    if chapter is None or not 1 <= chapter <= TOTAL_CHAPTERS:
+    chapter = int(token) if token.isdigit() else constants.CHAPTER_NUMERALS.get(token)
+    if chapter is None or not 1 <= chapter <= constants.TOTAL_CHAPTERS:
         return None
     return chapter
 
@@ -641,7 +550,7 @@ def _parse_map_title(text: str) -> MapIdentity | None:
         name = match.group(3).strip()
         cleaned_name = re.sub(r'^\d+', '', name).strip()
 
-        db_name = MAP_DATABASE.get((chapter, map_num))
+        db_name = constants.MAP_DATABASE.get((chapter, map_num))
         if db_name is not None:
             name = db_name
         elif cleaned_name != name:
@@ -656,9 +565,9 @@ def _parse_map_title(text: str) -> MapIdentity | None:
     raw_chapter = int(match.group(1))
     raw_map_num = int(match.group(2))
     raw_name = match.group(3).strip()
-    if raw_map_num >= 10 and 1 <= raw_chapter <= TOTAL_CHAPTERS:
+    if raw_map_num >= 10 and 1 <= raw_chapter <= constants.TOTAL_CHAPTERS:
         candidate = int(str(raw_map_num)[0])
-        db_name = MAP_DATABASE.get((raw_chapter, candidate))
+        db_name = constants.MAP_DATABASE.get((raw_chapter, candidate))
         if db_name is not None:
             _log.debug(
                 "[UI] OCR 校正：'{}'→{}-{} '{}' (数据库: '{}')",

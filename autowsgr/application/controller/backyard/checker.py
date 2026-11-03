@@ -14,38 +14,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.backyard import constants
 from autowsgr.application.controller.template import load_ui_template
-from autowsgr.common.vision import ROI, Template, expect_template, expect_template_center
+from autowsgr.common.vision import Template, expect_template, expect_template_center
 
 
 if TYPE_CHECKING:
     from autowsgr.dispatch.context import ContextHandle
-
-
-# ── 识别数据 ────────────────────────────────────────────────────────────────
-
-# 本模块在 UI 模板根下的命名空间；四个入口模板都放在这个根目录下。
-TEMPLATE_NAMESPACE = 'controller/backyard'
-
-
-# ── 后院主页身份 ────────────────────────────────────────────────────────────
-
-# 后院主页没有专属模板：四个入口同一时刻出现，任选其一当身份即可，这里取浴室入口。
-BACKYARD_TEMPLATE = 'BACKYARD_BATH_ENTRY_720P.png'
-BACKYARD_ROI = ROI(0.2446, 0.3, 0.3524, 0.4167)
-
-
-# ── 四个入口（点击落点用） ──────────────────────────────────────────────────
-
-CANTEEN_ENTRY_TEMPLATE = 'BACKYARD_CANTEEN_ENTRY_720P.png'
-ACADEMY_ENTRY_TEMPLATE = 'BACKYARD_ACADEMY_ENTRY_720P.png'
-RANK_ROOM_ENTRY_TEMPLATE = 'BACKYARD_RANK_ROOM_ENTRY_720P.png'
-BATH_ENTRY_TEMPLATE = 'BACKYARD_BATH_ENTRY_720P.png'
-
-CANTEEN_ENTRY_ROI = ROI(0.7485, 0.5764, 0.8758, 0.7487)
-ACADEMY_ENTRY_ROI = ROI(0.8641, 0.3473, 0.9696, 0.4695)
-RANK_ROOM_ENTRY_ROI = ROI(0.6493, 0.1514, 0.7532, 0.2362)
-BATH_ENTRY_ROI = ROI(0.2446, 0.3, 0.3524, 0.4167)
 
 
 # 进后院有较长的切换动画，到达确认给足重试（等效 5 秒缓冲，用户确认不用 sleep）。
@@ -76,8 +51,8 @@ def check_backyard_page(
     """
     return expect_template(
         ctx,
-        template=_load_template(BACKYARD_TEMPLATE),
-        roi=BACKYARD_ROI,
+        template=_load_template(constants.BACKYARD_TEMPLATE),
+        roi=constants.BACKYARD_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -95,8 +70,8 @@ def read_canteen_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
     """
     return expect_template_center(
         ctx,
-        template=_load_template(CANTEEN_ENTRY_TEMPLATE),
-        roi=CANTEEN_ENTRY_ROI,
+        template=_load_template(constants.CANTEEN_ENTRY_TEMPLATE),
+        roi=constants.CANTEEN_ENTRY_ROI,
         attempts=1,
     )
 
@@ -112,8 +87,8 @@ def read_academy_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
     """
     return expect_template_center(
         ctx,
-        template=_load_template(ACADEMY_ENTRY_TEMPLATE),
-        roi=ACADEMY_ENTRY_ROI,
+        template=_load_template(constants.ACADEMY_ENTRY_TEMPLATE),
+        roi=constants.ACADEMY_ENTRY_ROI,
         attempts=1,
     )
 
@@ -129,8 +104,8 @@ def read_rank_room_entry_center(ctx: ContextHandle) -> tuple[float, float] | Non
     """
     return expect_template_center(
         ctx,
-        template=_load_template(RANK_ROOM_ENTRY_TEMPLATE),
-        roi=RANK_ROOM_ENTRY_ROI,
+        template=_load_template(constants.RANK_ROOM_ENTRY_TEMPLATE),
+        roi=constants.RANK_ROOM_ENTRY_ROI,
         attempts=1,
     )
 
@@ -146,8 +121,8 @@ def read_bath_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
     """
     return expect_template_center(
         ctx,
-        template=_load_template(BATH_ENTRY_TEMPLATE),
-        roi=BATH_ENTRY_ROI,
+        template=_load_template(constants.BATH_ENTRY_TEMPLATE),
+        roi=constants.BATH_ENTRY_ROI,
         attempts=1,
     )
 
@@ -157,7 +132,7 @@ def read_bath_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
 
 def _load_template(filename: str) -> Template:
     """加载本模块模板。"""
-    return load_ui_template(TEMPLATE_NAMESPACE, filename)
+    return load_ui_template(constants.TEMPLATE_NAMESPACE, filename)
 
 
 __all__ = [

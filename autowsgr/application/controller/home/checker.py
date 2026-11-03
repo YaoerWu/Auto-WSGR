@@ -18,54 +18,15 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.home import constants
 from autowsgr.application.controller.template import load_ui_template
 from autowsgr.application.navigation.types import PageName
-from autowsgr.common.vision import ROI, Template, expect_template, expect_template_center
+from autowsgr.common.vision import Template, expect_template, expect_template_center
 from autowsgr.dispatch.session import DailyPopup, get_session
 
 
 if TYPE_CHECKING:
     from autowsgr.dispatch.context import ContextHandle
-
-
-# ── 识别数据 ────────────────────────────────────────────────────────────────
-
-# 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'controller/home'
-
-# 本模块的模板文件名；目录小写、文件名全大写。
-HOME_MAIN_TEMPLATE = 'HOME_MAIN_720P.png'
-NEWS_TEXT_TEMPLATE = 'HOME_NEWS_TEXT_720P.png'
-NEWS_CHECKED_TEMPLATE = 'HOME_NEWS_CHECKBOX_CHECKED_720P.png'
-NEWS_UNCHECKED_TEMPLATE = 'HOME_NEWS_CHECKBOX_UNCHECKED_720P.png'
-REWARD_TEXT_TEMPLATE = 'HOME_REWARD_TEXT_720P.png'
-REWARD_CLAIM_TEMPLATE = 'HOME_REWARD_CLAIM_BUTTON_720P.png'
-REWARD_CONFIRM_TEMPLATE = 'HOME_REWARD_CONFIRM_BUTTON_720P.png'
-
-# 主页入口图标的归一化区域，校准基准为 1280x720 截图。
-HOME_MAIN_ROI = ROI(0.9109, 0.8681, 0.9758, 0.9139)
-
-# 公告浮窗文字区域与勾选框区域。
-NEWS_TEXT_ROI = ROI(0.0867, 0.8763, 0.2125, 0.9403)
-NEWS_CHECKBOX_ROI = ROI(0.0382, 0.8652, 0.0875, 0.9459)
-
-# 每日奖励浮窗的文字区域与领取按钮区域。
-REWARD_TEXT_ROI = ROI(0.1015, 0.268, 0.3313, 0.3362)
-REWARD_CLAIM_BUTTON_ROI = ROI(0.4406, 0.6291, 0.5594, 0.7028)
-
-# 每日奖励确认浮窗的确认按钮区域。
-REWARD_CONFIRM_BUTTON_ROI = ROI(0.4351, 0.5194, 0.5696, 0.6209)
-
-# 一帧要读的七个模板，顺序固定；解包时的下标顺序以这里为准。
-_PROBES: tuple[tuple[str, ROI], ...] = (
-    (HOME_MAIN_TEMPLATE, HOME_MAIN_ROI),
-    (NEWS_TEXT_TEMPLATE, NEWS_TEXT_ROI),
-    (NEWS_CHECKED_TEMPLATE, NEWS_CHECKBOX_ROI),
-    (NEWS_UNCHECKED_TEMPLATE, NEWS_CHECKBOX_ROI),
-    (REWARD_TEXT_TEMPLATE, REWARD_TEXT_ROI),
-    (REWARD_CLAIM_TEMPLATE, REWARD_CLAIM_BUTTON_ROI),
-    (REWARD_CONFIRM_TEMPLATE, REWARD_CONFIRM_BUTTON_ROI),
-)
 
 
 # ── 浮窗事实 ────────────────────────────────────────────────────────────────
@@ -220,8 +181,8 @@ def check_news_checked(
     """
     return expect_template(
         ctx,
-        template=_load_template(NEWS_CHECKED_TEMPLATE),
-        roi=NEWS_CHECKBOX_ROI,
+        template=_load_template(constants.NEWS_CHECKED_TEMPLATE),
+        roi=constants.NEWS_CHECKBOX_ROI,
         attempts=attempts,
         interval_seconds=interval_seconds,
     ).satisfied
@@ -248,10 +209,10 @@ def check_home_reward_overlay(
     result = expect_template(
         ctx,
         template=(
-            _load_template(REWARD_TEXT_TEMPLATE),
-            _load_template(REWARD_CLAIM_TEMPLATE),
+            _load_template(constants.REWARD_TEXT_TEMPLATE),
+            _load_template(constants.REWARD_CLAIM_TEMPLATE),
         ),
-        roi=(REWARD_TEXT_ROI, REWARD_CLAIM_BUTTON_ROI),
+        roi=(constants.REWARD_TEXT_ROI, constants.REWARD_CLAIM_BUTTON_ROI),
         attempts=attempts,
         interval_seconds=interval_seconds,
     )
@@ -281,8 +242,8 @@ def check_home_reward_confirm(
     # 只读确认按钮：和别的模板混在一起时，任一命中会提前返回，等待窗口就失效了。
     return expect_template(
         ctx,
-        template=_load_template(REWARD_CONFIRM_TEMPLATE),
-        roi=REWARD_CONFIRM_BUTTON_ROI,
+        template=_load_template(constants.REWARD_CONFIRM_TEMPLATE),
+        roi=constants.REWARD_CONFIRM_BUTTON_ROI,
         attempts=attempts,
         interval_seconds=interval_seconds,
     ).satisfied
@@ -303,10 +264,10 @@ def read_news_checkbox_center(ctx: ContextHandle) -> tuple[float, float] | None:
     return expect_template_center(
         ctx,
         template=(
-            _load_template(NEWS_CHECKED_TEMPLATE),
-            _load_template(NEWS_UNCHECKED_TEMPLATE),
+            _load_template(constants.NEWS_CHECKED_TEMPLATE),
+            _load_template(constants.NEWS_UNCHECKED_TEMPLATE),
         ),
-        roi=NEWS_CHECKBOX_ROI,
+        roi=constants.NEWS_CHECKBOX_ROI,
         attempts=1,
     )
 
@@ -322,8 +283,8 @@ def read_reward_claim_center(ctx: ContextHandle) -> tuple[float, float] | None:
     """
     return expect_template_center(
         ctx,
-        template=_load_template(REWARD_CLAIM_TEMPLATE),
-        roi=REWARD_CLAIM_BUTTON_ROI,
+        template=_load_template(constants.REWARD_CLAIM_TEMPLATE),
+        roi=constants.REWARD_CLAIM_BUTTON_ROI,
         attempts=1,
     )
 
@@ -339,8 +300,8 @@ def read_reward_confirm_center(ctx: ContextHandle) -> tuple[float, float] | None
     """
     return expect_template_center(
         ctx,
-        template=_load_template(REWARD_CONFIRM_TEMPLATE),
-        roi=REWARD_CONFIRM_BUTTON_ROI,
+        template=_load_template(constants.REWARD_CONFIRM_TEMPLATE),
+        roi=constants.REWARD_CONFIRM_BUTTON_ROI,
         attempts=1,
     )
 
@@ -354,11 +315,11 @@ def _read_home_hits(
     attempts: int,
     interval_seconds: float,
 ) -> tuple[bool, ...]:
-    """读一帧，返回七个模板各自的命中状态，顺序与 _PROBES 一致。"""
+    """读一帧，返回七个模板各自的命中状态，顺序与 constants.HOME_PROBES 一致。"""
     result = expect_template(
         ctx,
-        template=tuple(_load_template(filename) for filename, _ in _PROBES),
-        roi=tuple(roi for _, roi in _PROBES),
+        template=tuple(_load_template(filename) for filename, _ in constants.HOME_PROBES),
+        roi=tuple(roi for _, roi in constants.HOME_PROBES),
         attempts=attempts,
         interval_seconds=interval_seconds,
     )
@@ -367,7 +328,7 @@ def _read_home_hits(
 
 def _load_template(filename: str) -> Template:
     """加载本模块模板。"""
-    return load_ui_template(TEMPLATE_NAMESPACE, filename)
+    return load_ui_template(constants.TEMPLATE_NAMESPACE, filename)
 
 
 __all__ = [

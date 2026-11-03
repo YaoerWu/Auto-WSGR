@@ -5,7 +5,7 @@
 - application.navigation：执行出征页标签切换与返回的页面边动作。
 
 下层依赖：
-- battle_page.constants：提供章节槽位、地图翻页和出征入口的点击坐标。
+- sortie.battle.constants：提供章节槽位、地图翻页和出征入口的点击坐标。
 - main_page：提供出征页页面壳的标签与返回动作。
 
 边界：只做单次点击，不识别画面、不等待页面、不计算落点、不编排流程、不重试。
@@ -13,8 +13,8 @@
 
 from __future__ import annotations
 
+from autowsgr.application.controller.sortie.battle import constants
 from autowsgr.application.controller.sortie.page import SortiePage
-from autowsgr.application.ui.controller.operations.sortie_page.battle_page import constants
 
 
 # ── 页面控制器 ──────────────────────────────────────────────────────────────

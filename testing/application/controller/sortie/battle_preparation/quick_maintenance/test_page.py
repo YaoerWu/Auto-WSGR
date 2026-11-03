@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from autowsgr.application.controller.sortie.battle_preparation.quick_maintenance import (
-    page as quick_module,
+    constants as quick_constants,
 )
 from autowsgr.application.controller.sortie.battle_preparation.quick_maintenance.page import (
     QuickMaintenancePanel,
@@ -31,9 +31,9 @@ def test_buttons_use_fallback_positions(ctx: Any, control: Any) -> None:
     panel.click_all_repair()
 
     assert control.clicks == [
-        quick_module.CLICK_AUTO_SUPPLY,
-        quick_module.CLICK_QUICK_REPAIR,
-        quick_module.CLICK_ALL_REPAIR,
+        quick_constants.CLICK_AUTO_SUPPLY,
+        quick_constants.CLICK_QUICK_REPAIR,
+        quick_constants.CLICK_ALL_REPAIR,
     ]
 
 

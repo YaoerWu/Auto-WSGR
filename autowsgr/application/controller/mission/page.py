@@ -4,7 +4,7 @@
 - application.navigation：执行任务页的领奖与返回主页的页面边动作。
 
 下层依赖：
-- application.ui.controller.operations.mission_page.constants：提供点击落点。
+- application.controller.mission.constants：提供点击落点。
 
 边界：只点击领奖按钮与返回按钮，不识别画面、不确认终态、不挑选具体任务。
 任务列表的逐条挑选与滚动属于旧业务，已随架构升级移除；领奖统一走「全部领取」。
@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.controller.operations.mission_page import constants
+from autowsgr.application.controller.mission import constants
 from autowsgr.common.system.logger import get_logger
 
 

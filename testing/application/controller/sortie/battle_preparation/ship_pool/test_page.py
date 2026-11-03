@@ -11,8 +11,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.sortie.battle_preparation import (
+    constants as preparation_constants,
+)
 from autowsgr.application.controller.sortie.battle_preparation.ship_pool import (
-    page as ship_pool_page,
+    constants as ship_pool_constants,
 )
 from autowsgr.application.controller.sortie.battle_preparation.ship_pool.page import ShipPoolPage
 
@@ -30,10 +33,10 @@ def test_page_actions_use_calibrated_positions(ctx: Any, control: Any) -> None:
     page.go_back()
 
     assert control.clicks == [
-        ship_pool_page.CLICK_SEARCH_BOX,
-        ship_pool_page.CLICK_DISMISS_KEYBOARD,
-        ship_pool_page.CLICK_REMOVE_SHIP,
-        ship_pool_page.CLICK_BACK,
+        ship_pool_constants.CLICK_SEARCH_BOX,
+        ship_pool_constants.CLICK_DISMISS_KEYBOARD,
+        ship_pool_constants.CLICK_REMOVE_SHIP,
+        preparation_constants.CLICK_BACK,
     ]
 
 
@@ -61,8 +64,8 @@ def test_scroll_list_uses_calibrated_swipe(ctx: Any, control: Any) -> None:
 
     assert control.swipes == [
         (
-            *ship_pool_page.SCROLL_START,
-            *ship_pool_page.SCROLL_END,
-            ship_pool_page.SCROLL_DURATION_SECONDS,
+            *ship_pool_constants.SCROLL_START,
+            *ship_pool_constants.SCROLL_END,
+            ship_pool_constants.SCROLL_DURATION_SECONDS,
         ),
     ]

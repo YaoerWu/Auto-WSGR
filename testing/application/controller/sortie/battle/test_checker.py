@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+from autowsgr.application.controller.sortie.battle import constants as battle_constants
 from autowsgr.application.controller.sortie.battle.checker import (
     ChapterSlot,
     MapIdentity,
@@ -96,7 +97,6 @@ def test_read_chapter_state_reads_slots_then_falls_back_to_title(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """一帧同时读出五个槽位与标题，当前章节取中间槽位，读不出时用标题章号兜底。"""
-    from autowsgr.application.controller.sortie.battle import checker as battle_checker
 
     _install_ocr(
         monkeypatch,
@@ -115,7 +115,7 @@ def test_read_chapter_state_reads_slots_then_falls_back_to_title(
     assert [slot.chapter for slot in slots] == [1, 2, 3, 4, 5]
     assert [slot.index for slot in slots] == [0, 1, 2, 3, 4]
     assert current == 3
-    assert len(battle_checker.CHAPTER_SLOT_ROIS) == 5
+    assert len(battle_constants.CHAPTER_SLOT_ROIS) == 5
 
     _install_ocr(
         monkeypatch,

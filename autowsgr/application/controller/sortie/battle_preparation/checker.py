@@ -16,60 +16,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.sortie.battle_preparation import constants
 from autowsgr.application.controller.template import load_ui_template
-from autowsgr.application.navigation.types import PageName
-from autowsgr.common.vision import ROI, Template, expect_template
+from autowsgr.common.vision import Template, expect_template
 
 
 if TYPE_CHECKING:
+    from autowsgr.application.navigation.types import PageName
     from autowsgr.dispatch.context import ContextHandle
-
-
-# ── 识别数据 ────────────────────────────────────────────────────────────────
-
-# 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'controller/sortie/battle_preparation'
-
-# 四个准备页的模板；目录小写、文件名全大写。
-BATTLE_PREPARATION_TEMPLATE = 'BATTLE_PREP_720P.png'
-DECISIVE_PREPARATION_TEMPLATE = 'DECISIVE_PREP_720P.png'
-EXERCISE_PREPARATION_TEMPLATE = 'EXERCISE_PREP_720P.png'
-CAMPAIGN_PREPARATION_TEMPLATE = 'CAMPAIGN_PREP_720P.png'
-
-# 四页共用同一块区域，只在右上角三格快捷按钮（预/装备/奖杯）的占用格数上不同。
-# 三格全齐的普通页模板放最后，避免最宽松的模板抢先命中其它页。
-_PAGE_TEMPLATES: tuple[tuple[PageName, str], ...] = (
-    (PageName.EXERCISE_PREPARATION, EXERCISE_PREPARATION_TEMPLATE),
-    (PageName.DECISIVE_BATTLE_PREPARATION, DECISIVE_PREPARATION_TEMPLATE),
-    (PageName.CAMPAIGN_PREPARATION, CAMPAIGN_PREPARATION_TEMPLATE),
-    (PageName.BATTLE_PREPARATION, BATTLE_PREPARATION_TEMPLATE),
-)
-
-# 四个舰队的选中态模板；只有被选中的那一队是亮蓝高亮块，其余三队为暗色。
-TEAM_TAB_TEMPLATES: tuple[str, ...] = (
-    'TEAM_1_ACTIVE_720P.png',
-    'TEAM_2_ACTIVE_720P.png',
-    'TEAM_3_ACTIVE_720P.png',
-    'TEAM_4_ACTIVE_720P.png',
-)
-
-
-# ── 识别区域 ────────────────────────────────────────────────────────────────
-
-# 校准基准 1280x720；由 出征准备页ROI_720P.yaml 的 roi_px=[767, 99, 928, 140] 换算，
-# 区域比 160x40 的模板各边大 1px。
-BATTLE_PREPARATION_ROI = ROI(0.5993, 0.1375, 0.725, 0.1945)
-
-# 四个舰队标签页的搜索区，与 TEAM_TAB_TEMPLATES 一一对应，由
-# 出征准备页状态ROI_720P.yaml 的 roi_normalized 抄录。
-# 四队底色相同、只差队列数字，共享区域会互相误命中（交叉分 0.87 以上），
-# 因此每队配一块只容 ±1px 滑动的窄区域；实测交叉分降到 0.72 以下。
-TEAM_TAB_ROIS: tuple[ROI, ...] = (
-    ROI(0.08125, 0.12777778, 0.1421875, 0.19722222),
-    ROI(0.20859375, 0.13055556, 0.26171875, 0.19444444),
-    ROI(0.33046875, 0.12916667, 0.38671875, 0.19444444),
-    ROI(0.4546875, 0.12777778, 0.5109375, 0.19722222),
-)
 
 
 # ── 页面响应窗口 ────────────────────────────────────────────────────────────
@@ -103,14 +57,16 @@ def read_battle_preparation_layer(
     """
     result = expect_template(
         ctx,
-        template=tuple(_load_template(filename) for _, filename in _PAGE_TEMPLATES),
-        roi=BATTLE_PREPARATION_ROI,
+        template=tuple(_load_template(filename) for _, filename in constants.PREPARATION_TEMPLATES),
+        roi=constants.BATTLE_PREPARATION_ROI,
         attempts=attempts,
         interval_seconds=interval_seconds,
     )
     return tuple(
         page
-        for (page, _), match in zip(_PAGE_TEMPLATES, result.observation, strict=True)
+        for (page, _), match in zip(
+            constants.PREPARATION_TEMPLATES, result.observation, strict=True
+        )
         if match.matched
     )
 
@@ -140,8 +96,8 @@ def read_team_tab(
     """
     result = expect_template(
         ctx,
-        template=tuple(_load_template(filename) for filename in TEAM_TAB_TEMPLATES),
-        roi=TEAM_TAB_ROIS,
+        template=tuple(_load_template(filename) for filename in constants.TEAM_TAB_TEMPLATES),
+        roi=constants.TEAM_TAB_ROIS,
         attempts=attempts,
         interval_seconds=interval_seconds,
     )
@@ -158,7 +114,7 @@ def read_team_tab(
 
 def _load_template(filename: str) -> Template:
     """加载本模块模板。"""
-    return load_ui_template(TEMPLATE_NAMESPACE, filename)
+    return load_ui_template(constants.TEMPLATE_NAMESPACE, filename)
 
 
 __all__ = [

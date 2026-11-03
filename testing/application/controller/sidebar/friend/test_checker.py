@@ -46,12 +46,12 @@ def _install_recognition(
 
 def test_friend_page_visible_by_first_tab(monkeypatch: pytest.MonkeyPatch) -> None:
     """「好友」页签命中即算在好友页。"""
-    calls = _install_recognition(monkeypatch, (friend_checker.FRIEND_TAB_ROI,))
+    calls = _install_recognition(monkeypatch, (friend_checker.constants.FRIEND_TAB_ROI,))
 
     assert check_friend_page(object()) is True
     assert calls[0]['roi'] == (
-        friend_checker.FRIEND_TAB_ROI,
-        friend_checker.FRIEND_ADD_TAB_ROI,
+        friend_checker.constants.FRIEND_TAB_ROI,
+        friend_checker.constants.FRIEND_ADD_TAB_ROI,
     )
     assert calls[0]['attempts'] == 5
     assert calls[0]['interval_seconds'] == 1.0
@@ -59,7 +59,7 @@ def test_friend_page_visible_by_first_tab(monkeypatch: pytest.MonkeyPatch) -> No
 
 def test_friend_page_visible_by_add_tab(monkeypatch: pytest.MonkeyPatch) -> None:
     """「添加」页签命中同样算在好友页。"""
-    _install_recognition(monkeypatch, (friend_checker.FRIEND_ADD_TAB_ROI,))
+    _install_recognition(monkeypatch, (friend_checker.constants.FRIEND_ADD_TAB_ROI,))
 
     assert check_friend_page(object()) is True
 

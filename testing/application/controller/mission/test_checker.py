@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 from autowsgr.application.controller import mission
 from autowsgr.application.controller.mission import checker as mission_checker
+from autowsgr.application.controller.mission import constants
 
 
 if TYPE_CHECKING:
@@ -36,41 +37,41 @@ def _install(monkeypatch: pytest.MonkeyPatch, *, visible: frozenset[object] = fr
 
 def test_mission_page_judges_tab_then_reward_overlay(monkeypatch: pytest.MonkeyPatch) -> None:
     """页签命中才算在任务页，领奖浮窗盖住时前识别不判到达，后识别只判页签。"""
-    seen = _install(monkeypatch, visible=frozenset({mission_checker.ALL_TAB_ROI}))
+    seen = _install(monkeypatch, visible=frozenset({constants.ALL_TAB_ROI}))
 
     assert mission.check_mission_page(object()) is True
     assert [entry[0] for entry in seen] == [
-        mission_checker.ALL_TAB_ROI,
-        mission_checker.REWARD_CONFIRM_BUTTON_ROI,
+        constants.ALL_TAB_ROI,
+        constants.REWARD_CONFIRM_BUTTON_ROI,
     ]
 
     seen = _install(monkeypatch, visible=frozenset())
 
     assert mission.check_mission_page(object()) is False
-    assert [entry[0] for entry in seen] == [mission_checker.ALL_TAB_ROI]
+    assert [entry[0] for entry in seen] == [constants.ALL_TAB_ROI]
 
     seen = _install(
         monkeypatch,
-        visible=frozenset({mission_checker.ALL_TAB_ROI, mission_checker.REWARD_CONFIRM_BUTTON_ROI}),
+        visible=frozenset({constants.ALL_TAB_ROI, constants.REWARD_CONFIRM_BUTTON_ROI}),
     )
 
     assert mission.check_mission_page(object()) is False
-    assert seen[-1] == (mission_checker.REWARD_CONFIRM_BUTTON_ROI, None)
+    assert seen[-1] == (constants.REWARD_CONFIRM_BUTTON_ROI, None)
 
     seen = _install(monkeypatch, visible=frozenset())
 
     assert mission.check_mission_page(object(), absent=True) is True
-    assert seen == [(mission_checker.ALL_TAB_ROI, True)]
+    assert seen == [(constants.ALL_TAB_ROI, True)]
 
 
 def test_mission_reward_buttons_follow_their_own_region(monkeypatch: pytest.MonkeyPatch) -> None:
     """领奖按钮与兜底确认各自只看自己的区域，区域未命中时返回假。"""
-    _install(monkeypatch, visible=frozenset({mission_checker.CLAIM_ALL_BUTTON_ROI}))
+    _install(monkeypatch, visible=frozenset({constants.CLAIM_ALL_BUTTON_ROI}))
     assert mission.check_claim_all_button(object()) is True
     assert mission.check_mission_reward_confirm(object()) is False
 
-    _install(monkeypatch, visible=frozenset({mission_checker.ALL_TAB_ROI}))
+    _install(monkeypatch, visible=frozenset({constants.ALL_TAB_ROI}))
     assert mission.check_claim_all_button(object()) is False
 
-    _install(monkeypatch, visible=frozenset({mission_checker.REWARD_CONFIRM_BUTTON_ROI}))
+    _install(monkeypatch, visible=frozenset({constants.REWARD_CONFIRM_BUTTON_ROI}))
     assert mission.check_mission_reward_confirm(object()) is True

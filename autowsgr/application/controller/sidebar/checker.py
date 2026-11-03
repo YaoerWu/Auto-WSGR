@@ -13,36 +13,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.sidebar import constants
 from autowsgr.application.controller.template import load_ui_template
-from autowsgr.common.vision import ROI, Template, expect_template
+from autowsgr.common.vision import Template, expect_template
 
 
 if TYPE_CHECKING:
     from autowsgr.dispatch.context import ContextHandle
-
-
-# ── 识别数据 ────────────────────────────────────────────────────────────────
-
-# 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'controller/sidebar'
-
-# 本模块的模板文件名；目录小写、文件名全大写。
-SIDEBAR_MAIN_TEMPLATE = 'SIDEBAR_MAIN_720P.png'
-BUILD_SUBMENU_TEMPLATE = 'SIDEBAR_BUILD_720P.png'
-INTENSIFY_SUBMENU_TEMPLATE = 'SIDEBAR_INTENSIFY_720P.png'
-
-
-# ── 侧边栏识别区域 ──────────────────────────────────────────────────────────
-
-# 侧边栏展开时「改造」条目的归一化区域，校准基准为 1280x720 截图。
-SIDEBAR_MAIN_ROI = ROI(0.118, 0.4694, 0.2453, 0.5306)
-
-
-# ── 二级菜单识别区域 ────────────────────────────────────────────────────────
-
-# 点「建造」「改造」后右侧弹出的二级菜单首项区域，同一校准基准。
-BUILD_SUBMENU_ROI = ROI(0.3024, 0.332, 0.475, 0.407)
-INTENSIFY_SUBMENU_ROI = ROI(0.3024, 0.4612, 0.4719, 0.5375)
 
 
 # 导航确认节奏：点条目后要走完展开动画，识别不到就重试。
@@ -70,8 +47,8 @@ def check_sidebar_page(
     """
     return expect_template(
         ctx,
-        template=_load_template(SIDEBAR_MAIN_TEMPLATE),
-        roi=SIDEBAR_MAIN_ROI,
+        template=_load_template(constants.SIDEBAR_MAIN_TEMPLATE),
+        roi=constants.SIDEBAR_MAIN_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -98,8 +75,8 @@ def check_build_submenu(
     """
     return expect_template(
         ctx,
-        template=_load_template(BUILD_SUBMENU_TEMPLATE),
-        roi=BUILD_SUBMENU_ROI,
+        template=_load_template(constants.BUILD_SUBMENU_TEMPLATE),
+        roi=constants.BUILD_SUBMENU_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -126,8 +103,8 @@ def check_intensify_submenu(
     """
     return expect_template(
         ctx,
-        template=_load_template(INTENSIFY_SUBMENU_TEMPLATE),
-        roi=INTENSIFY_SUBMENU_ROI,
+        template=_load_template(constants.INTENSIFY_SUBMENU_TEMPLATE),
+        roi=constants.INTENSIFY_SUBMENU_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -139,7 +116,7 @@ def check_intensify_submenu(
 
 def _load_template(filename: str) -> Template:
     """加载本模块模板。"""
-    return load_ui_template(TEMPLATE_NAMESPACE, filename)
+    return load_ui_template(constants.TEMPLATE_NAMESPACE, filename)
 
 
 __all__ = ['check_build_submenu', 'check_intensify_submenu', 'check_sidebar_page']

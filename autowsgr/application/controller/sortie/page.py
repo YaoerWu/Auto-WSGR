@@ -4,7 +4,7 @@
 - application.navigation：进入某个顶部标签，或离开出征页。
 
 下层依赖：
-- main_page.constants：提供标签落点与返回落点。
+- sortie.constants：提供标签落点与返回落点。
 - common.device.service：通过 `ctx.runtime.ctrl` 执行点击。
 
 边界：只做**单次点击**，不识别画面、不等待页面、不编排流程、不重试。
@@ -17,7 +17,7 @@ from __future__ import annotations
 import enum
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.controller.operations.sortie_page.main_page import constants
+from autowsgr.application.controller.sortie import constants
 from autowsgr.common.system.logger import get_logger
 
 

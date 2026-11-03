@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 
 from autowsgr.application.controller import home
 from autowsgr.application.controller.home import checker as home_checker
+from autowsgr.application.controller.home import constants
 from autowsgr.application.navigation.types import PageName
 from autowsgr.dispatch.session import DailyPopup, SessionState
 
@@ -194,8 +195,8 @@ def test_overlay_center_readers_pass_their_rois(monkeypatch: pytest.MonkeyPatch)
 
     rois = [options['roi'] for options in calls]
     assert rois == [
-        home_checker.NEWS_CHECKBOX_ROI,
-        home_checker.REWARD_CLAIM_BUTTON_ROI,
-        home_checker.REWARD_CONFIRM_BUTTON_ROI,
+        constants.NEWS_CHECKBOX_ROI,
+        constants.REWARD_CLAIM_BUTTON_ROI,
+        constants.REWARD_CONFIRM_BUTTON_ROI,
     ]
     assert all(options['attempts'] == 1 for options in calls)

@@ -6,6 +6,7 @@
 
 下层依赖：
 - common.vision：读取模板与 OCR 事实。
+- application.controller.event.stage_push.constants：提供识别数据与本期期望。
 - application.controller.template：加载本活动模板。
 - application.navigation.types：提供导航错误。
 
@@ -14,17 +15,16 @@
 
 from __future__ import annotations
 
-import re
 import time
 from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.event.stage_push import constants
 from autowsgr.application.controller.template import load_ui_template
 from autowsgr.application.navigation.types import NavigationError
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import (
-    ROI,
     Template,
     expect_ocr,
     expect_template,
@@ -41,55 +41,8 @@ if TYPE_CHECKING:
 _log = get_logger('ui')
 
 
-# ── 本期活动识别数据 ────────────────────────────────────────────────────────
-
-# 活动标识与本期期号；换期改期号，并按 <活动>_<期号> 补一份模板目录。
-ACTIVITY = 'stage_push'
-PERIOD = '20260930'
-
-# 本活动在 UI 模板根下的命名空间：一期一个目录，换期换目录。
-TEMPLATE_NAMESPACE = f'controller/event/{ACTIVITY}_{PERIOD}'
-
-# 本活动的模板文件名。
-HOME_ENTRY_TEMPLATE = 'EVENT_HOME_ENTRY_720P.png'
-MODE_NORMAL_TEMPLATE = 'EVENT_MODE_NORMAL_720P.png'
-MODE_HARD_TEMPLATE = 'EVENT_MODE_HARD_720P.png'
-SORTIE_PREPARE_TEMPLATE = 'EVENT_SORTIE_PREPARE_720P.png'
-
-# 校准值以 1280x720 截图为基准换算为归一化区域。
-HOME_ENTRY_ROI = ROI(0.8546, 0.3222, 0.9883, 0.6834)
-# 地图页左下角模式按钮；按钮文字表示"要切换到的"模式，命中它说明当前在另一种难度。
-MODE_ROI = ROI(0.0101, 0.9, 0.1118, 0.932)
-# 地图标题区域，普通地图与困难地图的名称不同。
-MAP_NAME_ROI = ROI(0.4023, 0.0291, 0.5954, 0.0723)
-# 节点浮窗内的出击准备按钮，命中即说明节点浮窗已经打开。
-SORTIE_PREPARE_ROI = ROI(0.7882, 0.8166, 0.925, 0.882)
-# 节点浮窗左上角的关卡标题，干净地图页该区域没有文字。
-STAGE_TITLE_ROI = ROI(0.0273, 0.0625, 0.2079, 0.1084)
-
-
-# ── 本期活动识别期望 ────────────────────────────────────────────────────────
-
-# 地图名与关卡名，换期只改这一段。困难模式的标题在本名后追加"困难"二字；
-# 括号形态不稳定，因此不参与比对，只判"标题 + 困难"。
-_MAP_NAME = '最强之舟'
-_STAGE_NAMES = {
-    1: '天降火雨',
-    2: '鹰群出击',
-    3: '追逐跳跃',
-    4: '火力全开',
-    5: '四面合围',
-    6: '海空鏖战',
-}
-
 # 只读探测只取当前一帧，不等待目标出现。
 _PROBE_ATTEMPTS = 1
-# 困难模式的固定标记；实测标题括号有全角、半角和丢失三种形态，因此只判这两个字。
-_HARD_MARKER = '困难'
-# 标题归一化时丢弃的装饰字符，保留数字、字母和汉字。
-_TITLE_DECORATION = re.compile(r'[^0-9a-zA-Z一-鿿]+')
-# 归一化标题里的关卡编号形式，大小写不敏感。
-_STAGE_TITLE_PATTERN = re.compile(r'ex(\d+)')
 
 
 # ── 活动页面事实模型 ────────────────────────────────────────────────────────
@@ -135,7 +88,7 @@ class EventStage:
 # ── 章节解析 ────────────────────────────────────────────────────────────────
 
 # 地图上的落点数量；普通与困难共用同一组落点。
-_NODE_COUNT = 6
+constants.NODE_COUNT = 6
 
 
 def parse_stage(stage: str) -> EventStage:
@@ -166,16 +119,16 @@ def parse_stage(stage: str) -> EventStage:
 
     number = int(digits)
     if legacy:
-        if not 1 <= number <= _NODE_COUNT:
+        if not 1 <= number <= constants.NODE_COUNT:
             raise ValueError(f'章节标识超出范围: {stage!r}')
         if text[0] == 'H':
-            number += _NODE_COUNT
-    elif not 1 <= number <= _NODE_COUNT * 2:
+            number += constants.NODE_COUNT
+    elif not 1 <= number <= constants.NODE_COUNT * 2:
         raise ValueError(f'章节标识超出范围: {stage!r}')
 
     # 2. 编号在后半段的是困难；落点序号按节点数取模回到 1-6。
-    difficulty = EventMode.NORMAL if number <= _NODE_COUNT else EventMode.HARD
-    return EventStage(difficulty=difficulty, node=(number - 1) % _NODE_COUNT + 1)
+    difficulty = EventMode.NORMAL if number <= constants.NODE_COUNT else EventMode.HARD
+    return EventStage(difficulty=difficulty, node=(number - 1) % constants.NODE_COUNT + 1)
 
 
 # ── 标题解析 ────────────────────────────────────────────────────────────────
@@ -194,16 +147,16 @@ def is_stage_title_matched(title_texts: Sequence[str], *, node: int, hard: bool)
     Returns:
         标题命中目标章节时为真。
     """
-    stage_name = _STAGE_NAMES[node]
-    stage_number = node + (len(_STAGE_NAMES) if hard else 0)
+    stage_name = constants.STAGE_NAMES[node]
+    stage_number = node + (len(constants.STAGE_NAMES) if hard else 0)
     for text in title_texts:
-        normalized = _TITLE_DECORATION.sub('', text).lower()
+        normalized = constants.TITLE_DECORATION.sub('', text).lower()
         # 普通与困难共用同一批章节名，只有"困难"二字能区分两者：模式不符直接排除，
         # 否则同名困难章节会被普通章节的判据抢先命中。
-        if (_HARD_MARKER in normalized) != hard:
+        if (constants.HARD_MARKER in normalized) != hard:
             continue
         # 关卡编号和章节名称任一命中即算匹配，兼容标题编号被 OCR 丢字的情况。
-        matched = _STAGE_TITLE_PATTERN.match(normalized)
+        matched = constants.STAGE_TITLE_PATTERN.match(normalized)
         if (int(matched.group(1)) if matched else None) == stage_number:
             return True
         if stage_name in normalized:
@@ -260,10 +213,10 @@ def read_mode_button(
     result = expect_template(
         ctx,
         template=(
-            _load_template(MODE_NORMAL_TEMPLATE),
-            _load_template(MODE_HARD_TEMPLATE),
+            _load_template(constants.MODE_NORMAL_TEMPLATE),
+            _load_template(constants.MODE_HARD_TEMPLATE),
         ),
-        roi=MODE_ROI,
+        roi=constants.MODE_ROI,
         attempts=attempts,
         interval_seconds=interval_seconds,
     )
@@ -293,16 +246,16 @@ def read_map_title(
     """
     result = expect_ocr(
         ctx,
-        expect=(_MAP_NAME, f'{_MAP_NAME}（困难）'),
-        roi=MAP_NAME_ROI,
+        expect=(constants.MAP_NAME, f'{constants.MAP_NAME}（困难）'),
+        roi=constants.MAP_NAME_ROI,
         attempts=attempts,
         interval_seconds=interval_seconds,
     )
     title_texts = [detection.recognized_text for detection in result.observation]
     # 困难标记是困难模式独有的文字，先判它，避免名称前缀被普通地图名抢先命中。
-    if any(_HARD_MARKER in text for text in title_texts):
+    if any(constants.HARD_MARKER in text for text in title_texts):
         return EventMode.HARD
-    if any(_MAP_NAME in text for text in title_texts):
+    if any(constants.MAP_NAME in text for text in title_texts):
         return EventMode.NORMAL
     return None
 
@@ -320,16 +273,16 @@ def read_stage_title_texts(ctx: ContextHandle) -> list[str]:
     """
     result = expect_ocr(
         ctx,
-        expect=tuple(_STAGE_NAMES.values()),
-        roi=STAGE_TITLE_ROI,
+        expect=tuple(constants.STAGE_NAMES.values()),
+        roi=constants.STAGE_TITLE_ROI,
         attempts=_PROBE_ATTEMPTS,
     )
     return [
         detection.recognized_text
         for detection in result.observation
-        if any(name in detection.recognized_text for name in _STAGE_NAMES.values())
+        if any(name in detection.recognized_text for name in constants.STAGE_NAMES.values())
         # 只读到编号、没读到名称的标题同样有效，不能在这一步丢掉。
-        or _STAGE_TITLE_PATTERN.search(detection.recognized_text.lower())
+        or constants.STAGE_TITLE_PATTERN.search(detection.recognized_text.lower())
     ]
 
 
@@ -350,8 +303,8 @@ def read_sortie_overlay(
     """
     result = expect_template(
         ctx,
-        template=_load_template(SORTIE_PREPARE_TEMPLATE),
-        roi=SORTIE_PREPARE_ROI,
+        template=_load_template(constants.SORTIE_PREPARE_TEMPLATE),
+        roi=constants.SORTIE_PREPARE_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -374,10 +327,10 @@ def read_mode_button_center(ctx: ContextHandle) -> tuple[float, float] | None:
     return expect_template_center(
         ctx,
         template=(
-            _load_template(MODE_NORMAL_TEMPLATE),
-            _load_template(MODE_HARD_TEMPLATE),
+            _load_template(constants.MODE_NORMAL_TEMPLATE),
+            _load_template(constants.MODE_HARD_TEMPLATE),
         ),
-        roi=MODE_ROI,
+        roi=constants.MODE_ROI,
         attempts=_PROBE_ATTEMPTS,
     )
 
@@ -393,8 +346,8 @@ def read_sortie_prepare_center(ctx: ContextHandle) -> tuple[float, float] | None
     """
     return expect_template_center(
         ctx,
-        template=_load_template(SORTIE_PREPARE_TEMPLATE),
-        roi=SORTIE_PREPARE_ROI,
+        template=_load_template(constants.SORTIE_PREPARE_TEMPLATE),
+        roi=constants.SORTIE_PREPARE_ROI,
         attempts=_PROBE_ATTEMPTS,
     )
 
@@ -458,8 +411,8 @@ def check_event_entry(ctx: ContextHandle, *, event_type: str) -> bool:
     _require_activity(event_type)
     result = expect_template(
         ctx,
-        template=_load_template(HOME_ENTRY_TEMPLATE),
-        roi=HOME_ENTRY_ROI,
+        template=_load_template(constants.HOME_ENTRY_TEMPLATE),
+        roi=constants.HOME_ENTRY_ROI,
     )
     return result.satisfied
 
@@ -653,17 +606,16 @@ def _require_activity(event_type: str) -> None:
     Raises:
         ValueError: 活动玩法标识与本期活动不一致。
     """
-    if event_type != ACTIVITY:
+    if event_type != constants.ACTIVITY:
         raise ValueError(f'当前 checker 不支持的活动玩法: {event_type!r}')
 
 
 def _load_template(filename: str) -> Template:
     """加载本活动模板。"""
-    return load_ui_template(TEMPLATE_NAMESPACE, filename)
+    return load_ui_template(constants.TEMPLATE_NAMESPACE, filename)
 
 
 __all__ = [
-    'ACTIVITY',
     'EventMapState',
     'EventMode',
     'EventStage',

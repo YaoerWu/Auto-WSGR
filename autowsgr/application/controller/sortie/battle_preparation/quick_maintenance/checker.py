@@ -16,10 +16,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.sortie.battle_preparation.quick_maintenance import (
+    constants,
+)
 from autowsgr.application.controller.template import load_ui_template
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import (
-    ROI,
     Template,
     expect_ocr,
     expect_template,
@@ -32,40 +34,6 @@ if TYPE_CHECKING:
 
 
 _log = get_logger('controller.sortie.battle_preparation.quick_maintenance.checker')
-
-
-# ── 识别数据 ────────────────────────────────────────────────────────────────
-
-# 本模块在 UI 模板根下的命名空间。
-TEMPLATE_NAMESPACE = 'controller/sortie/battle_preparation/quick_maintenance'
-
-# 左下角自动补给勾选框的开启态；只认开启，勾选框没勾上即视为未开启。
-AUTO_SUPPLY_TEMPLATE = 'AUTO_SUPPLY_ON_720P.png'
-
-# 底部功能栏快速修理页签的激活态；页签未激活时与激活模板的相关系数明显低于阈值。
-QUICK_REPAIR_TEMPLATE = 'QUICK_REPAIR_ACTIVE_720P.png'
-
-# 修理面板右侧的「全部修理」按钮；页签激活后右侧面板约 1.5-2 秒才联动弹出，
-# 只有它出现才说明真的进了修理视图（补给视图的「全部补给」同款同位置，靠模板分不开）。
-ALL_REPAIR_BUTTON_TEMPLATE = 'ALL_REPAIR_BUTTON_720P.png'
-
-
-# ── 识别区域 ────────────────────────────────────────────────────────────────
-
-# 校准基准 1280x720。自动补给勾选框像素范围 [38, 645, 93, 702]，
-# 比 54x56 的模板各边大 1px。
-AUTO_SUPPLY_ROI = ROI(0.0297, 0.8958, 0.0727, 0.975)
-
-# 快速修理页签像素范围 [469, 538, 651, 590]；限定在页签附近搜索，
-# 防止 179x49 的模板滑到右侧「快速补给」页签上。
-QUICK_REPAIR_ROI = ROI(0.3664, 0.7472, 0.5086, 0.8194)
-
-# 「全部修理」按钮像素范围 [1022, 464, 1174, 518]，比 151x53 的模板各边大 1px。
-ALL_REPAIR_BUTTON_ROI = ROI(0.7984375, 0.64444444, 0.9171875, 0.71944444)
-
-# 修理道具存量文字像素范围 [1136, 398, 1204, 432]；左边界贴着数字前的斜杠右侧，
-# 再往左会把斜杠读成数字 1。
-REPAIR_STOCK_ROI = ROI(0.8875, 0.55277778, 0.940625, 0.6)
 
 
 # ── 页面响应窗口 ────────────────────────────────────────────────────────────
@@ -90,8 +58,8 @@ def check_auto_supply_enabled(ctx: ContextHandle) -> bool:
     """
     return expect_template(
         ctx,
-        template=_load_template(AUTO_SUPPLY_TEMPLATE),
-        roi=AUTO_SUPPLY_ROI,
+        template=_load_template(constants.AUTO_SUPPLY_TEMPLATE),
+        roi=constants.AUTO_SUPPLY_ROI,
     ).satisfied
 
 
@@ -110,10 +78,10 @@ def check_quick_repair_active(ctx: ContextHandle) -> bool:
     return expect_template(
         ctx,
         template=(
-            _load_template(QUICK_REPAIR_TEMPLATE),
-            _load_template(ALL_REPAIR_BUTTON_TEMPLATE),
+            _load_template(constants.QUICK_REPAIR_TEMPLATE),
+            _load_template(constants.ALL_REPAIR_BUTTON_TEMPLATE),
         ),
-        roi=(QUICK_REPAIR_ROI, ALL_REPAIR_BUTTON_ROI),
+        roi=(constants.QUICK_REPAIR_ROI, constants.ALL_REPAIR_BUTTON_ROI),
         min_matches=2,
         attempts=_QUICK_REPAIR_ATTEMPTS,
         interval_seconds=_QUICK_REPAIR_INTERVAL_SECONDS,
@@ -133,7 +101,7 @@ def read_repair_tool_count(ctx: ContextHandle) -> int | None:
     """
     result = expect_ocr(
         ctx,
-        roi=REPAIR_STOCK_ROI,
+        roi=constants.REPAIR_STOCK_ROI,
         allowlist='0123456789',
         attempts=1,
     )
@@ -162,8 +130,8 @@ def read_auto_supply_center(ctx: ContextHandle) -> tuple[float, float] | None:
     """
     return expect_template_center(
         ctx,
-        template=_load_template(AUTO_SUPPLY_TEMPLATE),
-        roi=AUTO_SUPPLY_ROI,
+        template=_load_template(constants.AUTO_SUPPLY_TEMPLATE),
+        roi=constants.AUTO_SUPPLY_ROI,
     )
 
 
@@ -178,8 +146,8 @@ def read_quick_repair_center(ctx: ContextHandle) -> tuple[float, float] | None:
     """
     return expect_template_center(
         ctx,
-        template=_load_template(QUICK_REPAIR_TEMPLATE),
-        roi=QUICK_REPAIR_ROI,
+        template=_load_template(constants.QUICK_REPAIR_TEMPLATE),
+        roi=constants.QUICK_REPAIR_ROI,
     )
 
 
@@ -194,8 +162,8 @@ def read_all_repair_center(ctx: ContextHandle) -> tuple[float, float] | None:
     """
     return expect_template_center(
         ctx,
-        template=_load_template(ALL_REPAIR_BUTTON_TEMPLATE),
-        roi=ALL_REPAIR_BUTTON_ROI,
+        template=_load_template(constants.ALL_REPAIR_BUTTON_TEMPLATE),
+        roi=constants.ALL_REPAIR_BUTTON_ROI,
     )
 
 
@@ -204,7 +172,7 @@ def read_all_repair_center(ctx: ContextHandle) -> tuple[float, float] | None:
 
 def _load_template(filename: str) -> Template:
     """加载本模块模板。"""
-    return load_ui_template(TEMPLATE_NAMESPACE, filename)
+    return load_ui_template(constants.TEMPLATE_NAMESPACE, filename)
 
 
 __all__ = [

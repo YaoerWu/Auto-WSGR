@@ -24,6 +24,9 @@ from autowsgr.application.controller.sortie.battle_preparation.quick_maintenance
 from autowsgr.application.controller.sortie.battle_preparation.quick_maintenance import (
     checker as quick_checker,
 )
+from autowsgr.application.controller.sortie.battle_preparation.quick_maintenance import (
+    constants as quick_constants,
+)
 from autowsgr.common.vision import TextDetection
 
 
@@ -62,10 +65,10 @@ def test_auto_supply_reads_checkbox_template(monkeypatch: pytest.MonkeyPatch) ->
 
     assert check_auto_supply_enabled(object()) is True
     assert calls[0]['template'] == (
-        quick_checker.TEMPLATE_NAMESPACE,
-        quick_checker.AUTO_SUPPLY_TEMPLATE,
+        quick_checker.constants.TEMPLATE_NAMESPACE,
+        quick_constants.AUTO_SUPPLY_TEMPLATE,
     )
-    assert calls[0]['roi'] is quick_checker.AUTO_SUPPLY_ROI
+    assert calls[0]['roi'] is quick_constants.AUTO_SUPPLY_ROI
 
     _install_template(monkeypatch, False)
 
@@ -80,12 +83,12 @@ def test_quick_repair_requires_tab_and_all_repair_button(
 
     assert check_quick_repair_active(object()) is True
     assert calls[0]['template'] == (
-        (quick_checker.TEMPLATE_NAMESPACE, quick_checker.QUICK_REPAIR_TEMPLATE),
-        (quick_checker.TEMPLATE_NAMESPACE, quick_checker.ALL_REPAIR_BUTTON_TEMPLATE),
+        (quick_checker.constants.TEMPLATE_NAMESPACE, quick_constants.QUICK_REPAIR_TEMPLATE),
+        (quick_checker.constants.TEMPLATE_NAMESPACE, quick_constants.ALL_REPAIR_BUTTON_TEMPLATE),
     )
     assert calls[0]['roi'] == (
-        quick_checker.QUICK_REPAIR_ROI,
-        quick_checker.ALL_REPAIR_BUTTON_ROI,
+        quick_constants.QUICK_REPAIR_ROI,
+        quick_constants.ALL_REPAIR_BUTTON_ROI,
     )
     assert calls[0]['min_matches'] == 2
     assert calls[0]['attempts'] == 4
@@ -122,7 +125,7 @@ def test_read_repair_tool_count(
     monkeypatch.setattr(quick_checker, 'expect_ocr', expect_ocr)
 
     assert read_repair_tool_count(object()) == expected
-    assert calls[0]['roi'] is quick_checker.REPAIR_STOCK_ROI
+    assert calls[0]['roi'] is quick_constants.REPAIR_STOCK_ROI
     assert calls[0]['allowlist'] == '0123456789'
     assert calls[0]['attempts'] == 1
 
@@ -130,18 +133,18 @@ def test_read_repair_tool_count(
 _CENTER_CASES: tuple[tuple[Callable[[object], tuple[float, float] | None], str, object], ...] = (
     (
         read_auto_supply_center,
-        quick_checker.AUTO_SUPPLY_TEMPLATE,
-        quick_checker.AUTO_SUPPLY_ROI,
+        quick_constants.AUTO_SUPPLY_TEMPLATE,
+        quick_constants.AUTO_SUPPLY_ROI,
     ),
     (
         read_quick_repair_center,
-        quick_checker.QUICK_REPAIR_TEMPLATE,
-        quick_checker.QUICK_REPAIR_ROI,
+        quick_constants.QUICK_REPAIR_TEMPLATE,
+        quick_constants.QUICK_REPAIR_ROI,
     ),
     (
         read_all_repair_center,
-        quick_checker.ALL_REPAIR_BUTTON_TEMPLATE,
-        quick_checker.ALL_REPAIR_BUTTON_ROI,
+        quick_constants.ALL_REPAIR_BUTTON_TEMPLATE,
+        quick_constants.ALL_REPAIR_BUTTON_ROI,
     ),
 )
 
@@ -164,7 +167,7 @@ def test_center_readers_use_their_own_template_and_allow_missing(
         monkeypatch.setattr(quick_checker, 'expect_template_center', expect_template_center)
 
         assert reader(object()) == (0.25, 0.75)
-        assert calls[0]['template'] == (quick_checker.TEMPLATE_NAMESPACE, filename)
+        assert calls[0]['template'] == (quick_checker.constants.TEMPLATE_NAMESPACE, filename)
         assert calls[0]['roi'] is roi
 
         monkeypatch.setattr(quick_checker, 'expect_template_center', lambda *_a, **_k: None)

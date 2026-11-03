@@ -13,32 +13,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.sidebar.intensify import constants
 from autowsgr.application.controller.template import load_ui_template
-from autowsgr.common.vision import ROI, Template, expect_template
+from autowsgr.common.vision import Template, expect_template
 
 
 if TYPE_CHECKING:
     from autowsgr.dispatch.context import ContextHandle
-
-
-# ── 识别数据 ────────────────────────────────────────────────────────────────
-
-# 本模块在 UI 模板根下的命名空间：改造页从侧边栏进入，因此嵌在 sidebar 命名空间下。
-TEMPLATE_NAMESPACE = 'controller/sidebar/intensify'
-
-# 本模块的模板文件名；目录小写、文件名全大写。
-# 改造页默认落在「强化」标签，因此用它作为页面身份。
-INTENSIFY_TAB_TEMPLATE = 'INTENSIFY_TAB_720P.png'
-REMOLD_TAB_TEMPLATE = 'INTENSIFY_REMOLD_TAB_720P.png'
-SKILL_TAB_TEMPLATE = 'INTENSIFY_SKILL_TAB_720P.png'
-
-
-# ── 改造页面识别区域 ────────────────────────────────────────────────────────
-
-# 改造页三个标签的归一化区域，校准基准为 1280x720 截图。
-INTENSIFY_TAB_ROI = ROI(0.15, 0.0167, 0.218, 0.0792)
-REMOLD_TAB_ROI = ROI(0.2782, 0.0195, 0.3461, 0.0778)
-SKILL_TAB_ROI = ROI(0.4086, 0.0139, 0.4735, 0.0778)
 
 
 # 导航确认节奏：切换标签要走完切换动画，识别不到就重试。
@@ -68,8 +49,8 @@ def check_intensify_page(
     """
     return expect_template(
         ctx,
-        template=_load_template(INTENSIFY_TAB_TEMPLATE),
-        roi=INTENSIFY_TAB_ROI,
+        template=_load_template(constants.INTENSIFY_TAB_TEMPLATE),
+        roi=constants.INTENSIFY_TAB_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -96,8 +77,8 @@ def check_remold_tab(
     """
     return expect_template(
         ctx,
-        template=_load_template(REMOLD_TAB_TEMPLATE),
-        roi=REMOLD_TAB_ROI,
+        template=_load_template(constants.REMOLD_TAB_TEMPLATE),
+        roi=constants.REMOLD_TAB_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -124,8 +105,8 @@ def check_skill_tab(
     """
     return expect_template(
         ctx,
-        template=_load_template(SKILL_TAB_TEMPLATE),
-        roi=SKILL_TAB_ROI,
+        template=_load_template(constants.SKILL_TAB_TEMPLATE),
+        roi=constants.SKILL_TAB_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -137,7 +118,7 @@ def check_skill_tab(
 
 def _load_template(filename: str) -> Template:
     """加载本模块模板。"""
-    return load_ui_template(TEMPLATE_NAMESPACE, filename)
+    return load_ui_template(constants.TEMPLATE_NAMESPACE, filename)
 
 
 __all__ = ['check_intensify_page', 'check_remold_tab', 'check_skill_tab']

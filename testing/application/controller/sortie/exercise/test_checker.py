@@ -15,12 +15,15 @@ from typing import TYPE_CHECKING
 import pytest
 
 from autowsgr.application.controller.sortie.exercise import checker as exercise_checker
+from autowsgr.application.controller.sortie.exercise import constants as exercise_constants
 from autowsgr.application.controller.sortie.exercise.checker import (
-    EXERCISE_RIVAL_SLOTS,
     read_overlay_challenge_center,
     read_overlay_close_center,
     read_overlay_refresh_center,
     read_rival_ships,
+)
+from autowsgr.application.controller.sortie.exercise.constants import (
+    EXERCISE_RIVAL_SLOTS,
 )
 from autowsgr.application.controller.types import ShipType
 from autowsgr.common.vision import RecognitionProfile, TextDetection
@@ -55,18 +58,18 @@ def _install_center(
 _CASES: tuple[tuple[Callable[[object], tuple[float, float] | None], str, object], ...] = (
     (
         read_overlay_close_center,
-        exercise_checker.OVERLAY_CLOSE_TEMPLATE,
-        exercise_checker.OVERLAY_CLOSE_ROI,
+        exercise_constants.OVERLAY_CLOSE_TEMPLATE,
+        exercise_constants.OVERLAY_CLOSE_ROI,
     ),
     (
         read_overlay_refresh_center,
-        exercise_checker.OVERLAY_REFRESH_TEMPLATE,
-        exercise_checker.OVERLAY_REFRESH_ROI,
+        exercise_constants.OVERLAY_REFRESH_TEMPLATE,
+        exercise_constants.OVERLAY_REFRESH_ROI,
     ),
     (
         read_overlay_challenge_center,
-        exercise_checker.OVERLAY_CHALLENGE_TEMPLATE,
-        exercise_checker.OVERLAY_CHALLENGE_ROI,
+        exercise_constants.OVERLAY_CHALLENGE_TEMPLATE,
+        exercise_constants.OVERLAY_CHALLENGE_ROI,
     ),
 )
 
@@ -82,7 +85,7 @@ def test_each_button_reads_its_template_center(
     calls = _install_center(monkeypatch, (0.25, 0.75))
 
     assert reader(object()) == (0.25, 0.75)
-    assert calls[0]['template'] == (exercise_checker.TEMPLATE_NAMESPACE, filename)
+    assert calls[0]['template'] == (exercise_checker.constants.TEMPLATE_NAMESPACE, filename)
     assert calls[0]['roi'] is roi
     assert calls[0]['attempts'] == 1
 
@@ -119,7 +122,7 @@ def _install_ocr(
     def expect_ocr(_ctx: object, **options: object) -> SimpleNamespace:
         calls.append(options)
         texts = (
-            type_texts if options['roi'] is exercise_checker.RIVAL_SHIP_TYPE_ROIS else level_texts
+            type_texts if options['roi'] is exercise_constants.RIVAL_SHIP_TYPE_ROIS else level_texts
         )
         return SimpleNamespace(
             satisfied=True,
@@ -163,11 +166,11 @@ def test_reads_six_rival_slots(monkeypatch: pytest.MonkeyPatch) -> None:
         None,
     ]
     assert [rival.level for rival in rivals] == [110, 100, 95, 90, 1, 80]
-    assert calls[0]['roi'] is exercise_checker.RIVAL_SHIP_TYPE_ROIS
+    assert calls[0]['roi'] is exercise_constants.RIVAL_SHIP_TYPE_ROIS
     assert calls[0]['attempts'] == 1
     assert calls[0]['recognition_profile'] is RecognitionProfile.SINGLE_LINE
-    assert calls[1]['roi'] is exercise_checker.RIVAL_SHIP_LEVEL_ROIS
-    assert calls[1]['allowlist'] == exercise_checker._LEVEL_ALLOWLIST
+    assert calls[1]['roi'] is exercise_constants.RIVAL_SHIP_LEVEL_ROIS
+    assert calls[1]['allowlist'] == exercise_checker.constants.LEVEL_ALLOWLIST
 
 
 def test_ship_type_accepts_split_detections(monkeypatch: pytest.MonkeyPatch) -> None:

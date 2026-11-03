@@ -43,13 +43,6 @@ _NAV_CONFIRM_INTERVAL_SECONDS = 1.0
 
 # 四个特征模板与各自的死区域，顺序即识别结果顺序。定类规则：
 # 强化满隐藏 → 强化；快速选择 → 拆解；快速编队无星标 → 决战；有星标 → 出征。
-_KIND_FEATURES: tuple[tuple[str, ROI], ...] = (
-    (constants.QUICK_STRENGTHEN_TEMPLATE, constants.QUICK_STRENGTHEN_ROI),
-    (constants.QUICK_SELECT_TEMPLATE, constants.QUICK_SELECT_ROI),
-    (constants.QUICK_FORMATION_TEMPLATE, constants.QUICK_FORMATION_ROI),
-    (constants.STAR_TEMPLATE, constants.STAR_ROI),
-)
-
 
 # ── 识别模型 ────────────────────────────────────────────────────────────────
 
@@ -235,7 +228,7 @@ def _load_features() -> tuple[tuple[Template, ROI], ...]:
     """按固定顺序加载四个特征模板；模板按参数缓存，重复调用不读盘。"""
     return tuple(
         (load_ui_template(constants.TEMPLATE_NAMESPACE, filename), roi)
-        for filename, roi in _KIND_FEATURES
+        for filename, roi in constants.KIND_FEATURES
     )
 
 

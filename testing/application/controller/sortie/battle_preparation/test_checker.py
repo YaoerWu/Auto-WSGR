@@ -60,10 +60,10 @@ def test_read_layer_reports_matched_preparation_pages(
         PageName.DECISIVE_BATTLE_PREPARATION,
     )
     assert captured['template'] == tuple(
-        (checker_module.TEMPLATE_NAMESPACE, filename)
-        for _page, filename in checker_module._PAGE_TEMPLATES
+        (checker_module.constants.TEMPLATE_NAMESPACE, filename)
+        for _page, filename in checker_module.constants.PREPARATION_TEMPLATES
     )
-    assert captured['roi'] is checker_module.BATTLE_PREPARATION_ROI
+    assert captured['roi'] is checker_module.constants.BATTLE_PREPARATION_ROI
     assert captured['attempts'] == 5
     assert captured['interval_seconds'] == 0.5
 
@@ -99,10 +99,10 @@ def test_read_team_tab_returns_active_team(
 
         assert checker_module.read_team_tab(ctx) == team
         assert captured['template'] == tuple(
-            (checker_module.TEMPLATE_NAMESPACE, filename)
-            for filename in checker_module.TEAM_TAB_TEMPLATES
+            (checker_module.constants.TEMPLATE_NAMESPACE, filename)
+            for filename in checker_module.constants.TEAM_TAB_TEMPLATES
         )
-        assert captured['roi'] is checker_module.TEAM_TAB_ROIS
+        assert captured['roi'] is checker_module.constants.TEAM_TAB_ROIS
 
 
 def test_read_team_tab_reads_observation_and_prefers_higher_score(

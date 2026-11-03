@@ -14,10 +14,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.login import constants
 from autowsgr.application.controller.template import load_ui_template
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import (
-    ROI,
     Template,
     expect_ocr,
     expect_template,
@@ -30,57 +30,6 @@ if TYPE_CHECKING:
 
 
 _log = get_logger('ui.login')
-
-
-# ── 识别模板 ────────────────────────────────────────────────────────────────
-
-# 模板目录名，对应 resources/image/application/controller/login/。
-TEMPLATE_NAMESPACE = 'controller/login'
-
-# 健康游戏提示的黑屏画面，全屏模板。
-BLACK_SCREEN_TEMPLATE = 'LOGIN_BLACK_SCREEN_720P.png'
-
-# 登录页的进入游戏按钮。
-ENTER_BUTTON_TEMPLATE = 'LOGIN_ENTER_BUTTON_720P.png'
-
-# 登录页的点击换区文字。
-SWITCH_ENTRY_TEMPLATE = 'SERVER_SWITCH_ENTRY_720P.png'
-
-# 区服选择页的切换大区按钮。
-SWITCH_SERVER_TEMPLATE = 'SERVER_SWITCH_BUTTON_720P.png'
-
-
-# ── 识别区域 ────────────────────────────────────────────────────────────────
-
-# 更新提示文字区域。
-UPDATE_PROMPT_ROI = ROI(0.3211, 0.3681, 0.4859, 0.4222)
-
-# 更新中与加载中的进度文字区域，两个画面共用同一条横幅。
-PROGRESS_TEXT_ROI = ROI(0.3867, 0.8389, 0.6125, 0.8986)
-
-# 进入游戏按钮区域。
-ENTER_BUTTON_ROI = ROI(0.8195, 0.8236, 0.9532, 0.9098)
-
-# 点击换区文字区域。
-SWITCH_ENTRY_ROI = ROI(0.6820, 0.6958, 0.7844, 0.7653)
-
-# 切换大区按钮区域。
-SWITCH_SERVER_ROI = ROI(0.8133, 0.8792, 0.9407, 0.9667)
-
-# 四个区服条目区域，顺序与区服列表从上到下一致。
-SERVER_NAME_ROIS = (
-    ROI(0.7836, 0.0389, 0.8984, 0.1194),
-    ROI(0.7852, 0.1972, 0.8961, 0.2708),
-    ROI(0.7883, 0.3583, 0.8977, 0.4292),
-    ROI(0.7867, 0.5097, 0.9000, 0.5847),
-)
-
-
-# ── OCR 期望文本 ────────────────────────────────────────────────────────────
-
-UPDATE_PROMPT_TEXT = '有新的内容需要更新'
-LOADING_TEXT = '正在进入港区'
-SERVER_NAMES = ('胡德', '俾斯麦', '昆西', '长春')
 
 
 # 导航确认节奏：点击后要等弹层动画，单帧会立刻判失败。
@@ -108,7 +57,7 @@ def check_black_screen(
     """
     return expect_template(
         ctx,
-        template=_load_template(BLACK_SCREEN_TEMPLATE),
+        template=_load_template(constants.BLACK_SCREEN_TEMPLATE),
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -135,8 +84,8 @@ def check_update_prompt(
     """
     return expect_ocr(
         ctx,
-        expect=UPDATE_PROMPT_TEXT,
-        roi=UPDATE_PROMPT_ROI,
+        expect=constants.UPDATE_PROMPT_TEXT,
+        roi=constants.UPDATE_PROMPT_ROI,
         recognition_profile='single_line',
         absent=absent,
         attempts=attempts,
@@ -164,8 +113,8 @@ def check_loading(
     """
     return expect_ocr(
         ctx,
-        expect=LOADING_TEXT,
-        roi=PROGRESS_TEXT_ROI,
+        expect=constants.LOADING_TEXT,
+        roi=constants.PROGRESS_TEXT_ROI,
         recognition_profile='single_line',
         absent=absent,
         attempts=attempts,
@@ -196,8 +145,8 @@ def check_login_page(
     return expect_template(
         ctx,
         template=(
-            _load_template(ENTER_BUTTON_TEMPLATE),
-            _load_template(SWITCH_ENTRY_TEMPLATE),
+            _load_template(constants.ENTER_BUTTON_TEMPLATE),
+            _load_template(constants.SWITCH_ENTRY_TEMPLATE),
         ),
         absent=absent,
         attempts=attempts,
@@ -225,8 +174,8 @@ def check_server_select(
     """
     return expect_template(
         ctx,
-        template=_load_template(SWITCH_SERVER_TEMPLATE),
-        roi=SWITCH_SERVER_ROI,
+        template=_load_template(constants.SWITCH_SERVER_TEMPLATE),
+        roi=constants.SWITCH_SERVER_ROI,
         absent=absent,
         attempts=attempts,
         interval_seconds=interval_seconds,
@@ -239,7 +188,7 @@ def get_server_index(name: str) -> int:
     区服列表固定不滚动，位置是静态映射；OCR 定位失败时用它兜底。
 
     Args:
-        name: 区服名，取值见 `SERVER_NAMES`。
+        name: 区服名，取值见 `constants.SERVER_NAMES`。
 
     Returns:
         位置序号（0 起）。
@@ -247,7 +196,7 @@ def get_server_index(name: str) -> int:
     Raises:
         ValueError: 名字不在区服列表内。
     """
-    return SERVER_NAMES.index(name)
+    return constants.SERVER_NAMES.index(name)
 
 
 def read_server_position(ctx: ContextHandle, name: str) -> int | None:
@@ -262,7 +211,7 @@ def read_server_position(ctx: ContextHandle, name: str) -> int | None:
     Returns:
         位置序号（0 起），未命中时返回 None。
     """
-    for index, roi in enumerate(SERVER_NAME_ROIS):
+    for index, roi in enumerate(constants.SERVER_NAME_ROIS):
         if expect_ocr(
             ctx, expect=name, roi=roi, recognition_profile='single_line', attempts=1
         ).satisfied:
@@ -279,7 +228,7 @@ def read_server_index(ctx: ContextHandle, name: str) -> int:
 
     Args:
         ctx: 提供设备服务和截图事实的 dispatch 上下文句柄。
-        name: 目标区服名，取值见 `SERVER_NAMES`。
+        name: 目标区服名，取值见 `constants.SERVER_NAMES`。
 
     Returns:
         区服在列表中的位置序号（0 起）。
@@ -301,7 +250,10 @@ def read_enter_button_center(ctx: ContextHandle) -> tuple[float, float] | None:
         按钮模板命中时的归一化中心；未命中时为 None。
     """
     return expect_template_center(
-        ctx, template=_load_template(ENTER_BUTTON_TEMPLATE), roi=ENTER_BUTTON_ROI, attempts=1
+        ctx,
+        template=_load_template(constants.ENTER_BUTTON_TEMPLATE),
+        roi=constants.ENTER_BUTTON_ROI,
+        attempts=1,
     )
 
 
@@ -315,7 +267,10 @@ def read_switch_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
         入口模板命中时的归一化中心；未命中时为 None。
     """
     return expect_template_center(
-        ctx, template=_load_template(SWITCH_ENTRY_TEMPLATE), roi=SWITCH_ENTRY_ROI, attempts=1
+        ctx,
+        template=_load_template(constants.SWITCH_ENTRY_TEMPLATE),
+        roi=constants.SWITCH_ENTRY_ROI,
+        attempts=1,
     )
 
 
@@ -324,7 +279,7 @@ def read_switch_entry_center(ctx: ContextHandle) -> tuple[float, float] | None:
 
 def _load_template(filename: str) -> Template:
     """加载本模块模板。"""
-    return load_ui_template(TEMPLATE_NAMESPACE, filename)
+    return load_ui_template(constants.TEMPLATE_NAMESPACE, filename)
 
 
 __all__ = [

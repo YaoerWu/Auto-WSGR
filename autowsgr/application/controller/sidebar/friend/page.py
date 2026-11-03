@@ -4,7 +4,7 @@
 - application.navigation：执行好友页面返回主页的页面边动作。
 
 下层依赖：
-- application.ui.controller.sidebar.friend_page.constants：提供返回落点。
+- application.controller.sidebar.friend.constants：提供返回落点。
 
 边界：只点击返回按钮，不识别画面、不确认终态、不涉及好友业务。
 """
@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.controller.sidebar.friend_page import constants
+from autowsgr.application.controller.sidebar.friend import constants
 from autowsgr.common.system.logger import get_logger
 
 
