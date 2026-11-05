@@ -32,6 +32,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
+from autowsgr.application.controller.types import ShipType
 from autowsgr.application.fleet_select.rules.shipnames import (
     SHIPNAMES,
     get_active_ship_name_aliases,
@@ -46,7 +47,6 @@ from autowsgr.application.fleet_select.rules.shipnames import (
     build_ship_name_candidates as expand_group_candidates,
 )
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import ShipType
 
 
 if TYPE_CHECKING:

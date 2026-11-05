@@ -4,12 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from autowsgr.application.runtime.executor import BaseExecutor
 from autowsgr.application.navigation import goto_page
+from autowsgr.application.navigation.types import PageName
+from autowsgr.application.runtime.executor import BaseExecutor
 from autowsgr.business.combat import CombatPlan, CombatResult
 from autowsgr.business.combat.bettle.normal_fight import NormalFightRunner
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import PageName
 
 
 if TYPE_CHECKING:

@@ -75,8 +75,7 @@ def cook(self, position: int = 1, *, force_cook: bool = False) -> bool:
         time.sleep(_COOK_BUTTON_POLL_INTERVAL_SECONDS)
     else:
         _log.error(
-            '[UI] 食堂 → 做菜超时：菜谱位置={}，超时={:.1f}s，'
-            '原因=做菜按钮未出现，结果=失败',
+            '[UI] 食堂 → 做菜超时：菜谱位置={}，超时={:.1f}s，原因=做菜按钮未出现，结果=失败',
             position,
             _COOK_BUTTON_TIMEOUT_SECONDS,
         )
@@ -103,8 +102,7 @@ def cook(self, position: int = 1, *, force_cook: bool = False) -> bool:
             if no_times:
                 operations.click_dismiss_popup(self._ctrl)
                 _log.warning(
-                    '[UI] 食堂 → 做菜失败：菜谱位置={}，强制覆盖={!r}，'
-                    '原因=次数不足，结果=失败',
+                    '[UI] 食堂 → 做菜失败：菜谱位置={}，强制覆盖={!r}，原因=次数不足，结果=失败',
                     position,
                     force_cook,
                 )

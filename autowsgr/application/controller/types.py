@@ -1,19 +1,24 @@
 """模块功能：定义控制器层共用的业务枚举。
 
 上层调用：
-- application.controller 各页面包：用 ShipType 表达舰种，作为识别结果的分类标签。
+- application.controller 各页面包：用 ShipType 表达舰种、用 ShipDamageState 表达
+  舰船血量，作为识别结果的分类标签。
+- application.vision：舰种识别、血量识别与 OCR 规则输出上述枚举。
 - application.fleet_select：按舰种筛选船只、校验阵容规则。
+- business.logistics / business.combat：用 RepairMode 表达修理档位、用
+  DestroyShipWorkMode 表达拆解口径。
 
 下层依赖：
 - common.system.enums：提供统一的中文非法值错误。
 
 边界：只声明跨页面复用的业务枚举，不持有页面坐标、不读取图像、不判断业务规则。
-单个页面独占的枚举留在各自模块里，不上提到这里。
+单个页面独占的枚举留在各自模块里，不上提到这里。放这里的唯一理由是「多个层
+都要用，但谁也不该拥有它」——放 business 会让 application 反向依赖 business。
 """
 
 from __future__ import annotations
 
-from autowsgr.common.system.enums import StrEnum
+from autowsgr.common.system.enums import IntEnum, StrEnum
 
 
 # ── 舰船类型 ────────────────────────────────────────────────────────────────
@@ -48,4 +53,40 @@ class ShipType(StrEnum):
     Other = '其他'
 
 
-__all__ = ['ShipType']
+# ── 舰船血量 ────────────────────────────────────────────────────────────────
+
+
+class ShipDamageState(IntEnum):
+    """舰船血量状态。"""
+
+    NORMAL = 0
+    MODERATE = 1
+    SEVERE = 2
+    NO_SHIP = -1
+
+
+# ── 修理与拆解口径 ──────────────────────────────────────────────────────────
+
+
+class RepairMode(IntEnum):
+    """修理策略。"""
+
+    moderate_damage = 1
+    severe_damage = 2
+    repairing = 3
+
+
+class DestroyShipWorkMode(IntEnum):
+    """拆解工作模式。"""
+
+    disable = 0
+    include = 1
+    exclude = 2
+
+
+__all__ = [
+    'DestroyShipWorkMode',
+    'RepairMode',
+    'ShipDamageState',
+    'ShipType',
+]

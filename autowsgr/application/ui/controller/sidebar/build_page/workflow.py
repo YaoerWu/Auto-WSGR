@@ -25,7 +25,9 @@ from autowsgr.common.vision import ImageChecker
 
 
 if TYPE_CHECKING:
-    from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import ShipType
+    from autowsgr.application.controller.sortie.battle_preparation.ship_recognition.types import (
+        ShipType,
+    )
     from autowsgr.common.device.service import DeviceService
 
 
@@ -275,8 +277,7 @@ def _start_builds(ctrl: DeviceService, build_type: str, build_count: int) -> Non
         detail = ImageChecker.find_template(screen, start_template)
         if detail is None:
             _log.error(
-                '[UI] 建造页 → 建造失败：类型={!r}，序号={}，总数={}，'
-                '原因=建造队列已满，结果=失败',
+                '[UI] 建造页 → 建造失败：类型={!r}，序号={}，总数={}，原因=建造队列已满，结果=失败',
                 build_type,
                 build_index + 1,
                 build_count,

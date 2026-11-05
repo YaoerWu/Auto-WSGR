@@ -30,8 +30,8 @@ from autowsgr.application.errors import ManualRepairRequiredError
 from autowsgr.application.runtime.executor import BaseExecutor
 from autowsgr.business.combat.decisive.chapter import DecisiveChapterOps
 from autowsgr.business.combat.decisive.handlers import DecisivePhaseHandlers
+from autowsgr.business.combat.decisive.types import DecisivePhase
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import DecisivePhase
 from autowsgr.config import DecisiveConfig
 
 

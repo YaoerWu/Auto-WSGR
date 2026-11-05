@@ -96,7 +96,7 @@ class NodeDecisionRequest(BaseModel):
     ) -> list[RuleSpec] | None:
         if value is None:
             return None
-        from autowsgr.business.combat.rules import _parse_legacy_condition
+        from autowsgr.application.combat.rules.enemy import _parse_legacy_condition
 
         for condition, _action in value:
             _parse_legacy_condition(condition)

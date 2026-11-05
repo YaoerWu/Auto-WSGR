@@ -22,6 +22,11 @@ from typing import TYPE_CHECKING
 
 import cv2
 
+from autowsgr.application.navigation.interaction import (
+    NavConfig,
+    click_and_wait_for_page,
+    confirm_operation,
+)
 from autowsgr.application.ui.controller.fleet import BattlePreparationPage, RepairStrategy
 from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.constants import (
     ADVANCE_CARD_POSITIONS,
@@ -79,15 +84,8 @@ from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.rec
     recognize_fleet_options,
     recognize_map_node,
 )
-from autowsgr.application.navigation.interaction import (
-    NavConfig,
-    click_and_wait_for_page,
-    confirm_operation,
-)
 from autowsgr.application.vision.resources import Templates
 from autowsgr.business.combat.decisive.types import DecisivePhase
-from autowsgr.business.combat.types import FleetSelection
-from autowsgr.business.logistics.types import ShipDamageState
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import (
     ROI,
@@ -100,7 +98,9 @@ from autowsgr.common.vision import (
 if TYPE_CHECKING:
     import numpy as np
 
+    from autowsgr.application.controller.types import ShipDamageState
     from autowsgr.application.ui.controller.context import UIContext as GameContext
+    from autowsgr.business.combat.types import FleetSelection
     from autowsgr.config import DecisiveConfig
 
 

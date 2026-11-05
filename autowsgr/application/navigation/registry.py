@@ -56,7 +56,7 @@ from autowsgr.application.controller.sortie import (
     exercise,
     read_sortie_layer,
 )
-from autowsgr.application.controller.sortie.battle import BattlePage, ensure_chapter
+from autowsgr.application.controller.sortie.battle_map import BattlePage, ensure_chapter
 from autowsgr.application.controller.sortie.battle_preparation import (
     BattlePreparationPage,
     read_battle_preparation_layer,

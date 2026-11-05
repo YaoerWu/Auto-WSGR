@@ -19,17 +19,17 @@ from __future__ import annotations
 import time
 
 from autowsgr.application.controller.sortie import SortiePage
-from autowsgr.application.ui.controller.operations.sortie_page.expedition_page import (
-    constants,
-    operations,
-    recognition,
-)
 from autowsgr.application.navigation.interaction import (
     NavigationError,
     confirm_operation,
     wait_for_page,
 )
 from autowsgr.application.navigation.types import PageName
+from autowsgr.application.ui.controller.operations.sortie_page.expedition_page import (
+    constants,
+    operations,
+    recognition,
+)
 from autowsgr.application.vision.resources import Templates
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import ImageChecker

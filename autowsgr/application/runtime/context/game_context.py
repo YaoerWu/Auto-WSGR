@@ -7,9 +7,9 @@ import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from autowsgr.application.controller.types import ShipDamageState
 from autowsgr.application.navigation.stack import UIStack
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import ShipDamageState
 
 from .bathroom import BathRoom
 from .build import BuildQueue
@@ -22,8 +22,8 @@ from .ship import Ship
 if TYPE_CHECKING:
     from datetime import date
 
+    from autowsgr.application.navigation.types import PageName
     from autowsgr.common.device import AndroidController
-    from autowsgr.common.types import PageName
     from autowsgr.common.vision import OCREngine
     from autowsgr.config import UserConfig
 
@@ -100,7 +100,7 @@ class GameContext:
 
     .. deprecated::
         改读 :attr:`ui_stack.current`。本字段由导航循环尽力同步
-        (页面名不在 :class:`~autowsgr.common.types.PageName` 枚举内时为 ``None``),
+        (页面名不在 :class:`~autowsgr.application.controller.types.PageName` 枚举内时为 ``None``),
         仅为 server 状态上报等旧读者保留。
     """
 
@@ -221,7 +221,7 @@ class GameContext:
         result:
             战斗结果。
         """
-        from autowsgr.common.types import ConditionFlag
+        from autowsgr.application.combat.types import ConditionFlag
 
         if result.flag not in (
             ConditionFlag.OPERATION_SUCCESS,
@@ -269,12 +269,12 @@ class GameContext:
             战斗自行校准", 但战斗未必掉落, 计数器可能一直为 0 → 持续误触发。
         """
         from autowsgr.application.controller.sortie import SortieTab
-        from autowsgr.application.controller.sortie.battle import BattlePage
+        from autowsgr.application.controller.sortie.battle_map import BattlePage
+        from autowsgr.application.navigation import goto_page
+        from autowsgr.application.navigation.types import PageName
         from autowsgr.application.ui.controller.operations.sortie_page.battle_page import (
             recognition,
         )
-        from autowsgr.application.navigation import goto_page
-        from autowsgr.common.types import PageName
 
         goto_page(self, PageName.MAP)
         battle_page = BattlePage(self)

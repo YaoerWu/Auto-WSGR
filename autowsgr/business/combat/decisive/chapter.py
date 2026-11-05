@@ -6,10 +6,10 @@
 
 from __future__ import annotations
 
+from autowsgr.application.navigation.types import PageName
 from autowsgr.business.combat.decisive.base import DecisiveBase
 from autowsgr.common.system.errors import BusinessError
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import PageName
 
 
 _log = get_logger('business.combat.decisive')

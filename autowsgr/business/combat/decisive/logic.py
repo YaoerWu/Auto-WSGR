@@ -9,14 +9,15 @@ from __future__ import annotations
 from itertools import combinations
 from typing import TYPE_CHECKING
 
+from autowsgr.application.combat.types import Formation
 from autowsgr.business.combat.decisive.config import MapData
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import FleetSelection, Formation
 
 
 if TYPE_CHECKING:
     from autowsgr.application.runtime import RuntimeContext as GameContext
     from autowsgr.business.combat.decisive.state import DecisiveState
+    from autowsgr.business.combat.types import FleetSelection
     from autowsgr.config import DecisiveConfig
 
 

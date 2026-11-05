@@ -16,13 +16,13 @@ import time
 from typing import TYPE_CHECKING
 
 from autowsgr.application.errors import ManualRepairRequiredError
-from autowsgr.application.runtime.types import LoginServer
 from autowsgr.application.navigation.service import NavigationService
 from autowsgr.application.navigation.types import (
     ManualUpdateRequiredError,
     NavigationError,
     PageName,
 )
+from autowsgr.application.runtime.types import LoginServer
 from autowsgr.common.system.logger import get_logger
 from autowsgr.dispatch.session import get_session
 

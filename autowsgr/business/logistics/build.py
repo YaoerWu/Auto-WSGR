@@ -9,8 +9,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from autowsgr.application.navigation import goto_page
+from autowsgr.application.navigation.types import PageName
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import PageName
 
 
 if TYPE_CHECKING:

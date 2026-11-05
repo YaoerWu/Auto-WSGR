@@ -9,13 +9,13 @@ from autowsgr.application.controller.sortie import (
     SortieTab,
 )
 from autowsgr.application.controller.sortie.exercise import ExercisePage
+from autowsgr.application.controller.types import RepairMode, ShipDamageState
 from autowsgr.application.ui.controller.fleet import (
     BattlePreparationPage,
     RepairStrategy,
 )
 from autowsgr.common.device.interaction import NavigationError
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import RepairMode, ShipDamageState
 
 
 if TYPE_CHECKING:

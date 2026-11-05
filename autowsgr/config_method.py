@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field, model_validator
 
-from autowsgr.business.logistics.types import RepairMode
+from autowsgr.application.controller.types import RepairMode
 
 
 class NodeConfig(BaseModel):

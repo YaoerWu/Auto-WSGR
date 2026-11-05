@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 import cv2
 
+from autowsgr.application.controller.types import ShipType
 from autowsgr.application.fleet_select.rules.shipnames import (
     SHIPNAMES,
     build_ship_name_candidates,
@@ -45,7 +46,6 @@ from autowsgr.application.vision.ocr_rules import (
 )
 from autowsgr.common import vision
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import ShipType
 
 
 if TYPE_CHECKING:

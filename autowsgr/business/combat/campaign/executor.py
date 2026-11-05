@@ -5,11 +5,13 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, Any
 
-from autowsgr.application.runtime.executor import BaseExecutor
+from autowsgr.application.combat import run_battle
+from autowsgr.application.combat.types import ConditionFlag
 from autowsgr.application.navigation import goto_page
-from autowsgr.business.combat import CombatResult, run_combat
+from autowsgr.application.navigation.types import PageName
+from autowsgr.application.runtime.executor import BaseExecutor
+from autowsgr.business.combat import CombatResult
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import ConditionFlag, PageName
 
 from .operations import CampaignOperations
 from .spec import CAMPAIGN_DAILY_LIMIT, CampaignSpec
@@ -101,11 +103,10 @@ class CampaignExecutor(BaseExecutor):
                 self.spec.plan.default_node.formation.name,
                 self.spec.plan.default_node.night,
             )
-            result = run_combat(
-                self.ctx.ctrl,
+            result = run_battle(
+                self.ctx,
                 self.spec.plan,
                 ship_stats=ship_stats,
-                ocr=self.ctx.ocr,
                 stop_requested=self._stop.is_set,
             )
 

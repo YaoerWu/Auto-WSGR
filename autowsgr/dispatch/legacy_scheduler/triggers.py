@@ -12,7 +12,7 @@
 - 每个触发器同一时刻最多产出一个 pending 任务 (``_idle`` 标志), 避免队列堆积;
   任务完成后经 ``on_done`` 回调翻回 ``_idle``。
 - 战役/演习是「返回标志驱动」的可耗尽触发器 (:class:`ExhaustibleTrigger`):
-  runner 返回特定 :class:`~autowsgr.common.types.ConditionFlag` → 标记 ``_exhausted``,
+  runner 返回特定 :class:`~autowsgr.application.controller.types.ConditionFlag` → 标记 ``_exhausted``,
   不再产出, 直到 ``reset()`` (跨日/跨时段)。
 - 常规战不靠返回标志, 而是每次 ``should_fire`` 主动检查全局上限 (``ctx`` 每日计数器)。
 - 跨日由 :class:`~autowsgr.dispatch.legacy_scheduler.scheduler.TaskScheduler._check_daily_reset` 调
@@ -26,9 +26,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, ClassVar
 
+from autowsgr.application.combat.types import ConditionFlag
 from autowsgr.business.combat import grade_condition_met
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import ConditionFlag
 from autowsgr.dispatch.legacy_scheduler.scheduler import FightTask
 
 

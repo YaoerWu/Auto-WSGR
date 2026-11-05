@@ -10,6 +10,7 @@ from collections.abc import Mapping, Sequence
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any
 
+from autowsgr.application.controller.types import ShipType
 from autowsgr.business.fleet_policy import FLEET_POLICIES, FleetPolicy
 from autowsgr.common.fleet import (
     FleetPreset,
@@ -23,7 +24,6 @@ from autowsgr.common.fleet_types import (
     FLEET_VESSEL_TYPE_BY_CODE,
     FLEET_VESSEL_TYPES,
 )
-from autowsgr.common.types import ShipType
 
 
 if TYPE_CHECKING:

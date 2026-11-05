@@ -32,7 +32,5 @@ TAB_POSITIONS = {
 # 顶部远征完成通知的像素规则：探针位置命中橙红色即视为通知出现。
 EXPEDITION_NOTIF_SIGNATURE = PixelSignature(
     name='expedition_notification',
-    rules=(
-        PixelRule(x=0.4953, y=0.0213, color=Color(245, 88, 47), tolerance=40.0),
-    ),
+    rules=(PixelRule(x=0.4953, y=0.0213, color=Color(245, 88, 47), tolerance=40.0),),
 )

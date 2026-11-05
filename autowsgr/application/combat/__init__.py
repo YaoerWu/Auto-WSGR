@@ -1,27 +1,25 @@
-"""Reusable combat application capabilities.
+"""模块功能：战斗引擎包。
 
-Business runners choose the plan and interpret results; this package performs
-the common combat loop and device/vision actions.
+对外只有一个入口 run_battle：给一份战斗计划开战前状态，内部跑完一整场，返回
+战果。战斗内部分四块：准备阶段编排、战斗监控、战斗决策、战斗结果识别；地图
+节点追踪单独成子包，规则与操作分层放在 rules 与 operation。
+
+上层调用：
+- business.combat 各模式：编排层决定打几场、打完去哪，战斗本身交给这里。
+
+边界：不负责进图选章、编队换船、补给修理。
 """
 
-from autowsgr.application.combat.actions import (
-    click_enter_fight,
-    click_fight_condition,
-    click_formation,
-    click_image,
-    click_night_battle,
-    click_proceed,
-    click_result,
-    click_retreat,
-    click_skip_missile_animation,
-)
-from autowsgr.application.combat.engine import (
-    CombatEngine,
-    CombatPhase,
+from autowsgr.application.combat.engine.transitions import (
     ModeCategory,
-    PhaseBranch,
     build_transitions,
     resolve_successors,
+)
+from autowsgr.application.combat.engine.types import CombatPhase, PhaseBranch
+from autowsgr.application.combat.errors import (
+    CombatError,
+    CombatRecognitionTimeoutError,
+    CombatStopRequestedError,
 )
 from autowsgr.application.combat.history import (
     CombatEvent,
@@ -31,75 +29,43 @@ from autowsgr.application.combat.history import (
     FightResult,
     grade_condition_met,
 )
-from autowsgr.application.combat.node_tracker import MapNodeData, NodeTracker
-from autowsgr.application.combat.recognition import (
-    SHIP_DROP_PAGE_SIGNATURE,
-    ShipDropResult,
-    detect_mvp,
-    detect_result_grade,
-    detect_ship_stats,
-    get_enemy_formation,
-    get_enemy_info,
-    get_ship_drop,
-    image_exist,
-    recognize_enemy_formation,
-    recognize_enemy_ships,
-    recognize_ship_drop,
-)
-from autowsgr.application.combat.recognizer import (
-    CombatRecognitionTimeoutError,
-    CombatRecognizer,
-    CombatStopRequestedError,
+from autowsgr.application.combat.node_tracking import MapNodeData, NodePosition, NodeTracker
+from autowsgr.application.combat.service import run_battle
+from autowsgr.application.combat.types import (
+    CombatMode,
+    ConditionFlag,
+    FightCondition,
+    Formation,
+    RepairMode,
+    SearchEnemyAction,
+    ShipDamageState,
 )
 
 
 __all__ = [
-    'SHIP_DROP_PAGE_SIGNATURE',
-    'CombatEngine',
+    'CombatError',
     'CombatEvent',
     'CombatHistory',
+    'CombatMode',
     'CombatPhase',
     'CombatRecognitionTimeoutError',
-    'CombatRecognizer',
     'CombatResult',
     'CombatStopRequestedError',
+    'ConditionFlag',
     'EventType',
+    'FightCondition',
     'FightResult',
+    'Formation',
     'MapNodeData',
     'ModeCategory',
+    'NodePosition',
     'NodeTracker',
     'PhaseBranch',
-    'ShipDropResult',
+    'RepairMode',
+    'SearchEnemyAction',
+    'ShipDamageState',
     'build_transitions',
-    'click_enter_fight',
-    'click_fight_condition',
-    'click_formation',
-    'click_image',
-    'click_night_battle',
-    'click_proceed',
-    'click_result',
-    'click_retreat',
-    'click_skip_missile_animation',
-    'detect_mvp',
-    'detect_result_grade',
-    'detect_ship_stats',
-    'ensure_battle_support',
-    'get_enemy_formation',
-    'get_enemy_info',
-    'get_ship_drop',
     'grade_condition_met',
-    'image_exist',
-    'recognize_enemy_formation',
-    'recognize_enemy_ships',
-    'recognize_ship_drop',
     'resolve_successors',
+    'run_battle',
 ]
-
-
-def __getattr__(name: str) -> object:
-    """Load support operations only when their public export is requested."""
-    if name == 'ensure_battle_support':
-        from autowsgr.application.combat.support import ensure_battle_support
-
-        return ensure_battle_support
-    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')

@@ -34,8 +34,8 @@ async def game_acquisition() -> ApiResponse:
     """
     ctx = require_context(get_context)
 
-    from autowsgr.application.ui.controller.operations.sortie_page.campaign_page import CampaignPage
     from autowsgr.application.navigation import goto_page
+    from autowsgr.application.ui.controller.operations.sortie_page.campaign_page import CampaignPage
 
     def _recognize() -> dict[str, int | None]:
         goto_page(ctx, '出征页面')

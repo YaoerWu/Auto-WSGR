@@ -1,8 +1,8 @@
 """模块功能：通用枚举基类。
 
 上层调用：
-- application.runtime.types、application.navigation.types、business.combat.types、
-  business.logistics.types：按领域语义继承这些基类。
+- application.navigation.types、application.controller.types、application.combat.types、
+  business.combat.types：按领域语义继承这些基类。
 - common.device.device_engine.foundation.platform 和 common.vision.adapters.text_recognition：
   定义设备类型和识别模式枚举。
 

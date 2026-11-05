@@ -16,15 +16,16 @@ from pathlib import Path
 from typing import Any, Literal
 
 from autowsgr.application.combat import (
+    CombatMode,
     CombatPhase,
-    ModeCategory,
     PhaseBranch,
     build_transitions,
 )
+from autowsgr.application.combat.engine.transitions import MODE_END_PHASES, MODE_SPECS
+from autowsgr.application.combat.rules import RuleEngine
+from autowsgr.application.controller.types import RepairMode
 from autowsgr.business.combat.fleet import FleetPreset, fleet_presets_from_yaml
-from autowsgr.business.combat.rules import RuleEngine
 from autowsgr.business.combat.types import FightCondition, Formation
-from autowsgr.business.logistics.types import RepairMode
 from autowsgr.common.system import load_yaml
 from autowsgr.common.system.logger import get_logger
 from autowsgr.config_method import NodeConfig
@@ -165,56 +166,6 @@ def _parse_rule_item(rule: str | list) -> list:
     if isinstance(rule, list) and len(rule) >= 2:
         return rule[:2]
     raise ValueError(f'无法解析规则: {rule!r}')
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# 战斗模式
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
-class CombatMode:
-    """战斗模式标识与对应的状态转移图。"""
-
-    NORMAL = 'normal'
-    """常规战（多点地图）。"""
-
-    BATTLE = 'battle'
-    """战役（单点）。"""
-
-    EXERCISE = 'exercise'
-    """演习。"""
-
-    DECISIVE = 'decisive'
-    """决战 (单点战斗，RESULT 即终止)。"""
-
-    EVENT = 'event'
-    """活动战斗 (与常规战类似，但终止态为活动地图页面)。"""
-
-
-# ── 模式配置 ── 每种战斗模式只需指定大类和结束页 ──────────────
-
-_ModeSpec = tuple[ModeCategory, CombatPhase | None]
-"""模式规格: (大类, 结束页面)。``None`` 的 end_page 表示 RESULT 即终止。"""
-
-_MODE_SPECS: dict[str, _ModeSpec] = {
-    CombatMode.NORMAL: (ModeCategory.MAP, CombatPhase.MAP_PAGE),
-    CombatMode.EVENT: (ModeCategory.MAP, CombatPhase.EVENT_MAP_PAGE),
-    CombatMode.BATTLE: (ModeCategory.SINGLE, None),
-    CombatMode.DECISIVE: (ModeCategory.SINGLE, None),
-    CombatMode.EXERCISE: (ModeCategory.SINGLE, CombatPhase.EXERCISE_PAGE),
-}
-
-# ── 由规格自动派生的映射表 ──
-
-MODE_TRANSITIONS: dict[str, dict[CombatPhase, PhaseBranch]] = {
-    mode: build_transitions(cat, ep) for mode, (cat, ep) in _MODE_SPECS.items()
-}
-
-MODE_END_PHASES: dict[str, CombatPhase] = {
-    mode: (ep if ep is not None else CombatPhase.RESULT) for mode, (_cat, ep) in _MODE_SPECS.items()
-}
-
-MODE_CATEGORIES: dict[str, ModeCategory] = {mode: cat for mode, (cat, _ep) in _MODE_SPECS.items()}
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -375,7 +326,7 @@ class CombatPlan:
     @property
     def transitions(self) -> dict[CombatPhase, PhaseBranch]:
         """当前计划的状态转移图 (按模式 + ``collect_result_info`` 构建)。"""
-        category, ep = _MODE_SPECS[self.mode]
+        category, ep = MODE_SPECS[self.mode]
         return build_transitions(
             category,
             ep,

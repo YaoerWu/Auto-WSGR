@@ -16,8 +16,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from autowsgr.application.ui.controller.sidebar.build_page import constants
 from autowsgr.application.navigation.interaction import click_and_wait_for_page
+from autowsgr.application.ui.controller.sidebar.build_page import constants
 
 
 if TYPE_CHECKING:

@@ -144,9 +144,9 @@ def convert_combat_result(result: Any, round_num: int) -> dict[str, Any]:
 
 def build_combat_plan(request: Any) -> Any:
     """从请求构建 CombatPlan 对象。"""
+    from autowsgr.application.controller.types import RepairMode
     from autowsgr.business.combat import CombatPlan, NodeDecision
     from autowsgr.business.combat.plan import parse_map_value
-    from autowsgr.common.types import RepairMode
 
     node_defaults = request.node_defaults.model_dump(exclude_none=True)
 
@@ -235,7 +235,7 @@ def apply_combat_plan_overrides(
 
     fields = request.model_fields_set
     if 'repair_mode' in fields:
-        from autowsgr.common.types import RepairMode
+        from autowsgr.application.controller.types import RepairMode
 
         plan.repair_mode = [RepairMode(value) for value in request.repair_mode]
     if 'repair_method' in fields:

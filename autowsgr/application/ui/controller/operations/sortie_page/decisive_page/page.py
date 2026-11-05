@@ -23,6 +23,11 @@ from autowsgr.application.controller.sortie import (
     SortiePage,
     SortieTab,
 )
+from autowsgr.application.navigation.interaction import (
+    click_and_wait_for_page,
+    confirm_operation,
+)
+from autowsgr.application.navigation.types import PageName
 from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.constants import (
     CLICK_BACK,
     CLICK_BUY_CONFIRM,
@@ -42,11 +47,6 @@ from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.con
 from autowsgr.application.ui.controller.operations.sortie_page.decisive_page.recognition import (
     read_chapter_number,
 )
-from autowsgr.application.navigation.interaction import (
-    click_and_wait_for_page,
-    confirm_operation,
-)
-from autowsgr.application.navigation.types import PageName
 from autowsgr.application.vision.resources import Templates
 from autowsgr.business.combat.decisive.types import DecisiveEntryStatus
 from autowsgr.common.system.logger import get_logger

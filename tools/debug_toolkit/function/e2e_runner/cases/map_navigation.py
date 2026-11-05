@@ -42,7 +42,7 @@ def _navigate_target(page: Any, ctx: Any, chapter: int, map_num: int) -> None:
 def run(rt: Any) -> bool:
     """Run three rounds of shuffled map-only navigation."""
     from autowsgr.application.controller.sortie import SortieTab
-    from autowsgr.application.controller.sortie.battle import BattlePage
+    from autowsgr.application.controller.sortie.battle_map import BattlePage
     from autowsgr.application.navigation import goto_page
     from autowsgr.common.types import PageName
 

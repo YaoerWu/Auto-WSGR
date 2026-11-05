@@ -12,8 +12,8 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Any
 
+from autowsgr.application.combat.types import ConditionFlag, ShipDamageState
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import ConditionFlag, ShipDamageState
 
 
 _log = get_logger('combat')

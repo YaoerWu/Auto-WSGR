@@ -6,7 +6,7 @@ import time
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from autowsgr.common.types import RepairMode, ShipDamageState, ShipType
+from autowsgr.application.controller.types import RepairMode, ShipDamageState, ShipType
 
 
 if TYPE_CHECKING:

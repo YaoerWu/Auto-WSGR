@@ -17,10 +17,11 @@ from autowsgr.application.controller.sidebar.build import (
     BuildPage,
     BuildTab,
 )
+from autowsgr.application.controller.types import DestroyShipWorkMode, ShipType
 from autowsgr.application.navigation import goto_page
+from autowsgr.application.navigation.types import PageName
 from autowsgr.common.device.interaction import click_and_wait_for_page
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import DestroyShipWorkMode, PageName, ShipType
 
 
 if TYPE_CHECKING:

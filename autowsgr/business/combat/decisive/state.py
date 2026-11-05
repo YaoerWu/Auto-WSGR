@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from autowsgr.common.types import DecisivePhase, ShipDamageState
+from autowsgr.application.controller.types import ShipDamageState
+from autowsgr.business.combat.decisive.types import DecisivePhase
 
 
 @dataclass

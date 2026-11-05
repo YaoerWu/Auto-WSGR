@@ -4,13 +4,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from autowsgr.application.combat.types import ConditionFlag, Formation
+from autowsgr.application.controller.types import RepairMode
 from autowsgr.business.combat.campaign.executor import CampaignExecutor
 from autowsgr.business.combat.campaign.spec import (
     CAMPAIGN_NAME_MAP,
     CAMPAIGN_NAMES,
     parse_campaign_name,
 )
-from autowsgr.common.types import ConditionFlag, Formation, RepairMode
 
 
 if TYPE_CHECKING:

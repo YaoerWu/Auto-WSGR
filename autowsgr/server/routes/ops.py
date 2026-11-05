@@ -276,8 +276,8 @@ async def destroy_action(request: DestroyRequest) -> ApiResponse:
     """解装/解体舰船。"""
     ctx = require_context(get_context)
 
+    from autowsgr.application.controller.types import ShipType
     from autowsgr.business.logistics.destroy import destroy_ships
-    from autowsgr.common.types import ShipType
 
     ship_types = None
     if request.ship_types:

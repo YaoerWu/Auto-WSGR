@@ -19,10 +19,10 @@ from typing import TYPE_CHECKING
 
 import cv2
 
-from autowsgr.application.ui.controller.backyard.bath_page import constants
-from autowsgr.application.navigation.types import PageMatch, PageName
-from autowsgr.application.vision.resources import Templates
 from autowsgr.application.fleet_select.rules.shipnames import SHIPNAMES
+from autowsgr.application.navigation.types import PageMatch, PageName
+from autowsgr.application.ui.controller.backyard.bath_page import constants
+from autowsgr.application.vision.resources import Templates
 from autowsgr.common.system.logger import get_logger
 from autowsgr.common.vision import ImageChecker, PixelChecker
 from autowsgr.common.vision.adapters.pixel_matching import Color

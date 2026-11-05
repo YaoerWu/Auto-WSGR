@@ -6,6 +6,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass, replace
 from typing import Any
 
+from autowsgr.application.combat.types import Formation
+from autowsgr.application.controller.types import RepairMode, ShipType
 from autowsgr.business.combat.fleet import (
     FleetSlotRule,
     ResolvedFleetSelection,
@@ -15,7 +17,6 @@ from autowsgr.business.combat.fleet import (
     resolve_fleet_selection,
 )
 from autowsgr.business.combat.plan import CombatMode, CombatPlan
-from autowsgr.common.types import Formation, RepairMode, ShipType
 
 
 CAMPAIGN_NAMES: dict[int, str] = {

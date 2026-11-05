@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from autowsgr.common.types import RepairMode, ShipDamageState
+from autowsgr.application.controller.types import RepairMode, ShipDamageState
 
 
 if TYPE_CHECKING:

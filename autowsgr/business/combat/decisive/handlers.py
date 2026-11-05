@@ -17,30 +17,27 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING
 
-from autowsgr.application.combat import click_result
+from autowsgr.application.combat import click_result, run_battle
+from autowsgr.application.combat.types import ConditionFlag
+from autowsgr.application.controller.types import ShipDamageState
 from autowsgr.application.errors import ManualRepairRequiredError
+from autowsgr.application.navigation import goto_bath_from_decisive_sortie
 from autowsgr.application.ui.controller.fleet import (
     BattlePreparationPage,
     RepairStrategy,
 )
-from autowsgr.application.navigation import goto_bath_from_decisive_sortie
-from autowsgr.business.combat import CombatMode, CombatPlan, NodeDecision, run_combat
+from autowsgr.business.combat import CombatMode, CombatPlan, NodeDecision
 from autowsgr.business.combat.decisive.base import DecisiveBase
 from autowsgr.business.combat.decisive.config import MapData
+from autowsgr.business.combat.decisive.types import DecisiveEntryStatus, DecisivePhase
 from autowsgr.business.logistics.repair.bath_repair import repair_manual_targets_in_bath
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import (
-    ConditionFlag,
-    DecisiveEntryStatus,
-    DecisivePhase,
-    FleetSelection,
-    ShipDamageState,
-)
 
 
 if TYPE_CHECKING:
     import numpy as np
 
+    from autowsgr.business.combat.types import FleetSelection
     from autowsgr.common.vision import ROI
 
 
@@ -149,7 +146,7 @@ class DecisivePhaseHandlers(DecisiveBase):
         """检测入口状态 → 按需重置 → 点击进入地图 → 转到 WAITING_FOR_MAP。
 
         通过 :meth:`DecisiveBattlePage.read_entry_status` 识别当前章节的
-        入口状态，根据 :class:`~autowsgr.common.types.DecisiveEntryStatus` 分别处理:
+        入口状态，根据 :class:`~autowsgr.application.controller.types.DecisiveEntryStatus` 分别处理:
 
         - ``REFRESH``: 使用磁盘重置关卡后重新检测
         - ``REFRESHED``: 有存档进度，直接进入地图 (后续会弹出使用上次舰队)
@@ -496,11 +493,10 @@ class DecisivePhaseHandlers(DecisiveBase):
                 night=self._logic.is_key_point(),
             ),
         )
-        result = run_combat(
-            self._ctx.ctrl,
+        result = run_battle(
+            self._ctx,
             plan,
             ship_stats=self._state.ship_stats[:],
-            ocr=self._ctx.ocr,
             stop_requested=self._ctx.stop_event.is_set,
         )
         self._state.ship_stats = result.ship_stats[:]

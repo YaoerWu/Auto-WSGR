@@ -15,7 +15,7 @@
 
 from __future__ import annotations
 
-from autowsgr.common.types import ShipDamageState
+from autowsgr.application.controller.types import ShipDamageState
 from autowsgr.common.vision import Color
 
 

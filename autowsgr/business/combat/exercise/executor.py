@@ -36,19 +36,22 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, Any
 
-from autowsgr.application.runtime.executor import BaseExecutor
+from autowsgr.application.combat import run_battle
+from autowsgr.application.combat.types import ConditionFlag
 from autowsgr.application.navigation import goto_page
-from autowsgr.business.combat import CombatResult, run_combat
+from autowsgr.application.navigation.types import PageName
+from autowsgr.application.runtime.executor import BaseExecutor
 from autowsgr.business.combat.exercise.spec import ExerciseSpec
 from autowsgr.business.combat.fleet import exact_fleet_rules
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import ConditionFlag, PageName, ShipDamageState
 
 from .operations import ExerciseOperations
 
 
 if TYPE_CHECKING:
+    from autowsgr.application.controller.types import ShipDamageState
     from autowsgr.application.runtime import RuntimeContext as GameContext
+    from autowsgr.business.combat import CombatResult
 
 
 _log = get_logger('business.combat.exercise')
@@ -190,11 +193,10 @@ class ExerciseExecutor(BaseExecutor):
 
     def _run_combat(self, ship_stats: list[ShipDamageState]) -> CombatResult:
         """构建 CombatPlan 并执行战斗 (原子操作: 执行期间不响应暂停)。"""
-        return run_combat(
-            self.ctx.ctrl,
+        return run_battle(
+            self.ctx,
             self.plan,
             ship_stats=ship_stats,
-            ocr=self.ctx.ocr,
             stop_requested=self._stop.is_set,
         )
 

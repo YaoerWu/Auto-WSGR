@@ -21,12 +21,12 @@ from autowsgr.application.controller.sortie import (
     SortiePage,
     SortieTab,
 )
+from autowsgr.application.navigation.interaction import NavigationError, wait_for_page
+from autowsgr.application.navigation.types import PageName
 from autowsgr.application.ui.controller.operations.sortie_page.campaign_page import (
     constants,
     recognition,
 )
-from autowsgr.application.navigation.interaction import NavigationError, wait_for_page
-from autowsgr.application.navigation.types import PageName
 from autowsgr.common.system.logger import get_logger
 
 

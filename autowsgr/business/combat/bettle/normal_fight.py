@@ -10,18 +10,22 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, Literal
 
+from autowsgr.application.combat import run_battle
+from autowsgr.application.combat.types import ConditionFlag
 from autowsgr.application.controller.sortie import SortieTab
-from autowsgr.application.controller.sortie.battle import BattlePage
+from autowsgr.application.controller.sortie.battle_map import BattlePage
+from autowsgr.application.controller.types import RepairMode, ShipDamageState
 from autowsgr.application.errors import ActionFailedError, ManualRepairRequiredError
-from autowsgr.application.ui.controller.fleet import BattlePreparationPage, RepairStrategy
-from autowsgr.application.ui.controller.home.event_page import BaseEventPage
-from autowsgr.application.ui.controller.operations.sortie_page.battle_page import recognition
 from autowsgr.application.navigation import (
     goto_bath_from_event_sortie,
     goto_bath_from_normal_sortie,
     goto_page,
 )
-from autowsgr.business.combat import CombatMode, CombatPlan, CombatResult, run_combat
+from autowsgr.application.navigation.types import PageName
+from autowsgr.application.ui.controller.fleet import BattlePreparationPage, RepairStrategy
+from autowsgr.application.ui.controller.home.event_page import BaseEventPage
+from autowsgr.application.ui.controller.operations.sortie_page.battle_page import recognition
+from autowsgr.business.combat import CombatMode, CombatPlan, CombatResult
 from autowsgr.business.combat.fleet import (
     FleetSlotRule,
     ResolvedFleetSelection,
@@ -32,7 +36,6 @@ from autowsgr.business.combat.fleet import (
 from autowsgr.business.logistics.repair.bath_repair import repair_manual_targets_in_bath
 from autowsgr.common.device.interaction import NavigationError
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import ConditionFlag, PageName, RepairMode, ShipDamageState
 
 
 if TYPE_CHECKING:
@@ -548,11 +551,10 @@ class NormalFightRunner:
 
     def _do_combat(self, ship_stats: list[ShipDamageState]) -> CombatResult:
         """构建战斗运行器并执行战斗。"""
-        return run_combat(
-            self._ctx.ctrl,
+        return run_battle(
+            self._ctx,
             self._plan,
             ship_stats=ship_stats,
-            ocr=self._ctx.ocr,
             stop_requested=self._ctx.stop_event.is_set,
         )
 

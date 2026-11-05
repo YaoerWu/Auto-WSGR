@@ -41,7 +41,7 @@
 | --- | --- |
 | `controller/operations/mission_page/` | `controller/mission/` |
 | `controller/operations/sortie_page/main_page/` | `controller/sortie/main_page/` |
-| `controller/operations/sortie_page/battle_page/` | `controller/sortie/battle/`（先做第 4 条） |
+| `controller/operations/sortie_page/battle_page/` | `controller/sortie/battle_map/`（先做第 4 条） |
 | `controller/operations/sortie_page/campaign_page/` | `controller/sortie/campaign/` |
 | `controller/operations/sortie_page/decisive_page/` | `controller/sortie/decisive/` |
 | `controller/operations/sortie_page/expedition_page/` | `controller/sortie/expedition/` |
@@ -95,7 +95,7 @@
    要按 `expect_ocr` 重写一份；
 2. 删 `battle_page/recognition.py` 与 `battle_page/constants.py`，`constants.py` 里还活着的点击坐标
    并入 `page.py`；
-3. `battle_page/` 按第 2 条搬到 `controller/sortie/battle/`。
+3. `battle_page/` 按第 2 条搬到 `controller/sortie/battle_map/`。
 
 **注意**：`_read_loot_and_ship_count` 的旧实现在 `battle_page/recognition.py:417`，
 返回战斗结算里的战利品与舰船数。迁移时不要照抄旧实现——它依赖的 `OCREngine` 已经不存在，
@@ -154,7 +154,7 @@
 
 **现在什么状态**：出征准备页右下角「开始出征」按钮在四种准备页上都存在
 （OCR bbox (1050,653)–(1185,692)），点击即进入战斗。战斗模块（`business/combat`、
-`controller/sortie/battle/`）尚未重写，点了没有后续，所以
+`controller/sortie/battle_map/`）尚未重写，点了没有后续，所以
 `controller/sortie/battle_preparation/page.py` **目前不提供 `start_battle`**。
 
 **为什么现在不做**：见 `[任务书]出征准备页重写.md` §4.5——按钮本身只是「单次点击」，

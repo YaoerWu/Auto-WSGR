@@ -21,9 +21,10 @@ import time
 from typing import TYPE_CHECKING
 
 from autowsgr.application.controller.backyard.bath import BathPage
+from autowsgr.application.controller.types import ShipDamageState
 from autowsgr.application.navigation import goto_page
+from autowsgr.application.navigation.types import PageName
 from autowsgr.common.system.logger import get_logger
-from autowsgr.common.types import PageName, ShipDamageState
 
 
 if TYPE_CHECKING:
